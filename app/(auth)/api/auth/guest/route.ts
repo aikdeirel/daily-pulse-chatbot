@@ -1,3 +1,13 @@
+// GUEST AUTHENTICATION DISABLED - Code preserved below for future reference
+// To re-enable: uncomment the code below and comment out the 404 response
+
+import { NextResponse } from "next/server";
+
+export function GET() {
+  return new NextResponse("Not Found", { status: 404 });
+}
+
+/*
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { signIn } from "@/app/(auth)/auth";
@@ -19,3 +29,4 @@ export async function GET(request: Request) {
 
   return signIn("guest", { redirect: true, redirectTo: redirectUrl });
 }
+*/

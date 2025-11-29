@@ -24,11 +24,18 @@ export async function proxy(request: NextRequest) {
   });
 
   if (!token) {
+    /*
     const redirectUrl = encodeURIComponent(request.url);
 
     return NextResponse.redirect(
       new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url)
     );
+      */
+    if (pathname === "/login") {
+      // Allow unauthenticated access to the login page
+      return NextResponse.next();
+    }
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   const isGuest = guestRegex.test(token?.email ?? "");
@@ -46,7 +53,8 @@ export const config = {
     "/chat/:id",
     "/api/:path*",
     "/login",
-    "/register",
+    // GUEST AUTHENTICATION DISABLED - Code preserved below for future reference
+    // "/register",
 
     /*
      * Match all request paths except for the ones starting with:

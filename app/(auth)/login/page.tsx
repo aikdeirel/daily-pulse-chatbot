@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+// import Link from "next/link"; // Needed if registration link is re-enabled
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useActionState, useEffect, useState } from "react";
@@ -60,6 +60,8 @@ export default function Page() {
         </div>
         <AuthForm action={handleSubmit} defaultEmail={email}>
           <SubmitButton isSuccessful={isSuccessful}>Sign in</SubmitButton>
+          {/* REGISTRATION LINK DISABLED - Preserved for future reference */}
+          {/*
           <p className="mt-4 text-center text-gray-600 text-sm dark:text-zinc-400">
             {"Don't have an account? "}
             <Link
@@ -70,6 +72,7 @@ export default function Page() {
             </Link>
             {" for free."}
           </p>
+          */}
         </AuthForm>
       </div>
     </div>

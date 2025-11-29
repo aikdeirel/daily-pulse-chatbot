@@ -1,3 +1,13 @@
+// REGISTRATION DISABLED - Code preserved below for future reference
+// To re-enable: uncomment the code below and comment out the notFound() call
+
+import { notFound } from "next/navigation";
+
+export default function Page() {
+  notFound();
+}
+
+/*
 "use client";
 
 import Link from "next/link";
@@ -75,3 +85,4 @@ export default function Page() {
     </div>
   );
 }
+*/
