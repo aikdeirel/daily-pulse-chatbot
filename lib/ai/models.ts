@@ -1,4 +1,4 @@
-export const DEFAULT_CHAT_MODEL: string = "chat-model";
+export const DEFAULT_CHAT_MODEL: string = "mistral-medium";
 
 export type ChatModel = {
   id: string;
@@ -7,15 +7,20 @@ export type ChatModel = {
 };
 
 export const chatModels: ChatModel[] = [
+  // {
+  //   id: "chat-model",
+  //   name: "Grok Vision",
+  //   description: "Advanced multimodal model with vision and text capabilities",
+  // },
+  // {
+  //   id: "chat-model-reasoning",
+  //   name: "Grok Reasoning",
+  //   description:
+  //     "Uses advanced chain-of-thought reasoning for complex problems",
+  // },
   {
-    id: "chat-model",
-    name: "Grok Vision",
-    description: "Advanced multimodal model with vision and text capabilities",
-  },
-  {
-    id: "chat-model-reasoning",
-    name: "Grok Reasoning",
-    description:
-      "Uses advanced chain-of-thought reasoning for complex problems",
+    id: "mistral-medium",
+    name: "Mistral Medium",
+    description: "Mistral Medium (Latest) via direct API",
   },
 ];

@@ -1,4 +1,5 @@
 import { gateway } from "@ai-sdk/gateway";
+import { mistral } from "@ai-sdk/mistral";
 import {
   customProvider,
   extractReasoningMiddleware,
@@ -30,7 +31,8 @@ export const myProvider = isTestEnvironment
           model: gateway.languageModel("xai/grok-3-mini"),
           middleware: extractReasoningMiddleware({ tagName: "think" }),
         }),
-        "title-model": gateway.languageModel("xai/grok-2-1212"),
-        "artifact-model": gateway.languageModel("xai/grok-2-1212"),
+        "mistral-medium": mistral("mistral-medium-latest"),
+        "title-model": mistral("mistral-medium-latest"),
+        "artifact-model": mistral("mistral-medium-latest"),
       },
     });
