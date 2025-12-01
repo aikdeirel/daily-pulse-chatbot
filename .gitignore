@@ -43,8 +43,6 @@ yarn-error.log*
 /blob-report/
 /playwright/*
 
-# PWA
-public/sw.js
-public/sw.js.map
-public/serwist-*.js
-public/serwist-*.js.map
+# PWA / Serwist
+public/sw*
+public/swe-worker*
