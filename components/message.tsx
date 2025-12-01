@@ -119,19 +119,6 @@ const PurePreviewMessage = ({
 						</div>
 					)}
 
-					{/* Web Search Sources - show when assistant message has sources */}
-					{message.role === "assistant" && sourcesFromMessage.length > 0 && (
-						<WebSearch defaultOpen={false}>
-							<WebSearchHeader
-								isSearching={isLoading && sourcesFromMessage.length === 0}
-								sourceCount={sourcesFromMessage.length}
-							/>
-							<WebSearchContent>
-								<WebSearchSources sources={sourcesFromMessage} />
-							</WebSearchContent>
-						</WebSearch>
-					)}
-
 					{message.parts?.map((part, index) => {
 						const { type } = part;
 						const key = `message-${message.id}-part-${index}`;
@@ -470,6 +457,21 @@ const PurePreviewMessage = ({
 
 						return null;
 					})}
+
+					{/* Web Search Sources - full panel shown only after completion */}
+					{message.role === "assistant" &&
+						sourcesFromMessage.length > 0 &&
+						!isLoading && (
+							<WebSearch defaultOpen={false}>
+								<WebSearchHeader
+									isSearching={false}
+									sourceCount={sourcesFromMessage.length}
+								/>
+								<WebSearchContent>
+									<WebSearchSources sources={sourcesFromMessage} />
+								</WebSearchContent>
+							</WebSearch>
+						)}
 
 					{!isReadonly && (
 						<MessageActions

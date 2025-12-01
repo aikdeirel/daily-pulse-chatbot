@@ -21,7 +21,7 @@ import type { VisibilityType } from "@/components/visibility-selector";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
 import type { ChatModel } from "@/lib/ai/models";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
-import { myProvider } from "@/lib/ai/providers";
+import { getLanguageModel } from "@/lib/ai/providers";
 import { discoverSkills } from "@/lib/ai/skills";
 import { createDocument } from "@/lib/ai/tools/create-document";
 import { getWeather } from "@/lib/ai/tools/get-weather";
@@ -104,11 +104,13 @@ export async function POST(request: Request) {
 			message,
 			selectedChatModel,
 			selectedVisibilityType,
+			webSearchEnabled,
 		}: {
 			id: string;
 			message: ChatMessage;
 			selectedChatModel: ChatModel["id"];
 			selectedVisibilityType: VisibilityType;
+			webSearchEnabled: boolean;
 		} = requestBody;
 
 		const session = await auth();
@@ -227,7 +229,7 @@ export async function POST(request: Request) {
 				}
 
 				const result = streamText({
-					model: myProvider.languageModel(selectedChatModel),
+					model: getLanguageModel(selectedChatModel, webSearchEnabled),
 					system: systemPrompt({
 						selectedChatModel,
 						requestHints,
@@ -262,8 +264,11 @@ export async function POST(request: Request) {
 						}
 						try {
 							const providers = await getTokenlensCatalog();
-							const modelId =
-								myProvider.languageModel(selectedChatModel).modelId;
+							const model = getLanguageModel(
+								selectedChatModel,
+								webSearchEnabled,
+							);
+							const modelId = model.modelId;
 							if (!modelId) {
 								finalMergedUsage = usage;
 								dataStream.write({
