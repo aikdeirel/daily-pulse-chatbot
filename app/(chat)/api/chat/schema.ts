@@ -24,7 +24,7 @@ export const postRequestBodySchema = z.object({
   selectedChatModel: z.enum([
     "chat-model",
     "chat-model-reasoning",
-    "mistral-medium",
+    "openrouter-chat",
   ]),
   selectedVisibilityType: z.enum(["public", "private"]),
 });

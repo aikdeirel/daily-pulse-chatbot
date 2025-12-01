@@ -1,4 +1,4 @@
-export const DEFAULT_CHAT_MODEL: string = "mistral-medium";
+export const DEFAULT_CHAT_MODEL: string = "openrouter-chat";
 
 export type ChatModel = {
   id: string;
@@ -7,8 +7,7 @@ export type ChatModel = {
 };
 
 export const chatModels: ChatModel[] = [
-  // {
-  //   id: "chat-model",
+  // {\n  //   id: "chat-model",
   //   name: "Grok Vision",
   //   description: "Advanced multimodal model with vision and text capabilities",
   // },
@@ -19,8 +18,8 @@ export const chatModels: ChatModel[] = [
   //     "Uses advanced chain-of-thought reasoning for complex problems",
   // },
   {
-    id: "mistral-medium",
-    name: "Mistral Medium",
-    description: "Mistral Medium (Latest) via direct API",
+    id: "openrouter-chat",
+    name: "GPT-4o Mini",
+    description: "OpenAI GPT-4o mini via OpenRouter - Fast and cost-effective",
   },
 ];

@@ -1,11 +1,15 @@
 import { gateway } from "@ai-sdk/gateway";
-import { mistral } from "@ai-sdk/mistral";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import {
   customProvider,
   extractReasoningMiddleware,
   wrapLanguageModel,
 } from "ai";
 import { isTestEnvironment } from "../constants";
+
+const openrouter = createOpenRouter({
+  apiKey: process.env.OPENROUTER_API_KEY,
+});
 
 export const myProvider = isTestEnvironment
   ? (() => {
@@ -31,8 +35,8 @@ export const myProvider = isTestEnvironment
           model: gateway.languageModel("xai/grok-3-mini"),
           middleware: extractReasoningMiddleware({ tagName: "think" }),
         }),
-        "mistral-medium": mistral("mistral-medium-latest"),
-        "title-model": mistral("mistral-medium-latest"),
-        "artifact-model": mistral("mistral-medium-latest"),
+        "openrouter-chat": openrouter("openai/gpt-4o-mini"),
+        "title-model": openrouter("openai/gpt-4o-mini"),
+        "artifact-model": openrouter("openai/gpt-4o-mini"),
       },
     });
