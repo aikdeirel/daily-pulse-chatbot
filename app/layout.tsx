@@ -8,8 +8,18 @@ import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://chat.vercel.ai"),
+  applicationName: "AI Chatbot",
   title: "Next.js Chatbot Template",
   description: "Next.js chatbot template using the AI SDK.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "AI Chatbot",
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export const viewport = {

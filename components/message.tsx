@@ -18,7 +18,7 @@ import {
   ToolInput,
   ToolOutput,
 } from "./elements/tool";
-import { SparklesIcon } from "./icons";
+import { AppIcon } from "./icons";
 import { MessageActions } from "./message-actions";
 import { MessageEditor } from "./message-editor";
 import { MessageReasoning } from "./message-reasoning";
@@ -54,7 +54,7 @@ const PurePreviewMessage = ({
 
   return (
     <div
-      className="group/message fade-in w-full max-w-full animate-in duration-200 overflow-hidden"
+      className="group/message fade-in w-full max-w-full animate-in duration-200"
       data-role={message.role}
       data-testid={`message-${message.role}`}
     >
@@ -64,8 +64,8 @@ const PurePreviewMessage = ({
         })}
       >
         {message.role === "assistant" && (
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-500/20 text-orange-600 ring-1 ring-orange-500/30 dark:from-orange-500/30 dark:to-amber-500/30 dark:text-orange-400 dark:ring-orange-500/40">
-            <SparklesIcon size={18} />
+          <div className="flex size-10 shrink-0 items-center justify-center overflow-visible rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-500/20 text-orange-600 ring-1 ring-orange-500/30 dark:from-orange-500/30 dark:to-amber-500/30 dark:text-orange-400 dark:ring-orange-500/40">
+            <AppIcon size={24} />
           </div>
         )}
         
@@ -451,9 +451,9 @@ export const ThinkingMessage = () => {
       data-testid="message-assistant-loading"
     >
       <div className="flex items-start justify-start gap-3 md:gap-4">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-500/20 text-orange-600 ring-1 ring-orange-500/30 dark:from-orange-500/30 dark:to-amber-500/30 dark:text-orange-400 dark:ring-orange-500/40">
+        <div className="flex size-10 shrink-0 items-center justify-center overflow-visible rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-500/20 text-orange-600 ring-1 ring-orange-500/30 dark:from-orange-500/30 dark:to-amber-500/30 dark:text-orange-400 dark:ring-orange-500/40">
           <div className="animate-pulse">
-            <SparklesIcon size={18} />
+            <AppIcon size={40} />
           </div>
         </div>
 
