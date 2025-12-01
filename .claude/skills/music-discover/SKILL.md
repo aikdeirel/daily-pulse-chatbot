@@ -81,19 +81,19 @@ Structure the response as follows:
    - Format: `• Artist - "Album/Song" - Why this fits (1 sentence) [Link if available]`
    - Include 3-5 recommendations
 
-**Example:**
+**Example (replace all in []):**
 
 ```
-Hey, hab spannende Updates für dich! 🎵
+[short and excited intro with emoji(s)]
 
 News:
-• Mogwai - "The Bad Fire" (24. Jan 2025) - Neues Album mit düsterem Post-Rock
-• Queens of the Stone Age - Europa-Tour angekündigt, Berlin: 15. März 2025
+• [Band Name] - "[Album Name]" ([Date]) - [Brief description] [Link]
+• [Band Name] - [News Headline about Band], [Some details] [Link]
 
-Empfehlungen:
-• Russian Circles - "Gnosis" - Ähnlicher instrumentaler Post-Rock wie Mogwai
-• Burial - "Antidawn" - Atmospheric Trip Hop, passt zu deinem Death In Vegas Vibe
-• Swans - "The Beggar" - Intensiver, experimenteller Sound wenn du Latitudes magst
+[recommendations intro]:
+• [Band Name] - "[Song/Album Name]" - [Why this fits] [Link if available]
+• [Band Name] - "[Song/Album Name]" - [Why this fits] [Link if available]
+...
 ```
 
 **Keep it short:** Entire response should be readable in under 30 seconds.
