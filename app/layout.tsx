@@ -7,30 +7,30 @@ import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://chat.vercel.ai"),
-  applicationName: "AI Chatbot",
-  title: "Next.js Chatbot Template",
-  description: "Next.js chatbot template using the AI SDK.",
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "AI Chatbot",
-  },
-  formatDetection: {
-    telephone: false,
-  },
+	metadataBase: new URL("https://chat.vercel.ai"),
+	applicationName: "Daily Pulse",
+	title: "AI Chatbot for daily use",
+	description: "An AI-powered chatbot to assist you with various tasks.",
+	manifest: "/manifest.json",
+	appleWebApp: {
+		capable: true,
+		statusBarStyle: "default",
+		title: "Daily Pulse",
+	},
+	formatDetection: {
+		telephone: false,
+	},
 };
 
 export const viewport = {
-  maximumScale: 1, // Disable auto-zoom on mobile Safari
+	maximumScale: 1, // Disable auto-zoom on mobile Safari
 };
 
 const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-mono",
-  weight: ["300", "400", "500", "600", "700"],
+	subsets: ["latin"],
+	display: "swap",
+	variable: "--font-mono",
+	weight: ["300", "400", "500", "600", "700"],
 });
 
 const LIGHT_THEME_COLOR = "hsl(0 0% 100%)";
@@ -54,39 +54,39 @@ const THEME_COLOR_SCRIPT = `\
 })();`;
 
 export default function RootLayout({
-  children,
+	children,
 }: Readonly<{
-  children: React.ReactNode;
+	children: React.ReactNode;
 }>) {
-  return (
-    <html
-      className={jetbrainsMono.variable}
-      // `next-themes` injects an extra classname to the body element to avoid
-      // visual flicker before hydration. Hence the `suppressHydrationWarning`
-      // prop is necessary to avoid the React hydration mismatch warning.
-      // https://github.com/pacocoursey/next-themes?tab=readme-ov-file#with-app
-      lang="en"
-      suppressHydrationWarning
-    >
-      <head>
-        <script
-          // biome-ignore lint/security/noDangerouslySetInnerHtml: "Required"
-          dangerouslySetInnerHTML={{
-            __html: THEME_COLOR_SCRIPT,
-          }}
-        />
-      </head>
-      <body className="antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          disableTransitionOnChange
-          enableSystem
-        >
-          <Toaster position="top-center" />
-          <SessionProvider>{children}</SessionProvider>
-        </ThemeProvider>
-      </body>
-    </html>
-  );
+	return (
+		<html
+			className={jetbrainsMono.variable}
+			// `next-themes` injects an extra classname to the body element to avoid
+			// visual flicker before hydration. Hence the `suppressHydrationWarning`
+			// prop is necessary to avoid the React hydration mismatch warning.
+			// https://github.com/pacocoursey/next-themes?tab=readme-ov-file#with-app
+			lang="en"
+			suppressHydrationWarning
+		>
+			<head>
+				<script
+					// biome-ignore lint/security/noDangerouslySetInnerHtml: "Required"
+					dangerouslySetInnerHTML={{
+						__html: THEME_COLOR_SCRIPT,
+					}}
+				/>
+			</head>
+			<body className="antialiased">
+				<ThemeProvider
+					attribute="class"
+					defaultTheme="system"
+					disableTransitionOnChange
+					enableSystem
+				>
+					<Toaster position="top-center" />
+					<SessionProvider>{children}</SessionProvider>
+				</ThemeProvider>
+			</body>
+		</html>
+	);
 }
