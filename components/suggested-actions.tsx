@@ -16,7 +16,7 @@ type SuggestedActionsProps = {
 function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
 	const suggestedActions = [
 		"Do you have any recommendations for what music I should listen to next? Use the Music Discover Skill",
-		"What is the weather like today in Lichtenberg, Berlin?",
+		"What is the weather like today in Berlin?",
 	];
 
 	return (
