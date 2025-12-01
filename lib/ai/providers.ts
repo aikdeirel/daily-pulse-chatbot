@@ -1,4 +1,3 @@
-import { gateway } from "@ai-sdk/gateway";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import {
   customProvider,
@@ -30,13 +29,35 @@ export const myProvider = isTestEnvironment
     })()
   : customProvider({
       languageModels: {
-        "chat-model": gateway.languageModel("xai/grok-2-vision-1212"),
-        "chat-model-reasoning": wrapLanguageModel({
-          model: gateway.languageModel("xai/grok-3-mini"),
+        // OpenAI models
+        "gpt-oss-20b-free": openrouter("openai/gpt-oss-20b:free"),
+        "gpt-5-nano": openrouter("openai/gpt-5-nano"),
+        "gpt-5.1": openrouter("openai/gpt-5.1"),
+        "gpt-5.1-chat": openrouter("openai/gpt-5.1-chat"),
+        "gpt-5.1-codex": openrouter("openai/gpt-5.1-codex"),
+        "gpt-5.1-codex-mini": openrouter("openai/gpt-5.1-codex-mini"),
+        
+        // Anthropic Claude models
+        "claude-sonnet-4.5": openrouter("anthropic/claude-sonnet-4.5"),
+        "claude-opus-4.5": openrouter("anthropic/claude-opus-4.5"),
+        "claude-haiku-4.5": openrouter("anthropic/claude-haiku-4.5"),
+        
+        // Reasoning-enabled variants
+        "gpt-5.1-reasoning": wrapLanguageModel({
+          model: openrouter("openai/gpt-5.1"),
           middleware: extractReasoningMiddleware({ tagName: "think" }),
         }),
-        "openrouter-chat": openrouter("openai/gpt-4o-mini"),
-        "title-model": openrouter("openai/gpt-4o-mini"),
-        "artifact-model": openrouter("openai/gpt-4o-mini"),
+        "claude-opus-4.5-reasoning": wrapLanguageModel({
+          model: openrouter("anthropic/claude-opus-4.5"),
+          middleware: extractReasoningMiddleware({ tagName: "think" }),
+        }),
+        "claude-sonnet-4.5-reasoning": wrapLanguageModel({
+          model: openrouter("anthropic/claude-sonnet-4.5"),
+          middleware: extractReasoningMiddleware({ tagName: "think" }),
+        }),
+        
+        // Special purpose models
+        "title-model": openrouter("openai/gpt-5-nano"),
+        "artifact-model": openrouter("anthropic/claude-haiku-4.5"),
       },
     });
