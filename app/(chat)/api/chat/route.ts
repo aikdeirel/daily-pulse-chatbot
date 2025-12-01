@@ -27,6 +27,7 @@ import { getWeather } from "@/lib/ai/tools/get-weather";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
 import { updateDocument } from "@/lib/ai/tools/update-document";
 import { useSkill, getSkillResource } from "@/lib/ai/tools/use-skill";
+import { webFetch } from "@/lib/ai/tools/web-fetch";
 import { discoverSkills } from "@/lib/ai/skills";
 import { isProductionEnvironment } from "@/lib/constants";
 import {
@@ -196,6 +197,7 @@ export async function POST(request: Request) {
           }),
           useSkill: useSkill({ availableSkills }),
           getSkillResource: getSkillResource({ availableSkills }),
+          webFetch,
         };
 
         // Determine which tools to activate
@@ -212,6 +214,7 @@ export async function POST(request: Request) {
             "requestSuggestions",
             "useSkill",
             "getSkillResource",
+            "webFetch",
           ];
         } else {
           activeTools = [
@@ -219,6 +222,7 @@ export async function POST(request: Request) {
             "createDocument",
             "updateDocument",
             "requestSuggestions",
+            "webFetch",
           ];
         }
 

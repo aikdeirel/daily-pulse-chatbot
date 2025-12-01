@@ -6,6 +6,7 @@ import type { getWeather } from "./ai/tools/get-weather";
 import type { requestSuggestions } from "./ai/tools/request-suggestions";
 import type { updateDocument } from "./ai/tools/update-document";
 import type { useSkill, getSkillResource } from "./ai/tools/use-skill";
+import type { webFetch } from "./ai/tools/web-fetch";
 import type { Suggestion } from "./db/schema";
 import type { AppUsage } from "./usage";
 
@@ -25,6 +26,7 @@ type requestSuggestionsTool = InferUITool<
 >;
 type useSkillTool = InferUITool<ReturnType<typeof useSkill>>;
 type getSkillResourceTool = InferUITool<ReturnType<typeof getSkillResource>>;
+type webFetchTool = InferUITool<typeof webFetch>;
 
 export type ChatTools = {
   getWeather: weatherTool;
@@ -33,6 +35,7 @@ export type ChatTools = {
   requestSuggestions: requestSuggestionsTool;
   useSkill: useSkillTool;
   getSkillResource: getSkillResourceTool;
+  webFetch: webFetchTool;
 };
 
 export type CustomUIDataTypes = {

@@ -8,6 +8,7 @@ import {
   CircleIcon,
   CloudIcon,
   FileTextIcon,
+  GlobeIcon,
   LightbulbIcon,
   PencilIcon,
   SparklesIcon,
@@ -78,6 +79,11 @@ const toolConfigData: Record<string, ToolConfigEntry> = {
     color: "text-cyan-500",
     description: "Loading skill resource",
   },
+  "tool-webFetch": {
+    label: "Web Fetch",
+    color: "text-rose-500",
+    description: "Fetching web content",
+  },
 };
 
 // Get icon component based on tool type
@@ -95,6 +101,8 @@ function getToolIcon(type: string, className: string = "size-4"): ReactNode {
       return <SparklesIcon className={className} />;
     case "tool-getSkillResource":
       return <BookOpenIcon className={className} />;
+    case "tool-webFetch":
+      return <GlobeIcon className={className} />;
     default:
       return <WrenchIcon className={className} />;
   }

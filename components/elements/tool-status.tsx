@@ -7,6 +7,7 @@ import {
   CheckCircleIcon,
   CloudIcon,
   FileTextIcon,
+  GlobeIcon,
   LightbulbIcon,
   Loader2Icon,
   PencilIcon,
@@ -49,6 +50,10 @@ const toolConfigData: Record<string, ToolConfigEntry> = {
     label: "Resource",
     color: "text-cyan-500 bg-cyan-500/10 border-cyan-500/20",
   },
+  "tool-webFetch": {
+    label: "Web Fetch",
+    color: "text-rose-500 bg-rose-500/10 border-rose-500/20",
+  },
 };
 
 // Get icon component at render time
@@ -66,6 +71,8 @@ function getToolIcon(type: string, className: string = "size-3.5"): ReactNode {
       return <SparklesIcon className={className} />;
     case "tool-getSkillResource":
       return <BookOpenIcon className={className} />;
+    case "tool-webFetch":
+      return <GlobeIcon className={className} />;
     default:
       return <WrenchIcon className={className} />;
   }

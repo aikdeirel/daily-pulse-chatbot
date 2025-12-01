@@ -13,11 +13,11 @@ Follow these steps in order:
 
 ### Step 1: Fetch User's Music Profile
 
-Always fetch the latest data at the start of each conversation:
+**IMPORTANT: Use the `webFetch` tool to get the user's Spotify data:**
 
-```bash
-web_fetch https://aikdeirel.github.io/spotify-stats/spotify_top.json
-```
+Call the `webFetch` tool with:
+- url: `https://aikdeirel.github.io/spotify-stats/spotify_top.json`
+- responseType: `json`
 
 This JSON contains the user's top 10 Spotify artists with their genres, albums, and top tracks. Analyze this to understand the user's taste profile.
 
