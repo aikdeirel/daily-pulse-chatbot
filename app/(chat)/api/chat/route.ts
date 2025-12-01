@@ -26,6 +26,8 @@ import { createDocument } from "@/lib/ai/tools/create-document";
 import { getWeather } from "@/lib/ai/tools/get-weather";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
 import { updateDocument } from "@/lib/ai/tools/update-document";
+import { useSkill, getSkillResource } from "@/lib/ai/tools/use-skill";
+import { discoverSkills } from "@/lib/ai/skills";
 import { isProductionEnvironment } from "@/lib/constants";
 import {
   createStreamId,
@@ -175,34 +177,59 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
+    // Discover available skills (Level 1 - metadata only)
+    const availableSkills = await discoverSkills();
+
     let finalMergedUsage: AppUsage | undefined;
 
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
+        // Always define all tools (including skill tools)
+        // Skills are discovered at runtime, tools are always available
+        const tools = {
+          getWeather,
+          createDocument: createDocument({ session, dataStream }),
+          updateDocument: updateDocument({ session, dataStream }),
+          requestSuggestions: requestSuggestions({
+            session,
+            dataStream,
+          }),
+          useSkill: useSkill({ availableSkills }),
+          getSkillResource: getSkillResource({ availableSkills }),
+        };
+
+        // Determine which tools to activate
+        type ToolName = keyof typeof tools;
+        let activeTools: ToolName[] | undefined;
+        
+        if (selectedChatModel === "chat-model-reasoning") {
+          activeTools = [];
+        } else if (availableSkills.length > 0) {
+          activeTools = [
+            "getWeather",
+            "createDocument",
+            "updateDocument",
+            "requestSuggestions",
+            "useSkill",
+            "getSkillResource",
+          ];
+        } else {
+          activeTools = [
+            "getWeather",
+            "createDocument",
+            "updateDocument",
+            "requestSuggestions",
+          ];
+        }
+
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
+          system: systemPrompt({ selectedChatModel, requestHints, skills: availableSkills }),
           messages: convertToModelMessages(uiMessages),
           stopWhen: stepCountIs(5),
-          experimental_activeTools:
-            selectedChatModel === "chat-model-reasoning"
-              ? []
-              : [
-                  "getWeather",
-                  "createDocument",
-                  "updateDocument",
-                  "requestSuggestions",
-                ],
+          experimental_activeTools: activeTools,
           experimental_transform: smoothStream({ chunking: "word" }),
-          tools: {
-            getWeather,
-            createDocument: createDocument({ session, dataStream }),
-            updateDocument: updateDocument({ session, dataStream }),
-            requestSuggestions: requestSuggestions({
-              session,
-              dataStream,
-            }),
-          },
+          tools,
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
             functionId: "stream-text",

@@ -1,5 +1,6 @@
 import type { Geo } from "@vercel/functions";
 import type { ArtifactKind } from "@/components/artifact";
+import type { SkillSummary } from "@/lib/ai/skills";
 
 export const artifactsPrompt = `
 Artifacts is a special user interface mode that helps users with writing, editing, and other content creation tasks. When artifact is open, it is on the right side of the screen, while the conversation is on the left side. When creating or updating documents, changes are reflected in real-time on the artifacts and visible to the user.
@@ -50,20 +51,48 @@ About the origin of user's request:
 - country: ${requestHints.country}
 `;
 
+/**
+ * Generate compact skill metadata for system prompt
+ * ~100 tokens per skill - Level 1 of progressive disclosure
+ */
+export const getSkillsPrompt = (skills: SkillSummary[]): string => {
+  if (skills.length === 0) {
+    return "";
+  }
+
+  const skillList = skills
+    .map((s) => `- [${s.id}] ${s.name}: ${s.description}`)
+    .join("\n");
+
+  return `
+## Available Skills
+
+You have access to specialized skills that provide detailed guidance for specific tasks.
+To use a skill, call the \`useSkill\` tool with the skill ID. Only use a skill when the user's request clearly matches the skill's description.
+
+${skillList}
+
+**Important**: Only load a skill if needed. Do not load skills for simple questions you can answer directly.
+`;
+};
+
 export const systemPrompt = ({
   selectedChatModel,
   requestHints,
+  skills = [],
 }: {
   selectedChatModel: string;
   requestHints: RequestHints;
+  skills?: SkillSummary[];
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
+  const skillsPrompt = getSkillsPrompt(skills);
 
   if (selectedChatModel === "chat-model-reasoning") {
-    return `${regularPrompt}\n\n${requestPrompt}`;
+    return `${regularPrompt}\n\n${requestPrompt}${skillsPrompt}`;
   }
 
-  return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
+  return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}${skillsPrompt}`;
 };
 
 export const codePrompt = `
