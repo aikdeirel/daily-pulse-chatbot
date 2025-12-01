@@ -2,6 +2,7 @@
 import type { UseChatHelpers } from "@ai-sdk/react";
 import equal from "fast-deep-equal";
 import { memo, useState } from "react";
+import { useThinkingPhrase } from "@/hooks/use-thinking-phrase";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
 import { cn, sanitizeText } from "@/lib/utils";
@@ -513,6 +514,8 @@ export const PreviewMessage = memo(
 );
 
 export const ThinkingMessage = () => {
+	const { phrase, isTransitioning } = useThinkingPhrase();
+
 	return (
 		<div
 			className="group/message fade-in w-full animate-in duration-300"
@@ -529,8 +532,13 @@ export const ThinkingMessage = () => {
 				<div className="flex w-full flex-col gap-3 md:gap-4">
 					<div className="flex items-center gap-2 p-0">
 						<div className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500/15 to-amber-500/15 px-4 py-2.5 text-base dark:from-orange-500/25 dark:to-amber-500/25">
-							<span className="animate-pulse bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text font-medium text-transparent dark:from-orange-400 dark:to-amber-400">
-								Thinking
+							<span
+								className={cn(
+									"bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text font-medium text-transparent transition-opacity duration-300 dark:from-orange-400 dark:to-amber-400",
+									isTransitioning ? "opacity-0" : "opacity-100",
+								)}
+							>
+								{phrase}
 							</span>
 							<span className="inline-flex text-orange-600 dark:text-orange-400">
 								<span className="animate-bounce [animation-delay:0ms]">.</span>
