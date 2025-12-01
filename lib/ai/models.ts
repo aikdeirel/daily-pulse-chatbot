@@ -8,34 +8,9 @@ export type ChatModel = {
 
 export const chatModels: ChatModel[] = [
   {
-    id: "gpt-oss-20b-free",
-    name: "GPT OSS 20B",
-    description: "Free open-source 20B parameter model",
-  },
-  {
-    id: "gpt-5-nano",
-    name: "GPT-5 Nano",
-    description: "Fast and cost-effective compact model",
-  },
-  {
-    id: "gpt-5.1",
-    name: "GPT-5.1",
-    description: "Latest GPT-5.1 general purpose model",
-  },
-  {
-    id: "gpt-5.1-chat",
-    name: "GPT-5.1 Chat",
-    description: "GPT-5.1 optimized for conversational interactions",
-  },
-  {
-    id: "gpt-5.1-codex",
-    name: "GPT-5.1 Codex",
-    description: "Advanced coding model for complex programming tasks",
-  },
-  {
-    id: "gpt-5.1-codex-mini",
-    name: "GPT-5.1 Codex Mini",
-    description: "Lightweight coding model for quick tasks",
+    id: "claude-haiku-4.5",
+    name: "Claude Haiku 4.5",
+    description: "Fast and efficient Claude model (Default)",
   },
   {
     id: "claude-sonnet-4.5",
@@ -48,14 +23,9 @@ export const chatModels: ChatModel[] = [
     description: "Most capable Claude model for complex tasks",
   },
   {
-    id: "claude-haiku-4.5",
-    name: "Claude Haiku 4.5",
-    description: "Fast and efficient Claude model (Default)",
-  },
-  {
-    id: "gpt-5.1-reasoning",
-    name: "GPT-5.1 Reasoning",
-    description: "GPT-5.1 with chain-of-thought reasoning enabled",
+    id: "claude-sonnet-4.5-reasoning",
+    name: "Claude Sonnet 4.5 Reasoning",
+    description: "Balanced Claude model with reasoning enabled",
   },
   {
     id: "claude-opus-4.5-reasoning",
@@ -63,8 +33,38 @@ export const chatModels: ChatModel[] = [
     description: "Most capable Claude with reasoning enabled",
   },
   {
-    id: "claude-sonnet-4.5-reasoning",
-    name: "Claude Sonnet 4.5 Reasoning",
-    description: "Balanced Claude model with reasoning enabled",
+    id: "gpt-oss-20b-free",
+    name: "GPT OSS 20B",
+    description: "Free open-source 20B parameter model",
+  },
+  {
+    id: "gpt-5-nano",
+    name: "GPT-5 Nano",
+    description: "Fast and cost-effective compact model",
+  },
+  {
+    id: "gpt-5.1-chat",
+    name: "GPT-5.1 Chat",
+    description: "GPT-5.1 optimized for conversational interactions",
+  },
+  {
+    id: "gpt-5.1",
+    name: "GPT-5.1",
+    description: "Latest GPT-5.1 general purpose model",
+  },
+  {
+    id: "gpt-5.1-codex-mini",
+    name: "GPT-5.1 Codex Mini",
+    description: "Lightweight coding model for quick tasks",
+  },
+  {
+    id: "gpt-5.1-codex",
+    name: "GPT-5.1 Codex",
+    description: "Advanced coding model for complex programming tasks",
+  },
+  {
+    id: "gpt-5.1-reasoning",
+    name: "GPT-5.1 Reasoning",
+    description: "GPT-5.1 with chain-of-thought reasoning enabled",
   },
 ];
