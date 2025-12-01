@@ -16,6 +16,7 @@ Follow these steps in order:
 **IMPORTANT: Use the `webFetch` tool to get the user's Spotify data:**
 
 Call the `webFetch` tool with:
+
 - url: `https://aikdeirel.github.io/spotify-stats/spotify_top.json`
 - responseType: `json`
 
