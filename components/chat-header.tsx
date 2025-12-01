@@ -25,12 +25,12 @@ function PureChatHeader({
   const { width: windowWidth } = useWindowSize();
 
   return (
-    <header className="sticky top-0 flex items-center gap-2 bg-background px-2 py-1.5 md:px-2">
+    <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-border/40 bg-background/90 px-3 py-3 backdrop-blur-md md:px-4">
       <SidebarToggle />
 
       {(!open || windowWidth < 768) && (
         <Button
-          className="order-2 ml-auto h-8 px-2 md:order-1 md:ml-0 md:h-fit md:px-2"
+          className="order-2 ml-auto h-10 rounded-xl px-3 transition-colors md:order-1 md:ml-0 md:h-fit md:px-3"
           onClick={() => {
             router.push("/");
             router.refresh();
@@ -52,7 +52,7 @@ function PureChatHeader({
 
       <Button
         asChild
-        className="order-3 hidden bg-zinc-900 px-2 text-zinc-50 hover:bg-zinc-800 md:ml-auto md:flex md:h-fit dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+        className="order-3 hidden rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-4 text-white shadow-md shadow-orange-500/20 transition-all hover:from-orange-400 hover:to-amber-400 hover:shadow-lg md:ml-auto md:flex md:h-fit dark:from-orange-500 dark:to-amber-500"
       >
         <Link
           href={"https://vercel.com/templates/next.js/nextjs-ai-chatbot"}

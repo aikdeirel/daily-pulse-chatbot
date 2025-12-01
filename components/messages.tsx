@@ -1,6 +1,5 @@
 import type { UseChatHelpers } from "@ai-sdk/react";
 import equal from "fast-deep-equal";
-import { ArrowDownIcon } from "lucide-react";
 import { memo } from "react";
 import { useMessages } from "@/hooks/use-messages";
 import type { Vote } from "@/lib/db/schema";
@@ -34,8 +33,6 @@ function PureMessages({
   const {
     containerRef: messagesContainerRef,
     endRef: messagesEndRef,
-    isAtBottom,
-    scrollToBottom,
     hasSentMessage,
   } = useMessages({
     status,
@@ -48,7 +45,7 @@ function PureMessages({
       className="relative flex-1 touch-pan-y overflow-y-auto overflow-x-hidden"
       ref={messagesContainerRef}
     >
-      <div className="mx-auto flex min-w-0 max-w-4xl flex-col gap-4 px-2 py-4 md:gap-6 md:px-4 overflow-hidden">
+      <div className="mx-auto flex min-w-0 max-w-4xl flex-col gap-6 px-4 py-6 md:gap-8 md:px-6 overflow-hidden">
         {messages.length === 0 && <Greeting />}
 
         {messages.map((message, index) => (
@@ -78,17 +75,6 @@ function PureMessages({
           ref={messagesEndRef}
         />
       </div>
-
-      {!isAtBottom && (
-        <button
-          aria-label="Scroll to bottom"
-          className="-translate-x-1/2 absolute bottom-40 left-1/2 z-10 rounded-full border bg-background p-2 shadow-lg transition-colors hover:bg-muted"
-          onClick={() => scrollToBottom("smooth")}
-          type="button"
-        >
-          <ArrowDownIcon className="size-4" />
-        </button>
-      )}
     </div>
   );
 }

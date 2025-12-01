@@ -119,22 +119,22 @@ export const ReasoningTrigger = memo(
     return (
       <CollapsibleTrigger
         className={cn(
-          "flex items-center gap-1.5 text-muted-foreground text-xs transition-colors hover:text-foreground",
+          "flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500/15 to-amber-500/15 px-4 py-2 text-sm transition-all hover:from-orange-500/25 hover:to-amber-500/25 dark:from-orange-500/25 dark:to-amber-500/25 dark:hover:from-orange-500/35 dark:hover:to-amber-500/35",
           className
         )}
         {...props}
       >
         {children ?? (
           <>
-            <BrainIcon className="size-4" />
+            <BrainIcon className="size-4 text-orange-600 dark:text-orange-400" />
             {isStreaming || duration === 0 ? (
-              <p>Thinking...</p>
+              <p className="font-medium text-orange-700 dark:text-orange-300">Thinking...</p>
             ) : (
-              <p>Thought for {duration}s</p>
+              <p className="font-medium text-orange-700 dark:text-orange-300">Thought for {duration}s</p>
             )}
             <ChevronDownIcon
               className={cn(
-                "size-3 text-muted-foreground transition-transform",
+                "size-4 text-orange-600 transition-transform dark:text-orange-400",
                 isOpen ? "rotate-180" : "rotate-0"
               )}
             />
@@ -155,7 +155,7 @@ export const ReasoningContent = memo(
   ({ className, children, ...props }: ReasoningContentProps) => (
     <CollapsibleContent
       className={cn(
-        "mt-2 text-muted-foreground text-xs",
+        "mt-4 rounded-xl border-2 border-orange-500/20 bg-gradient-to-br from-orange-500/5 to-amber-500/5 p-4 text-muted-foreground text-sm dark:border-orange-500/25",
         "data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 outline-hidden data-[state=closed]:animate-out data-[state=open]:animate-in",
         className
       )}

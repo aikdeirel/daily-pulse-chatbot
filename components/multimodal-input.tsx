@@ -308,7 +308,7 @@ function PureMultimodalInput({
       />
 
       <PromptInput
-        className="rounded-xl border border-border bg-background p-3 shadow-xs transition-all duration-200 focus-within:border-border hover:border-muted-foreground/50"
+        className="rounded-2xl border-2 border-border/60 bg-background/90 p-4 shadow-xl shadow-orange-500/5 ring-1 ring-black/5 backdrop-blur-sm transition-all duration-300 focus-within:border-orange-500/50 focus-within:ring-orange-500/20 focus-within:shadow-orange-500/10 hover:border-border dark:border-border/50 dark:bg-background/70 dark:ring-white/5 dark:focus-within:border-orange-400/50 dark:focus-within:ring-orange-400/20"
         onSubmit={(event) => {
           event.preventDefault();
           if (status !== "ready") {
@@ -354,13 +354,13 @@ function PureMultimodalInput({
         <div className="flex flex-row items-start gap-1 sm:gap-2">
           <PromptInputTextarea
             autoFocus
-            className="grow resize-none border-0! border-none! bg-transparent p-2 text-sm outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-scrollbar]:hidden"
+            className="grow resize-none border-0! border-none! bg-transparent p-2 text-base outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-scrollbar]:hidden"
             data-testid="multimodal-input"
             disableAutoResize={true}
             maxHeight={200}
-            minHeight={44}
+            minHeight={52}
             onChange={handleInput}
-            placeholder="Send a message..."
+            placeholder="Type your message..."
             ref={textareaRef}
             rows={1}
             value={input}
@@ -384,12 +384,12 @@ function PureMultimodalInput({
             <StopButton setMessages={setMessages} stop={stop} />
           ) : (
             <PromptInputSubmit
-              className="size-8 rounded-full bg-primary text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
+              className="size-10 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/30 transition-all duration-200 hover:from-orange-400 hover:to-amber-400 hover:shadow-xl hover:shadow-orange-500/40 disabled:from-muted disabled:to-muted disabled:text-muted-foreground disabled:shadow-none dark:from-orange-500 dark:to-amber-500 dark:shadow-orange-500/25"
               data-testid="send-button"
               disabled={!input.trim() || uploadQueue.length > 0}
               status={status}
             >
-              <ArrowUpIcon size={14} />
+              <ArrowUpIcon size={18} />
             </PromptInputSubmit>
           )}
         </PromptInputToolbar>

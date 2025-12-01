@@ -31,7 +31,7 @@ export type ToolProps = ComponentProps<typeof Collapsible>;
 export const Tool = ({ className, ...props }: ToolProps) => (
   <Collapsible
     className={cn(
-      "not-prose mb-4 w-full max-w-full overflow-hidden rounded-xl border border-border/50 bg-gradient-to-b from-muted/30 to-muted/10 shadow-sm transition-all duration-200 hover:border-border hover:shadow-md",
+      "not-prose mb-4 w-full max-w-full overflow-hidden rounded-2xl border-2 border-border/50 bg-gradient-to-b from-muted/40 to-muted/15 shadow-sm transition-all duration-200 hover:border-orange-500/30 hover:shadow-lg",
       className
     )}
     {...props}
@@ -51,37 +51,37 @@ type ToolConfigEntry = { label: string; color: string; description: string };
 const toolConfigData: Record<string, ToolConfigEntry> = {
   "tool-getWeather": {
     label: "Weather",
-    color: "text-sky-500",
+    color: "text-amber-600 dark:text-amber-400",
     description: "Fetching weather data",
   },
   "tool-createDocument": {
     label: "Create Document",
-    color: "text-emerald-500",
+    color: "text-emerald-600 dark:text-emerald-400",
     description: "Creating a new document",
   },
   "tool-updateDocument": {
     label: "Update Document",
-    color: "text-amber-500",
+    color: "text-orange-600 dark:text-orange-400",
     description: "Updating document content",
   },
   "tool-requestSuggestions": {
     label: "Suggestions",
-    color: "text-purple-500",
+    color: "text-amber-600 dark:text-amber-400",
     description: "Generating suggestions",
   },
   "tool-useSkill": {
     label: "Loading Skill",
-    color: "text-indigo-500",
+    color: "text-orange-600 dark:text-orange-400",
     description: "Activating specialized skill",
   },
   "tool-getSkillResource": {
     label: "Skill Resource",
-    color: "text-cyan-500",
+    color: "text-amber-600 dark:text-amber-400",
     description: "Loading skill resource",
   },
   "tool-webFetch": {
     label: "Web Fetch",
-    color: "text-rose-500",
+    color: "text-orange-600 dark:text-orange-400",
     description: "Fetching web content",
   },
 };
@@ -131,17 +131,17 @@ const statusConfigData: Record<ToolUIPart["state"], StatusConfig> = {
   },
   "input-available": {
     label: "Running",
-    className: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-    dotColor: "bg-amber-500",
+    className: "bg-orange-500/15 text-orange-600 dark:text-orange-400",
+    dotColor: "bg-orange-500",
   },
   "output-available": {
     label: "Completed",
-    className: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    className: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
     dotColor: "bg-emerald-500",
   },
   "output-error": {
     label: "Error",
-    className: "bg-red-500/10 text-red-600 dark:text-red-400",
+    className: "bg-red-500/15 text-red-600 dark:text-red-400",
     dotColor: "bg-red-500",
   },
 };
@@ -153,15 +153,15 @@ function StatusBadge({ status }: { status: ToolUIPart["state"] }) {
   return (
     <div
       className={cn(
-        "flex size-6 items-center justify-center rounded-full transition-colors",
+        "flex size-7 items-center justify-center rounded-lg transition-colors",
         config.className
       )}
       title={config.label}
     >
       {isRunning ? (
-        <span className={cn("size-2 rounded-full animate-pulse", config.dotColor)} />
+        <span className={cn("size-2.5 rounded-full animate-pulse", config.dotColor)} />
       ) : (
-        getStatusIcon(status, "size-3.5")
+        getStatusIcon(status, "size-4")
       )}
     </div>
   );
@@ -183,26 +183,26 @@ export const ToolHeader = ({
   return (
     <CollapsibleTrigger
       className={cn(
-        "group flex w-full min-w-0 items-center gap-2 p-3 transition-colors hover:bg-muted/50",
+        "group flex w-full min-w-0 items-center gap-3 p-4 transition-colors hover:bg-muted/50",
         className
       )}
     >
       <div className={cn(
-        "flex size-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-background to-muted shadow-sm ring-1 ring-border/50",
+        "flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-background to-muted shadow-sm ring-1 ring-border/50",
         config.color
       )}>
-        {getToolIcon(type, "size-3.5")}
+        {getToolIcon(type, "size-4")}
       </div>
       <div className="flex min-w-0 flex-1 flex-col items-start">
-        <span className="truncate font-medium text-sm max-w-full">
+        <span className="truncate font-medium text-base max-w-full">
           {title || config.label}
         </span>
-        <span className="truncate text-muted-foreground text-xs max-w-full hidden sm:block">
+        <span className="truncate text-muted-foreground text-sm max-w-full hidden sm:block">
           {description || config.description}
         </span>
       </div>
       <StatusBadge status={state} />
-      <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+      <ChevronDownIcon className="hidden size-5 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180 sm:block" />
     </CollapsibleTrigger>
   );
 };
@@ -225,14 +225,14 @@ export type ToolInputProps = ComponentProps<"div"> & {
 };
 
 export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
-  <div className={cn("space-y-3 p-4 max-w-full overflow-hidden", className)} {...props}>
+  <div className={cn("space-y-4 p-5 max-w-full overflow-hidden", className)} {...props}>
     <div className="flex items-center gap-2">
-      <div className="size-1.5 rounded-full bg-sky-500" />
-      <h4 className="font-medium text-muted-foreground text-xs uppercase tracking-wider">
+      <div className="size-2 rounded-full bg-amber-500" />
+      <h4 className="font-medium text-muted-foreground text-sm uppercase tracking-wider">
         Parameters
       </h4>
     </div>
-    <div className="overflow-x-auto rounded-lg bg-muted/50 ring-1 ring-border/50">
+    <div className="overflow-x-auto rounded-xl bg-muted/50 ring-1 ring-border/50">
       <CodeBlock code={JSON.stringify(input, null, 2)} language="json" />
     </div>
   </div>
@@ -254,25 +254,25 @@ export const ToolOutput = ({
   }
 
   return (
-    <div className={cn("space-y-3 p-4 max-w-full overflow-hidden", className)} {...props}>
+    <div className={cn("space-y-4 p-5 max-w-full overflow-hidden", className)} {...props}>
       <div className="flex items-center gap-2">
         <div className={cn(
-          "size-1.5 rounded-full",
+          "size-2 rounded-full",
           errorText ? "bg-red-500" : "bg-emerald-500"
         )} />
-        <h4 className="font-medium text-muted-foreground text-xs uppercase tracking-wider">
+        <h4 className="font-medium text-muted-foreground text-sm uppercase tracking-wider">
           {errorText ? "Error" : "Result"}
         </h4>
       </div>
       <div
         className={cn(
-          "overflow-x-auto rounded-lg text-sm ring-1 max-w-full",
+          "overflow-x-auto rounded-xl text-sm ring-1 max-w-full",
           errorText
-            ? "bg-red-500/5 text-red-600 ring-red-500/20 dark:text-red-400"
+            ? "bg-red-500/10 text-red-600 ring-red-500/25 dark:text-red-400"
             : "bg-muted/50 text-foreground ring-border/50"
         )}
       >
-        {errorText && <div className="p-3 break-words">{errorText}</div>}
+        {errorText && <div className="p-4 break-words">{errorText}</div>}
         {output && <div className="max-w-full overflow-x-auto">{output}</div>}
       </div>
     </div>
@@ -289,20 +289,20 @@ export const SkillOutput = ({
   skillName: string;
   instructions: string;
 }) => (
-  <div className="space-y-3 p-4 max-w-full overflow-hidden">
+  <div className="space-y-4 p-5 max-w-full overflow-hidden">
     <div className="flex items-center gap-2">
-      <div className="size-1.5 rounded-full bg-indigo-500" />
-      <h4 className="font-medium text-muted-foreground text-xs uppercase tracking-wider">
+      <div className="size-2 rounded-full bg-orange-500" />
+      <h4 className="font-medium text-muted-foreground text-sm uppercase tracking-wider">
         Skill Loaded
       </h4>
     </div>
-    <div className="rounded-lg bg-gradient-to-br from-indigo-500/5 to-purple-500/5 p-4 ring-1 ring-indigo-500/20 max-w-full overflow-hidden">
-      <div className="flex flex-wrap items-center gap-2 mb-2">
-        <SparklesIcon className="size-4 shrink-0 text-indigo-500" />
-        <span className="font-semibold text-sm truncate">{skillName}</span>
-        <Badge variant="outline" className="text-xs shrink-0">{skillId}</Badge>
+    <div className="rounded-xl bg-gradient-to-br from-orange-500/10 to-amber-500/10 p-5 ring-1 ring-orange-500/25 max-w-full overflow-hidden">
+      <div className="flex flex-wrap items-center gap-2 mb-3">
+        <SparklesIcon className="size-5 shrink-0 text-orange-500" />
+        <span className="font-semibold text-base truncate">{skillName}</span>
+        <Badge variant="outline" className="text-sm shrink-0">{skillId}</Badge>
       </div>
-      <p className="text-muted-foreground text-xs line-clamp-2 break-words">
+      <p className="text-muted-foreground text-sm line-clamp-2 break-words">
         {instructions.substring(0, 150)}...
       </p>
     </div>

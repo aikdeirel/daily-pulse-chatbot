@@ -23,7 +23,7 @@ function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
 
   return (
     <div
-      className="grid w-full gap-2 sm:grid-cols-2"
+      className="grid w-full gap-3 sm:grid-cols-2"
       data-testid="suggested-actions"
     >
       {suggestedActions.map((suggestedAction, index) => (
@@ -35,7 +35,7 @@ function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
           transition={{ delay: 0.05 * index }}
         >
           <Suggestion
-            className="h-auto w-full whitespace-normal p-3 text-left"
+            className="h-auto w-full whitespace-normal rounded-2xl border-2 border-border/50 bg-background/60 p-4 text-left text-base text-muted-foreground shadow-sm ring-1 ring-black/5 backdrop-blur-sm transition-all duration-200 hover:border-orange-500/40 hover:bg-orange-500/5 hover:text-foreground hover:shadow-lg dark:border-border/40 dark:ring-white/5 dark:hover:border-orange-400/40 dark:hover:bg-orange-400/5"
             onClick={(suggestion) => {
               window.history.replaceState({}, "", `/chat/${chatId}`);
               sendMessage({

@@ -70,7 +70,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                   setOpenMobile(false);
                 }}
               >
-                <span className="cursor-pointer rounded-md px-2 font-semibold text-lg hover:bg-muted">
+                <span className="cursor-pointer rounded-xl bg-gradient-to-r from-orange-500/15 to-amber-500/15 px-3 py-1.5 font-bold text-lg transition-colors hover:from-orange-500/25 hover:to-amber-500/25 dark:from-orange-400/15 dark:to-amber-400/15 dark:hover:from-orange-400/25 dark:hover:to-amber-400/25">
                   Chatbot
                 </span>
               </Link>
