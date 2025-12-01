@@ -1,83 +1,96 @@
 "use client";
 
-import { useEffect } from "react";
-import { initialArtifactData, useArtifact } from "@/hooks/use-artifact";
-import { artifactDefinitions } from "./artifact";
+import { useCallback, useEffect, useRef } from "react";
+import { useArtifact } from "@/hooks/use-artifact";
+import { type ArtifactKind, artifactDefinitions } from "./artifact";
 import { useDataStream } from "./data-stream-provider";
 
 export function DataStreamHandler() {
-  const { dataStream, setDataStream } = useDataStream();
+	const { dataStream, setDataStream } = useDataStream();
 
-  const { artifact, setArtifact, setMetadata } = useArtifact();
+	const { artifact, setArtifact, setMetadata } = useArtifact();
 
-  useEffect(() => {
-    if (!dataStream?.length) {
-      return;
-    }
+	// Track the current kind across stream parts to handle the case where
+	// data-kind arrives before data-codeDelta/data-textDelta in the same batch
+	const currentKindRef = useRef<ArtifactKind>(artifact.kind);
 
-    const newDeltas = dataStream.slice();
-    setDataStream([]);
+	// Store setMetadata in a ref to avoid dependency array issues
+	// (setMetadata can change when artifact.documentId changes)
+	const setMetadataRef = useRef(setMetadata);
+	useEffect(() => {
+		setMetadataRef.current = setMetadata;
+	}, [setMetadata]);
 
-    for (const delta of newDeltas) {
-      const artifactDefinition = artifactDefinitions.find(
-        (currentArtifactDefinition) =>
-          currentArtifactDefinition.kind === artifact.kind
-      );
+	// Keep the ref in sync with artifact.kind when it changes externally
+	useEffect(() => {
+		currentKindRef.current = artifact.kind;
+	}, [artifact.kind]);
 
-      if (artifactDefinition?.onStreamPart) {
-        artifactDefinition.onStreamPart({
-          streamPart: delta,
-          setArtifact,
-          setMetadata,
-        });
-      }
+	// Stable callback wrapper for setMetadata
+	const stableSetMetadata = useCallback(
+		(...args: Parameters<typeof setMetadata>) => {
+			return setMetadataRef.current?.(...args);
+		},
+		[],
+	);
 
-      setArtifact((draftArtifact) => {
-        if (!draftArtifact) {
-          return { ...initialArtifactData, status: "streaming" };
-        }
+	useEffect(() => {
+		if (!dataStream?.length) {
+			return;
+		}
 
-        switch (delta.type) {
-          case "data-id":
-            return {
-              ...draftArtifact,
-              documentId: delta.data,
-              status: "streaming",
-            };
+		const newDeltas = dataStream.slice();
+		setDataStream([]);
 
-          case "data-title":
-            return {
-              ...draftArtifact,
-              title: delta.data,
-              status: "streaming",
-            };
+		for (const delta of newDeltas) {
+			// Update kind immediately when we receive it, so subsequent deltas use correct handler
+			if (delta.type === "data-kind") {
+				currentKindRef.current = delta.data;
+				setArtifact((draftArtifact) => ({
+					...draftArtifact,
+					kind: delta.data,
+					status: "streaming",
+				}));
+			} else if (delta.type === "data-id") {
+				setArtifact((draftArtifact) => ({
+					...draftArtifact,
+					documentId: delta.data,
+					status: "streaming",
+				}));
+			} else if (delta.type === "data-title") {
+				setArtifact((draftArtifact) => ({
+					...draftArtifact,
+					title: delta.data,
+					status: "streaming",
+				}));
+			} else if (delta.type === "data-clear") {
+				setArtifact((draftArtifact) => ({
+					...draftArtifact,
+					content: "",
+					status: "streaming",
+				}));
+			} else if (delta.type === "data-finish") {
+				setArtifact((draftArtifact) => ({
+					...draftArtifact,
+					status: "idle",
+				}));
+			}
 
-          case "data-kind":
-            return {
-              ...draftArtifact,
-              kind: delta.data,
-              status: "streaming",
-            };
+			// Find artifact definition using the tracked kind (which may have been updated above)
+			const artifactDefinition = artifactDefinitions.find(
+				(currentArtifactDefinition) =>
+					currentArtifactDefinition.kind === currentKindRef.current,
+			);
 
-          case "data-clear":
-            return {
-              ...draftArtifact,
-              content: "",
-              status: "streaming",
-            };
+			if (artifactDefinition?.onStreamPart) {
+				artifactDefinition.onStreamPart({
+					streamPart: delta,
+					setArtifact,
+					setMetadata: stableSetMetadata,
+				});
+			}
+		}
+	}, [dataStream, setArtifact, stableSetMetadata, setDataStream]);
 
-          case "data-finish":
-            return {
-              ...draftArtifact,
-              status: "idle",
-            };
-
-          default:
-            return draftArtifact;
-        }
-      });
-    }
-  }, [dataStream, setArtifact, setMetadata, artifact, setDataStream]);
-
-  return null;
+	return null;
 }
