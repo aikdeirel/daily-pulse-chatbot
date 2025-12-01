@@ -8,6 +8,7 @@ const withSerwist = withSerwistInit({
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  // Required for Next.js 16+ when @serwist/next adds webpack config
   turbopack: {},
   images: {
     remotePatterns: [
