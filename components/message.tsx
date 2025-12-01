@@ -264,6 +264,69 @@ const PurePreviewMessage = ({
               );
             }
 
+            // Web Fetch Tool
+            if (type === "tool-webFetch") {
+              const { toolCallId, state } = part;
+              const url = part.input?.url as string | undefined;
+
+              // Extract domain from URL for display
+              let domain = "URL";
+              if (url) {
+                try {
+                  domain = new URL(url).hostname;
+                } catch {
+                  domain = url.substring(0, 30);
+                }
+              }
+
+              return (
+                <Tool defaultOpen={false} key={toolCallId}>
+                  <ToolHeader 
+                    state={state} 
+                    type="tool-webFetch"
+                    title={`Fetching: ${domain}`}
+                    description={url || "Loading web content"}
+                  />
+                  <ToolContent>
+                    {(state === "input-available" || state === "input-streaming") && (
+                      <ToolInput input={part.input} />
+                    )}
+                    {state === "output-available" && (
+                      <ToolOutput
+                        errorText={
+                          part.output && "error" in part.output 
+                            ? String(part.output.error) 
+                            : part.output && part.output.success === false
+                              ? String(part.output.error || "Request failed")
+                              : undefined
+                        }
+                        output={
+                          part.output && part.output.success ? (
+                            <div className="p-3">
+                              <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-emerald-600 dark:text-emerald-400">
+                                  ✓ Success
+                                </span>
+                                <span className="truncate">{part.output.url}</span>
+                              </div>
+                              <pre className="max-h-48 overflow-auto rounded bg-muted/50 p-2 text-xs">
+                                {typeof part.output.data === "object" 
+                                  ? JSON.stringify(part.output.data, null, 2).substring(0, 1000)
+                                  : String(part.output.data).substring(0, 1000)}
+                                {(typeof part.output.data === "object" 
+                                  ? JSON.stringify(part.output.data).length > 1000
+                                  : String(part.output.data).length > 1000) && "\n..."}
+                              </pre>
+                            </div>
+                          ) : null
+                        }
+                      />
+                    )}
+                  </ToolContent>
+                </Tool>
+              );
+            }
+
             // Skill Tools - useSkill
             if (type === "tool-useSkill") {
               const { toolCallId, state } = part;
