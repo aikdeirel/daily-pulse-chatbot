@@ -119,7 +119,7 @@ type WeatherAtLocation = {
 	};
 };
 
-const SAMPLE = {
+const SAMPLE: WeatherAtLocation = {
 	latitude: 37.763_283,
 	longitude: -122.412_86,
 	generationtime_ms: 0.027_894_973_754_882_812,
@@ -127,6 +127,7 @@ const SAMPLE = {
 	timezone: "GMT",
 	timezone_abbreviation: "GMT",
 	elevation: 18,
+	cityName: "San Francisco",
 	current_units: { time: "iso8601", interval: "seconds", temperature_2m: "°C" },
 	current: { time: "2024-10-07T19:30", interval: 900, temperature_2m: 29.3 },
 	hourly_units: { time: "iso8601", temperature_2m: "°C" },
