@@ -66,15 +66,6 @@ const PurePreviewMessage = ({
 		},
 	);
 
-	// Debug: log source parts to verify they're being detected
-	if (message.role === "assistant" && sourcesFromMessage.length > 0) {
-		console.log(
-			"[WebSearch Debug] Found sources:",
-			sourcesFromMessage.length,
-			sourcesFromMessage.map((s) => ({ url: s.url, title: s.title })),
-		);
-	}
-
 	useDataStream();
 
 	return (
