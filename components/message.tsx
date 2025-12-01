@@ -18,7 +18,7 @@ import {
   ToolInput,
   ToolOutput,
 } from "./elements/tool";
-import { AppIcon } from "./icons";
+import { BotIcon, UserIcon } from "./icons";
 import { MessageActions } from "./message-actions";
 import { MessageEditor } from "./message-editor";
 import { MessageReasoning } from "./message-reasoning";
@@ -65,13 +65,15 @@ const PurePreviewMessage = ({
       >
         {message.role === "assistant" && (
           <div className="flex size-10 shrink-0 items-center justify-center overflow-visible rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-500/20 text-orange-600 ring-1 ring-orange-500/30 dark:from-orange-500/30 dark:to-amber-500/30 dark:text-orange-400 dark:ring-orange-500/40">
-            <AppIcon size={24} />
+            <BotIcon />
           </div>
         )}
         
         {message.role === "user" && (
           <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-600/20 to-orange-600/20 text-amber-700 ring-1 ring-amber-600/30 dark:from-amber-500/30 dark:to-orange-500/30 dark:text-amber-400 dark:ring-amber-500/40">
-            <span className="text-base font-semibold">Du</span>
+            <span className="text-base font-semibold">
+              <UserIcon />
+            </span>
           </div>
         )}
 
@@ -453,7 +455,7 @@ export const ThinkingMessage = () => {
       <div className="flex items-start justify-start gap-3 md:gap-4">
         <div className="flex size-10 shrink-0 items-center justify-center overflow-visible rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-500/20 text-orange-600 ring-1 ring-orange-500/30 dark:from-orange-500/30 dark:to-amber-500/30 dark:text-orange-400 dark:ring-orange-500/40">
           <div className="animate-pulse">
-            <AppIcon size={24} />
+            <BotIcon />
           </div>
         </div>
 
