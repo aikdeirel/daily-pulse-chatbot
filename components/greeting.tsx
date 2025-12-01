@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { SparklesIcon } from "lucide-react";
+import { AppIcon } from "./icons";
 
 export const Greeting = () => {
   return (
@@ -13,7 +13,7 @@ export const Greeting = () => {
         initial={{ opacity: 0, scale: 0.8 }}
         transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
       >
-        <SparklesIcon className="size-10 md:size-12" />
+        <AppIcon size={56} />
       </motion.div>
       
       <motion.div
