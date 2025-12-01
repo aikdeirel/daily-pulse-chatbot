@@ -54,12 +54,12 @@ const PurePreviewMessage = ({
 
   return (
     <div
-      className="group/message fade-in w-full animate-in duration-200"
+      className="group/message fade-in w-full max-w-full animate-in duration-200 overflow-hidden"
       data-role={message.role}
       data-testid={`message-${message.role}`}
     >
       <div
-        className={cn("flex w-full items-start gap-2 md:gap-3", {
+        className={cn("flex w-full max-w-full items-start gap-2 md:gap-3", {
           "justify-end": message.role === "user" && mode !== "edit",
           "justify-start": message.role === "assistant",
         })}
@@ -71,11 +71,11 @@ const PurePreviewMessage = ({
         )}
 
         <div
-          className={cn("flex flex-col", {
+          className={cn("flex flex-col min-w-0", {
             "gap-2 md:gap-4": message.parts?.some(
               (p) => p.type === "text" && p.text?.trim()
             ),
-            "w-full":
+            "w-full max-w-full":
               (message.role === "assistant" &&
                 message.parts?.some(
                   (p) => p.type === "text" && p.text?.trim()
@@ -302,14 +302,14 @@ const PurePreviewMessage = ({
                         }
                         output={
                           part.output && part.output.success ? (
-                            <div className="p-3">
+                            <div className="p-3 max-w-full overflow-hidden">
                               <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
-                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-emerald-600 dark:text-emerald-400">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-emerald-600 dark:text-emerald-400 shrink-0">
                                   ✓ Success
                                 </span>
-                                <span className="truncate">{part.output.url}</span>
+                                <span className="truncate min-w-0">{part.output.url}</span>
                               </div>
-                              <pre className="max-h-48 overflow-auto rounded bg-muted/50 p-2 text-xs">
+                              <pre className="max-h-48 max-w-full overflow-auto rounded bg-muted/50 p-2 text-xs whitespace-pre-wrap break-words">
                                 {typeof part.output.data === "object" 
                                   ? JSON.stringify(part.output.data, null, 2).substring(0, 1000)
                                   : String(part.output.data).substring(0, 1000)}
@@ -359,7 +359,7 @@ const PurePreviewMessage = ({
                       ) : (
                         <ToolOutput
                           errorText={undefined}
-                          output={<pre className="p-3 text-xs">{JSON.stringify(part.output, null, 2)}</pre>}
+                          output={<pre className="p-3 text-xs max-w-full overflow-auto whitespace-pre-wrap break-words">{JSON.stringify(part.output, null, 2)}</pre>}
                         />
                       )
                     )}
@@ -390,7 +390,7 @@ const PurePreviewMessage = ({
                         errorText={part.output && "error" in part.output ? String(part.output.error) : undefined}
                         output={
                           part.output && "content" in part.output ? (
-                            <pre className="max-h-48 overflow-auto p-3 text-xs whitespace-pre-wrap">
+                            <pre className="max-h-48 max-w-full overflow-auto p-3 text-xs whitespace-pre-wrap break-words">
                               {(part.output.content as string).substring(0, 500)}
                               {(part.output.content as string).length > 500 ? "..." : ""}
                             </pre>
