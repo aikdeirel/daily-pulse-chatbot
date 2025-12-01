@@ -11,6 +11,7 @@ import { DocumentPreview } from "./document-preview";
 import { MessageContent } from "./elements/message";
 import { Response } from "./elements/response";
 import {
+  SkillOutput,
   Tool,
   ToolContent,
   ToolHeader,
@@ -255,6 +256,82 @@ const PurePreviewMessage = ({
                               type="request-suggestions"
                             />
                           )
+                        }
+                      />
+                    )}
+                  </ToolContent>
+                </Tool>
+              );
+            }
+
+            // Skill Tools - useSkill
+            if (type === "tool-useSkill") {
+              const { toolCallId, state } = part;
+              const skillId = part.input?.skillId as string | undefined;
+
+              return (
+                <Tool defaultOpen={true} key={toolCallId}>
+                  <ToolHeader 
+                    state={state} 
+                    type="tool-useSkill"
+                    title={skillId ? `Loading: ${skillId}` : "Loading Skill"}
+                    description="Activating specialized skill instructions"
+                  />
+                  <ToolContent>
+                    {state === "input-available" && (
+                      <ToolInput input={part.input} />
+                    )}
+                    {state === "output-available" && (
+                      part.output && "error" in part.output ? (
+                        <ToolOutput
+                          errorText={String(part.output.error)}
+                          output={null}
+                        />
+                      ) : part.output && "instructions" in part.output ? (
+                        <SkillOutput 
+                          skillId={part.output.skillId as string}
+                          skillName={part.output.name as string}
+                          instructions={part.output.instructions as string}
+                        />
+                      ) : (
+                        <ToolOutput
+                          errorText={undefined}
+                          output={<pre className="p-3 text-xs">{JSON.stringify(part.output, null, 2)}</pre>}
+                        />
+                      )
+                    )}
+                  </ToolContent>
+                </Tool>
+              );
+            }
+
+            // Skill Tools - getSkillResource
+            if (type === "tool-getSkillResource") {
+              const { toolCallId, state } = part;
+              const resourcePath = part.input?.resourcePath as string | undefined;
+
+              return (
+                <Tool defaultOpen={false} key={toolCallId}>
+                  <ToolHeader 
+                    state={state} 
+                    type="tool-getSkillResource"
+                    title={resourcePath ? `Resource: ${resourcePath}` : "Skill Resource"}
+                    description="Loading additional skill documentation"
+                  />
+                  <ToolContent>
+                    {state === "input-available" && (
+                      <ToolInput input={part.input} />
+                    )}
+                    {state === "output-available" && (
+                      <ToolOutput
+                        errorText={part.output && "error" in part.output ? String(part.output.error) : undefined}
+                        output={
+                          part.output && "content" in part.output ? (
+                            <pre className="max-h-48 overflow-auto p-3 text-xs whitespace-pre-wrap">
+                              {(part.output.content as string).substring(0, 500)}
+                              {(part.output.content as string).length > 500 ? "..." : ""}
+                            </pre>
+                          ) : null
                         }
                       />
                     )}
