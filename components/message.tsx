@@ -155,9 +155,9 @@ const PurePreviewMessage = ({
 											style={
 												message.role === "user"
 													? {
-															background:
-																"linear-gradient(135deg, hsl(25 85% 50%) 0%, hsl(30 90% 45%) 50%, hsl(20 80% 40%) 100%)",
-														}
+														background:
+															"linear-gradient(135deg, hsl(25 85% 50%) 0%, hsl(30 90% 45%) 50%, hsl(20 80% 40%) 100%)",
+													}
 													: undefined
 											}
 										>
@@ -316,8 +316,8 @@ const PurePreviewMessage = ({
 									<ToolContent>
 										{(state === "input-available" ||
 											state === "input-streaming") && (
-											<ToolInput input={part.input} />
-										)}
+												<ToolInput input={part.input} />
+											)}
 										{state === "output-available" && (
 											<ToolOutput
 												errorText={
@@ -341,14 +341,14 @@ const PurePreviewMessage = ({
 															<pre className="max-h-48 max-w-full overflow-auto rounded bg-muted/50 p-2 text-xs whitespace-pre-wrap break-words">
 																{typeof part.output.data === "object"
 																	? JSON.stringify(
-																			part.output.data,
-																			null,
-																			2,
-																		).substring(0, 1000)
+																		part.output.data,
+																		null,
+																		2,
+																	).substring(0, 1000)
 																	: String(part.output.data).substring(0, 1000)}
 																{(typeof part.output.data === "object"
 																	? JSON.stringify(part.output.data).length >
-																		1000
+																	1000
 																	: String(part.output.data).length > 1000) &&
 																	"\n..."}
 															</pre>
