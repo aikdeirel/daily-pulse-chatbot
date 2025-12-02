@@ -1,7 +1,8 @@
 "use client";
 import type { UseChatHelpers } from "@ai-sdk/react";
 import equal from "fast-deep-equal";
-import { memo, useState } from "react";
+import type { AnchorHTMLAttributes } from "react";
+import { memo, useState, useMemo } from "react";
 import { useThinkingPhrase } from "@/hooks/use-thinking-phrase";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
@@ -53,6 +54,23 @@ const PurePreviewMessage = ({
 	requiresScrollPadding: boolean;
 }) => {
 	const [mode, setMode] = useState<"view" | "edit">("view");
+
+	// Custom components for user messages to override Streamdown defaults
+	// Only override `a` for links - inline code is handled via CSS
+	const userMessageComponents = useMemo(() => ({
+		// Custom link component with white color for user messages
+		a: ({ className, children, ...props }: AnchorHTMLAttributes<HTMLAnchorElement>) => (
+			<a
+				className={cn(
+					"wrap-anywhere font-medium underline text-white",
+					className
+				)}
+				{...props}
+			>
+				{children}
+			</a>
+		),
+	}), []);
 
 	const attachmentsFromMessage = message.parts.filter(
 		(part) => part.type === "file",
@@ -161,7 +179,11 @@ const PurePreviewMessage = ({
 													: undefined
 											}
 										>
-											<Response>{sanitizeText(part.text)}</Response>
+											<Response
+												components={message.role === "user" ? userMessageComponents : undefined}
+											>
+												{sanitizeText(part.text)}
+											</Response>
 										</MessageContent>
 									</div>
 								);
