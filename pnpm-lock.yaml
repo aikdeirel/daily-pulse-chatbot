@@ -234,9 +234,6 @@ importers:
         specifier: ^4.1.13
         version: 4.1.13
     devDependencies:
-      '@biomejs/biome':
-        specifier: 2.3.8
-        version: 2.3.8
       '@playwright/test':
         specifier: ^1.57.0
         version: 1.57.0
@@ -7128,6 +7125,7 @@ snapshots:
       '@biomejs/cli-linux-x64-musl': 2.3.8
       '@biomejs/cli-win32-arm64': 2.3.8
       '@biomejs/cli-win32-x64': 2.3.8
+    optional: true
 
   '@biomejs/cli-darwin-arm64@2.3.8':
     optional: true
