@@ -52,6 +52,15 @@
   --accent-orange: hsl(25 85% 55%);
   --accent-amber: hsl(35 90% 50%);
   --accent-brown: hsl(20 40% 30%);
+  /* shiki theme colors */
+  --shiki-dark-bg: hsl(20 10% 8%);
+  --shiki-light-bg: hsl(30 20% 98%);
+  --shiki-dark-text: hsl(30 20% 95%);
+  --shiki-light-text: hsl(20 15% 15%);
+  --shiki-dark-gutter: hsl(20 10% 12%);
+  --shiki-light-gutter: hsl(30 15% 92%);
+  --shiki-dark-selection: hsl(25 85% 60%);
+  --shiki-light-selection: hsl(25 85% 55%);
 }
 
 /* define design tokens (dark mode) */
@@ -93,6 +102,15 @@
   --accent-orange: hsl(25 85% 60%);
   --accent-amber: hsl(35 90% 55%);
   --accent-brown: hsl(25 30% 45%);
+  /* shiki theme colors */
+  --shiki-dark-bg: hsl(20 10% 8%);
+  --shiki-light-bg: hsl(30 20% 98%);
+  --shiki-dark-text: hsl(30 20% 95%);
+  --shiki-light-text: hsl(20 15% 15%);
+  --shiki-dark-gutter: hsl(20 10% 12%);
+  --shiki-light-gutter: hsl(30 15% 92%);
+  --shiki-dark-selection: hsl(25 85% 60%);
+  --shiki-light-selection: hsl(25 85% 55%);
 }
 
 /* define theme */
@@ -312,19 +330,34 @@
 
 /* Modern gradient animations */
 @keyframes gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 @keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-4px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
 }
 
 /* Subtle glow effect for focus states */
