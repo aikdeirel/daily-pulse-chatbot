@@ -355,6 +355,49 @@ When no active device is found (HTTP 404), the service:
 
 ---
 
+## Known Limitations
+
+### Device Activation Requirement (Cannot "Wake Up" Idle Devices)
+
+**This is a fundamental Spotify API limitation, not a bug in this implementation.**
+
+#### The Problem
+
+When users ask the AI to play music, they may receive a "No active Spotify device found" error even though their phone or other device appears as "available" in Spotify.
+
+#### Why This Happens
+
+Spotify's Web API distinguishes between two device states:
+
+| State      | Meaning                                                              | Can Receive Commands |
+| ---------- | -------------------------------------------------------------------- | -------------------- |
+| Available  | Device is connected to Spotify Connect network (visible in the list) | ❌ No                |
+| **Active** | Device is currently playing or has played very recently              | ✅ Yes               |
+
+The Spotify Web API **cannot** "wake up" an idle device. This is intentional:
+
+- **Battery preservation**: Mobile devices suspend apps in the background
+- **User presence**: Spotify prevents third-party apps from unexpectedly starting audio
+- **Platform constraints**: iOS/Android limit background app activation
+
+#### User Workaround
+
+Users must manually activate Spotify first by:
+
+1. Opening the Spotify app on their phone/device
+2. Playing any song (even briefly)
+3. Then the AI can control playback seamlessly
+
+Once a device is active, the AI can play/pause, skip, and queue tracks without issues.
+
+#### Potential Future Solutions
+
+1. **Spotify Web Playback SDK**: Implement a browser-based player that's always "active" when the tab is open. This would allow playback without needing an external device.
+
+2. **User Education**: The AI should explain this limitation and guide users to activate Spotify manually when a `no_device` error occurs.
+
+---
+
 ## Troubleshooting
 
 ### User says "Spotify not connected"
