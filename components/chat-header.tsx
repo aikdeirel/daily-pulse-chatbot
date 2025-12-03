@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { memo } from "react";
 import { SidebarToggle } from "@/components/sidebar-toggle";
+import { SpotifyNowPlayingIndicator } from "@/components/spotify-now-playing-indicator";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, VercelIcon } from "./icons";
 import { useSidebar } from "./ui/sidebar";
@@ -28,11 +29,11 @@ function PureChatHeader({
 	const { open } = useSidebar();
 
 	return (
-		<header className="sticky top-0 z-10 flex items-center gap-3 border-b border-border/40 bg-background/90 px-3 py-3 backdrop-blur-md md:px-4">
+		<header className="sticky top-0 z-10 flex items-center gap-2 border-b border-border/40 bg-background/90 px-3 py-3 backdrop-blur-md md:gap-3 md:px-4">
 			<SidebarToggle />
 
 			<Button
-				className={`order-2 ml-auto h-10 rounded-xl px-3 transition-colors md:order-1 md:ml-0 md:h-fit md:px-3 ${open ? "md:hidden" : ""}`}
+				className={`order-1 h-10 rounded-xl px-3 transition-colors md:h-fit md:px-3 ${open ? "md:hidden" : ""}`}
 				onClick={() => {
 					router.push("/");
 					router.refresh();
@@ -46,10 +47,15 @@ function PureChatHeader({
 			{!isReadonly && (
 				<VisibilitySelector
 					chatId={chatId}
-					className="order-1 md:order-2"
+					className="order-2"
 					selectedVisibilityType={selectedVisibilityType}
 				/>
 			)}
+
+			{/* Spotify Now Playing Indicator - last element on left side */}
+			<div className="order-3">
+				<SpotifyNowPlayingIndicator />
+			</div>
 
 			{/* Web Search Indicator - shows when actively searching */}
 			<AnimatePresence>
@@ -111,7 +117,7 @@ function PureChatHeader({
 
 			<Button
 				asChild
-				className="order-3 hidden rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-4 text-white shadow-md shadow-orange-500/20 transition-all hover:from-orange-400 hover:to-amber-400 hover:shadow-lg md:ml-auto md:flex md:h-fit dark:from-orange-500 dark:to-amber-500"
+				className="order-4 ml-auto hidden rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-4 text-white shadow-md shadow-orange-500/20 transition-all hover:from-orange-400 hover:to-amber-400 hover:shadow-lg md:flex md:h-fit dark:from-orange-500 dark:to-amber-500"
 			>
 				<Link
 					href={"https://vercel.com/templates/next.js/nextjs-ai-chatbot"}

@@ -140,12 +140,30 @@ export class SpotifyService {
       throw error;
     }
 
-    // Handle 204 No Content
+    // Handle 204 No Content or empty responses
     if (response.status === 204) {
       return {} as T;
     }
 
-    return response.json();
+    // Check if response has content before parsing JSON
+    const contentType = response.headers.get("content-type");
+    const contentLength = response.headers.get("content-length");
+
+    // If no content or not JSON, return empty object
+    if (contentLength === "0" || !contentType?.includes("application/json")) {
+      return {} as T;
+    }
+
+    // Try to parse JSON, return empty object if it fails
+    try {
+      const text = await response.text();
+      if (!text || text.trim() === "") {
+        return {} as T;
+      }
+      return JSON.parse(text) as T;
+    } catch {
+      return {} as T;
+    }
   }
 
   async getCurrentlyPlaying(): Promise<{

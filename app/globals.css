@@ -360,6 +360,60 @@
   }
 }
 
+/* Spotify marquee - simple continuous scroll, no pausing, no state changes */
+@keyframes spotify-marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.spotify-marquee-container {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 8px,
+    black calc(100% - 8px),
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 8px,
+    black calc(100% - 8px),
+    transparent
+  );
+}
+
+.spotify-marquee {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: spotify-marquee-scroll 15s linear infinite;
+}
+
+.spotify-marquee-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #1db954;
+}
+
+.dark .spotify-marquee-text {
+  color: #1ed760;
+}
+
+.spotify-marquee-separator {
+  margin: 0 1.5rem;
+  font-size: 0.875rem;
+  color: #1db954;
+  opacity: 0.5;
+}
+
+.dark .spotify-marquee-separator {
+  color: #1ed760;
+}
+
 /* Subtle glow effect for focus states */
 .glow-violet {
   box-shadow: 0 0 20px -5px rgba(139, 92, 246, 0.3);

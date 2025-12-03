@@ -156,15 +156,54 @@ All responses include an `action` field matching the requested action. Error res
 
 ---
 
+## Header Now Playing Indicator
+
+The application displays a real-time "Now Playing" indicator in the header when music is playing on the user's Spotify account.
+
+### Features
+
+- **Real-time updates**: Polls the Spotify API every 5 seconds
+- **Responsive design**: Adapts to mobile and desktop layouts
+- **Marquee animation**: Long track names scroll horizontally on mobile
+- **Playback control**: Click to play/pause (Premium users only)
+- **Visual feedback**: Animated equalizer bars when playing
+- **Smart polling**: Pauses when browser tab is hidden
+
+### UI Behavior
+
+| Screen Size | Display                                 |
+| ----------- | --------------------------------------- |
+| Mobile      | Album art + scrolling text + equalizer  |
+| Desktop     | Album art + full track info + equalizer |
+
+### Click Action
+
+- **Premium users**: Toggle play/pause
+- **Free users**: Shows "Premium required" toast
+- **No device**: Shows "Open Spotify" toast
+
+### Technical Details
+
+- **Polling interval**: 5 seconds (configurable in hook)
+- **Visibility API**: Pauses polling when tab is hidden
+- **Optimistic updates**: UI updates immediately, then syncs
+- **Error handling**: Graceful degradation with toasts
+
+---
+
 ## Architecture Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        User Interface                           │
 ├─────────────────────────────────────────────────────────────────┤
-│  User Menu Dropdown          │  Chat Message                    │
-│  ├─ Connect Spotify         │  ├─ AI calls spotify tool        │
-│  └─ Disconnect Spotify      │  └─ SpotifyPlayer component      │
+│  Header                      │  Chat Message                    │
+│  ├─ Now Playing Indicator   │  ├─ AI calls spotify tool        │
+│  │   (click to play/pause)  │  └─ SpotifyPlayer component      │
+│  │                          │                                    │
+│  User Menu Dropdown          │                                    │
+│  ├─ Connect Spotify         │                                    │
+│  └─ Disconnect Spotify      │                                    │
 └─────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
@@ -177,6 +216,10 @@ All responses include an `action` field matching the requested action. Error res
 │  │   callback              │  ├─ Device selection               │
 │  └─ /api/auth/spotify/     │  └─ All Spotify API calls          │
 │      disconnect            │                                     │
+│                             │                                     │
+│  Playback API               │                                     │
+│  ├─ /api/spotify/now-playing│ (GET - current track)             │
+│  └─ /api/spotify/playback   │ (POST - play/pause)               │
 └─────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
@@ -203,14 +246,23 @@ lib/
     ├── schema.ts               # oauthConnection table
     └── queries.ts              # OAuth CRUD functions
 
+hooks/
+└── use-spotify-now-playing.ts  # SWR hook for header indicator
+
 app/api/auth/spotify/
 ├── route.ts                    # OAuth initiation
 ├── callback/route.ts           # OAuth callback
 ├── disconnect/route.ts         # Disconnect endpoint
 └── status/route.ts             # Connection status check
 
+app/api/spotify/
+├── now-playing/route.ts        # GET - current playback state
+└── playback/route.ts           # POST - play/pause control
+
 components/
 ├── spotify-player.tsx          # UI component for tool output
+├── spotify-now-playing-indicator.tsx  # Header indicator component
+├── chat-header.tsx             # Includes the indicator
 ├── message.tsx                 # Tool rendering (tool-spotify case)
 └── sidebar-user-nav.tsx        # Connect/disconnect menu item
 ```
