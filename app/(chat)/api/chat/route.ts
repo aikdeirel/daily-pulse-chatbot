@@ -214,8 +214,17 @@ export async function POST(request: Request) {
         type ToolName = keyof typeof tools;
         let activeTools: ToolName[] | undefined;
 
-        if (selectedChatModel === "chat-model-reasoning") {
+        // Models that don't support tools (free models and reasoning models)
+        const modelsWithoutToolSupport = [
+          "chat-model-reasoning",
+          "gemma-3-27b-free",
+          "glm-4.5-air-free",
+          "gpt-oss-20b-free",
+        ];
+
+        if (modelsWithoutToolSupport.includes(selectedChatModel)) {
           activeTools = [];
+          console.log(`DEBUG: Disabling tools for model: ${selectedChatModel}`);
         } else if (availableSkills.length > 0) {
           activeTools = [
             "getWeather",
