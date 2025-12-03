@@ -94,8 +94,10 @@ export async function POST(request: Request) {
 
   try {
     const json = await request.json();
+    console.log("DEBUG: Received request body:", JSON.stringify(json, null, 2));
     requestBody = postRequestBodySchema.parse(json);
-  } catch (_) {
+  } catch (error) {
+    console.error("DEBUG: Schema validation failed:", error);
     return new ChatSDKError("bad_request:api").toResponse();
   }
 
@@ -113,6 +115,10 @@ export async function POST(request: Request) {
       selectedVisibilityType: VisibilityType;
       webSearchEnabled: boolean;
     } = requestBody;
+
+    console.log(
+      `DEBUG: Processing chat request with model: ${selectedChatModel}`,
+    );
 
     const session = await auth();
 
@@ -232,6 +238,7 @@ export async function POST(request: Request) {
           ];
         }
 
+        console.log(`DEBUG: Getting language model for: ${selectedChatModel}`);
         const result = streamText({
           model: getLanguageModel(selectedChatModel, webSearchEnabled),
           system: systemPrompt({

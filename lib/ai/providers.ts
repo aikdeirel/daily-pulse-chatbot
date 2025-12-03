@@ -54,6 +54,7 @@ const WEB_SEARCH_PLUGIN = {
  * Get a language model with optional web search enabled
  */
 export function getLanguageModel(modelId: string, webSearchEnabled = false) {
+  console.log(`DEBUG: getLanguageModel called with modelId: ${modelId}`);
   if (isTestEnvironment) {
     const {
       chatModel,
@@ -71,6 +72,9 @@ export function getLanguageModel(modelId: string, webSearchEnabled = false) {
   }
 
   const openRouterModelId = modelIdToOpenRouter[modelId];
+  console.log(
+    `DEBUG: OpenRouter model mapping: ${modelId} -> ${openRouterModelId}`,
+  );
   if (!openRouterModelId) {
     throw new Error(`Unknown model ID: ${modelId}`);
   }
