@@ -217,9 +217,29 @@ export class SpotifyService {
         ? `/me/player/play?device_id=${deviceId}`
         : "/me/player/play";
 
+      // Determine the correct body format based on URI type
+      let body: string | undefined;
+      if (uri) {
+        // Check if this is a track URI or a context URI (playlist/album/artist)
+        if (uri.startsWith("spotify:track:")) {
+          // Track URIs use the "uris" array parameter
+          body = JSON.stringify({ uris: [uri] });
+        } else if (
+          uri.startsWith("spotify:playlist:") ||
+          uri.startsWith("spotify:album:") ||
+          uri.startsWith("spotify:artist:")
+        ) {
+          // Playlists, albums, and artists use "context_uri" parameter
+          body = JSON.stringify({ context_uri: uri });
+        } else {
+          // For unknown URI types, try as context_uri (more permissive)
+          body = JSON.stringify({ context_uri: uri });
+        }
+      }
+
       await this.apiCall(endpoint, {
         method: "PUT",
-        body: uri ? JSON.stringify({ uris: [uri] }) : undefined,
+        body,
       });
 
       return { success: true };
