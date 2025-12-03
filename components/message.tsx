@@ -32,6 +32,7 @@ import { MessageActions } from "./message-actions";
 import { MessageEditor } from "./message-editor";
 import { MessageReasoning } from "./message-reasoning";
 import { PreviewAttachment } from "./preview-attachment";
+import { SpotifyPlayer } from "./spotify-player";
 import { Weather } from "./weather";
 
 const PurePreviewMessage = ({
@@ -471,6 +472,42 @@ const PurePreviewMessage = ({
 														</pre>
 													) : null
 												}
+											/>
+										)}
+									</ToolContent>
+								</Tool>
+							);
+						}
+
+						// Spotify Tool
+						if (type === "tool-spotify") {
+							const { toolCallId, state } = part;
+							const action = part.input?.action as string | undefined;
+
+							// Determine title based on action
+							let title = "Spotify";
+							if (action === "search")
+								title = `Searching: ${part.input?.query || ""}`;
+							else if (action === "now_playing") title = "Now Playing";
+							else if (action === "play") title = "Playing";
+							else if (action === "pause") title = "Pausing";
+							else if (action === "top_tracks") title = "Top Tracks";
+							else if (action === "playlists") title = "Playlists";
+							else if (action === "get_devices") title = "Devices";
+							else if (action === "next") title = "Next Track";
+							else if (action === "previous") title = "Previous Track";
+
+							return (
+								<Tool defaultOpen={true} key={toolCallId}>
+									<ToolHeader state={state} type="tool-spotify" title={title} />
+									<ToolContent>
+										{state === "input-available" && (
+											<ToolInput input={part.input} />
+										)}
+										{state === "output-available" && (
+											<ToolOutput
+												errorText={undefined}
+												output={<SpotifyPlayer data={part.output} />}
 											/>
 										)}
 									</ToolContent>

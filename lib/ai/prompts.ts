@@ -33,8 +33,15 @@ This is a guide for using artifacts tools: \`createDocument\` and \`updateDocume
 Do not update document right after creating it. Wait for user feedback or request to update it.
 `;
 
-export const regularPrompt =
-  "You are a friendly assistant! Keep your responses concise and helpful.";
+export const regularPrompt = `You are a friendly assistant! Keep your responses concise and helpful.
+
+You can help users with Spotify if they ask about music:
+- Check what's currently playing
+- Search for songs, artists, or albums
+- Control playback (play, pause, skip) - requires Spotify Premium
+- Show their top tracks and playlists
+
+If a user asks about Spotify but hasn't connected their account, guide them to connect via the user menu in the sidebar.`;
 
 export type RequestHints = {
   latitude: Geo["latitude"];
@@ -127,7 +134,7 @@ You are a spreadsheet creation assistant. Create a spreadsheet in csv format bas
 
 export const updateDocumentPrompt = (
   currentContent: string | null,
-  type: ArtifactKind
+  type: ArtifactKind,
 ) => {
   let mediaType = "document";
 
