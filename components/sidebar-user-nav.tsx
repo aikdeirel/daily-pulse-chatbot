@@ -97,9 +97,12 @@ export function SidebarUserNav({ user }: { user: User }) {
                   onSelect={async () => {
                     if (spotifyConnected) {
                       try {
-                        await fetch("/api/auth/spotify/disconnect", {
+                        const response = await fetch("/api/auth/spotify/disconnect", {
                           method: "POST",
                         });
+                        if (!response.ok) {
+                          throw new Error("Failed to disconnect");
+                        }
                         setSpotifyConnected(false);
                         toast({
                           type: "success",

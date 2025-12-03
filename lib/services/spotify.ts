@@ -65,7 +65,10 @@ export class SpotifyService {
       connection.expiresAt &&
       connection.expiresAt < new Date(Date.now() + 5 * 60 * 1000)
     ) {
-      return this.refreshAccessToken(connection.refreshToken!);
+      if (!connection.refreshToken) {
+        throw new Error("Refresh token not available");
+      }
+      return this.refreshAccessToken(connection.refreshToken);
     }
 
     return connection.accessToken;
@@ -97,12 +100,15 @@ export class SpotifyService {
 
     const data = await response.json();
 
+    // Preserve existing scopes if not returned by Spotify
+    const currentConnection = await getOAuthConnection(this.userId, "spotify");
     await saveOAuthConnection({
       userId: this.userId,
       provider: "spotify",
       accessToken: data.access_token,
       refreshToken: data.refresh_token || refreshToken,
       expiresAt: new Date(Date.now() + data.expires_in * 1000),
+      scopes: data.scope || currentConnection?.scopes || undefined,
     });
 
     return data.access_token;
