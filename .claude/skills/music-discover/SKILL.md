@@ -5,7 +5,7 @@ description: Discover music news and personalized recommendations based on the u
 
 # Music Discover
 
-Provide personalized music news and recommendations based on the user's Spotify top artists.
+Provide personalized music news and recommendations based on the user's Spotify top tracks and artists.
 
 ## Workflow
 
@@ -13,18 +13,19 @@ Follow these steps in order:
 
 ### Step 1: Fetch User's Music Profile
 
-**IMPORTANT: Use the `webFetch` tool to get the user's Spotify data:**
+**IMPORTANT: Use the `spotify` tool to get the user's top tracks:**
 
-Call the `webFetch` tool with:
+Call the `spotify` tool with:
 
-- url: `https://aikdeirel.github.io/spotify-stats/spotify_top.json`
-- responseType: `json`
+- action: `top_tracks`
 
-This JSON contains the user's top 10 Spotify artists with their genres, albums, and top tracks. Analyze this to understand the user's taste profile.
+This returns the user's top 10 most-played tracks including artist and album information. Extract the unique artists from these tracks to understand the user's taste profile.
+
+**If Spotify is not connected:** The tool will return an error with `error: "not_connected"`. In this case, inform the user they need to connect their Spotify account from the user menu in the sidebar, then skip to Step 3 with generic recommendations.
 
 ### Step 2: Search for News (Conditional)
 
-Search for recent news about the user's top artists. Focus on:
+Search for recent news about the user's top artists (extracted from the top tracks). Focus on:
 
 - New album releases (within last 4 weeks)
 - Upcoming album announcements (with confirmed dates)
@@ -45,8 +46,8 @@ Always provide recommendations. Focus on:
 
 **Priority 1: Similar artists**
 
-- Find artists similar to user's top artists (especially the top 5)
-- Look for artists in the same genres (post-rock, trip hop, shoegaze, etc.)
+- Find artists similar to user's top artists (especially from the most-played tracks)
+- Look for artists in the same genres based on the artists found
 - Search for "artists similar to [artist name]" or "if you like [artist] you'll like [similar artist]"
 
 **Priority 2: New releases from similar artists**
@@ -66,12 +67,10 @@ Tailor recommendations to the user's context if specified (e.g., "long train rid
 Structure the response as follows:
 
 1. **Brief, excited intro** (1-2 sentences)
-
    - Be enthusiastic but concise
    - Examples: "Hey, hab was Cooles für dich gefunden! 🎵" or "Spannende Updates aus deiner Musikwelt:"
 
 2. **News section** (only if relevant news exists)
-
    - Use bullet points
    - Format: `• Artist - "Title/Event" (Date) - Brief description [Link]`
    - Keep descriptions to one sentence max
