@@ -642,7 +642,7 @@ export async function saveOAuthConnection({
         refreshToken,
         expiresAt,
         scopes,
-        createdAt: new Date(),
+        // createdAt uses database default (defaultNow())
         updatedAt: new Date(),
       })
       .onConflictDoUpdate({

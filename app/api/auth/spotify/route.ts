@@ -19,11 +19,22 @@ export async function GET() {
     return new Response("Unauthorized", { status: 401 });
   }
 
+  // Validate required environment variables
+  if (!process.env.SPOTIFY_CLIENT_ID || !process.env.SPOTIFY_REDIRECT_URI) {
+    console.error(
+      "Missing required Spotify environment variables: SPOTIFY_CLIENT_ID or SPOTIFY_REDIRECT_URI",
+    );
+    return new Response(
+      "Server configuration error: Spotify integration is not properly configured.",
+      { status: 500 },
+    );
+  }
+
   const params = new URLSearchParams({
     response_type: "code",
-    client_id: process.env.SPOTIFY_CLIENT_ID!,
+    client_id: process.env.SPOTIFY_CLIENT_ID,
     scope: SPOTIFY_SCOPES,
-    redirect_uri: process.env.SPOTIFY_REDIRECT_URI!,
+    redirect_uri: process.env.SPOTIFY_REDIRECT_URI,
     state: session.user.id, // CSRF protection
   });
 

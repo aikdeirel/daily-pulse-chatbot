@@ -38,6 +38,10 @@ export function SidebarUserNav({ user }: { user: User }) {
     async function checkSpotify() {
       try {
         const res = await fetch("/api/auth/spotify/status");
+        if (!res.ok) {
+          setSpotifyConnected(false);
+          return;
+        }
         const data = await res.json();
         setSpotifyConnected(data.connected);
       } catch {
@@ -104,6 +108,7 @@ export function SidebarUserNav({ user }: { user: User }) {
                           throw new Error("Failed to disconnect");
                         }
                         setSpotifyConnected(false);
+                        router.refresh();
                         toast({
                           type: "success",
                           description: "Spotify disconnected",

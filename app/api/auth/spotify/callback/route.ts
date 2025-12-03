@@ -19,6 +19,18 @@ export async function GET(request: Request) {
     redirect("/?error=spotify_auth_denied");
   }
 
+  // Validate required environment variables
+  if (
+    !process.env.SPOTIFY_CLIENT_ID ||
+    !process.env.SPOTIFY_CLIENT_SECRET ||
+    !process.env.SPOTIFY_REDIRECT_URI
+  ) {
+    console.error(
+      "Missing required Spotify environment variables: SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, or SPOTIFY_REDIRECT_URI",
+    );
+    redirect("/?error=spotify_config_error");
+  }
+
   try {
     // Exchange code for tokens
     const tokenResponse = await fetch(
@@ -34,7 +46,7 @@ export async function GET(request: Request) {
         body: new URLSearchParams({
           grant_type: "authorization_code",
           code,
-          redirect_uri: process.env.SPOTIFY_REDIRECT_URI!,
+          redirect_uri: process.env.SPOTIFY_REDIRECT_URI,
         }),
       },
     );
@@ -55,6 +67,9 @@ export async function GET(request: Request) {
       scopes: tokens.scope,
     });
 
+    // Frontend contract: When redirected with `?spotify=connected`, the frontend
+    // should show a success notification/toast to inform the user that Spotify
+    // was connected successfully.
     redirect("/?spotify=connected");
   } catch (error) {
     // Re-throw redirect errors - they're not actual errors in Next.js 14+

@@ -95,7 +95,13 @@ export class SpotifyService {
     });
 
     if (!response.ok) {
-      throw new Error("Token refresh failed");
+      // Provide more specific error messages based on status code
+      if (response.status === 400 || response.status === 401) {
+        throw new Error(
+          "Spotify authentication expired or revoked. Please reconnect your Spotify account.",
+        );
+      }
+      throw new Error(`Token refresh failed (status ${response.status})`);
     }
 
     const data = await response.json();
@@ -177,9 +183,7 @@ export class SpotifyService {
           : undefined,
       };
     } catch (error: any) {
-      if (error.status === 204) {
-        return { track: null, isPlaying: false, progressMs: 0 };
-      }
+      // Note: 204 status is already handled in apiCall, so it won't reach here
       throw error;
     }
   }

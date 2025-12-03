@@ -318,10 +318,15 @@ The user must have connected their Spotify account from the user menu first.`,
             };
         }
       } catch (error: any) {
-        console.error("Spotify tool error:", error);
+        // Sanitize error logging to avoid exposing sensitive information
+        if (error instanceof Error) {
+          console.error("Spotify tool error:", error.message);
+        } else {
+          console.error("Spotify tool error:", String(error));
+        }
         return {
           error: "api_error",
-          message: error.message || "An error occurred with Spotify",
+          message: error?.message || "An error occurred with Spotify",
         };
       }
     },

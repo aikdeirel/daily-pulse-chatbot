@@ -400,8 +400,6 @@ export function SpotifyPlayer({ data }: { data: SpotifyToolOutput }) {
                 </div>
                 <div className="mt-3 flex items-center gap-2 text-xs text-white/50">
                     <span>{data.playlist.public ? "Public" : "Private"} playlist</span>
-                    <span>•</span>
-                    <span>ID: {data.playlist.id}</span>
                 </div>
             </div>
         );

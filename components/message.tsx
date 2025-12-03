@@ -496,6 +496,9 @@ const PurePreviewMessage = ({
 							else if (action === "get_devices") title = "Devices";
 							else if (action === "next") title = "Next Track";
 							else if (action === "previous") title = "Previous Track";
+							else if (action === "create_playlist") title = "Creating Playlist";
+							else if (action === "add_tracks_to_playlist") title = "Adding to Playlist";
+							else if (action === "get_playlist_tracks") title = "Playlist Tracks";
 
 							return (
 								<Tool defaultOpen={true} key={toolCallId}>
