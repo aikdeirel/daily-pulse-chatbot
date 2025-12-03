@@ -87,24 +87,6 @@ function PureMultimodalInput({
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const { width } = useWindowSize();
 
-	const adjustHeight = useCallback(() => {
-		if (textareaRef.current) {
-			textareaRef.current.style.height = "44px";
-		}
-	}, []);
-
-	useEffect(() => {
-		if (textareaRef.current) {
-			adjustHeight();
-		}
-	}, [adjustHeight]);
-
-	const resetHeight = useCallback(() => {
-		if (textareaRef.current) {
-			textareaRef.current.style.height = "44px";
-		}
-	}, []);
-
 	const [localStorageInput, setLocalStorageInput] = useLocalStorage(
 		"input",
 		"",
@@ -116,11 +98,10 @@ function PureMultimodalInput({
 			// Prefer DOM value over localStorage to handle hydration
 			const finalValue = domValue || localStorageInput || "";
 			setInput(finalValue);
-			adjustHeight();
 		}
 		// Only run once after hydration
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [adjustHeight, localStorageInput, setInput]);
+	}, [localStorageInput, setInput]);
 
 	useEffect(() => {
 		setLocalStorageInput(input);
@@ -154,7 +135,6 @@ function PureMultimodalInput({
 
 		setAttachments([]);
 		setLocalStorageInput("");
-		resetHeight();
 		setInput("");
 
 		if (width && width > 768) {
@@ -169,7 +149,6 @@ function PureMultimodalInput({
 		setLocalStorageInput,
 		width,
 		chatId,
-		resetHeight,
 	]);
 
 	const uploadFile = useCallback(async (file: File) => {
@@ -359,11 +338,11 @@ function PureMultimodalInput({
 				<div className="flex flex-row items-start gap-1 sm:gap-2">
 					<PromptInputTextarea
 						autoFocus
-						className="grow resize-none border-0! border-none! bg-transparent p-2 text-base outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-scrollbar]:hidden"
+						className="grow resize-none border-0! border-none! bg-transparent py-1 text-base outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-scrollbar]:hidden"
 						data-testid="multimodal-input"
-						disableAutoResize={true}
+						disableAutoResize={false}
 						maxHeight={200}
-						minHeight={52}
+						minHeight={0}
 						onChange={handleInput}
 						placeholder="Type your message..."
 						ref={textareaRef}
