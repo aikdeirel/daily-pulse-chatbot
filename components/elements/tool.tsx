@@ -15,6 +15,8 @@ import {
   WrenchIcon,
   XCircleIcon,
   ZapIcon,
+  Music,
+  MusicIcon
 } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -103,6 +105,8 @@ function getToolIcon(type: string, className: string = "size-4"): ReactNode {
       return <BookOpenIcon className={className} />;
     case "tool-webFetch":
       return <GlobeIcon className={className} />;
+    case "tool-spotify":
+      return <MusicIcon className={className} />;
     default:
       return <WrenchIcon className={className} />;
   }
@@ -280,12 +284,12 @@ export const ToolOutput = ({
 };
 
 // Skill-specific output component for pretty rendering
-export const SkillOutput = ({ 
-  skillId, 
+export const SkillOutput = ({
+  skillId,
   skillName,
-  instructions 
-}: { 
-  skillId: string; 
+  instructions
+}: {
+  skillId: string;
   skillName: string;
   instructions: string;
 }) => (

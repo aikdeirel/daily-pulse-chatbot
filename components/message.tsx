@@ -494,6 +494,7 @@ const PurePreviewMessage = ({
 							else if (action === "play") title = "Playing";
 							else if (action === "pause") title = "Pausing";
 							else if (action === "top_tracks") title = "Top Tracks";
+							else if (action === "top_artists") title = "Top Artists";
 							else if (action === "playlists") title = "Playlists";
 							else if (action === "get_devices") title = "Devices";
 							else if (action === "next") title = "Next Track";

@@ -17,6 +17,7 @@ export const spotify = ({ userId }: SpotifyToolProps) =>
 - "next": Skip to next track
 - "previous": Go to previous track
 - "top_tracks": Get user's top tracks (recent favorites)
+- "top_artists": Get user's top artists (recent favorites)
 - "playlists": Get user's playlists (returns playlist IDs for use with get_playlist_tracks)
 - "get_playlist_tracks": Get tracks from a specific playlist by ID
 - "create_playlist": Create a new playlist with a name and optional description
@@ -34,6 +35,7 @@ The user must have connected their Spotify account from the user menu first.`,
         "next",
         "previous",
         "top_tracks",
+        "top_artists",
         "playlists",
         "get_playlist_tracks",
         "create_playlist",
@@ -197,6 +199,20 @@ The user must have connected their Spotify account from the user menu first.`,
                 album: t.album.name,
                 albumArt: t.album.images[0]?.url,
                 uri: t.uri,
+              })),
+            };
+          }
+
+          case "top_artists": {
+            const result = await service.getTopArtists();
+            return {
+              action: "top_artists",
+              artists: result.items.map((a: any) => ({
+                name: a.name,
+                uri: a.uri,
+                image: a.images[0]?.url,
+                genres: a.genres,
+                popularity: a.popularity,
               })),
             };
           }

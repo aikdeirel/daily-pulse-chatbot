@@ -19,6 +19,7 @@ This document describes the Spotify integration for AI agents, providing guidanc
 | `next`                   | Skip to next track               | None                               | **Yes**          |
 | `previous`               | Go to previous track             | None                               | **Yes**          |
 | `top_tracks`             | Get user's top tracks            | None                               | No               |
+| `top_artists`            | Get user's top artists           | None                               | No               |
 | `playlists`              | Get user's playlists             | None                               | No               |
 | `get_playlist_tracks`    | Get tracks from a playlist       | `playlistId`                       | No               |
 | `create_playlist`        | Create a new playlist            | `playlistName`                     | No               |
@@ -33,6 +34,9 @@ User: "What's playing on Spotify?"
 
 User: "Search for Taylor Swift"
 → Use action: "search" with query: "Taylor Swift"
+
+User: "Show my top artists"
+→ Use action: "top_artists"
 
 User: "Show my playlists"
 → Use action: "playlists"
@@ -57,7 +61,7 @@ User: "Add this song to my playlist"
 {
   action: enum [
     "now_playing", "search", "play", "pause", "next", "previous",
-    "top_tracks", "playlists", "get_playlist_tracks",
+    "top_tracks", "top_artists", "playlists", "get_playlist_tracks",
     "create_playlist", "add_tracks_to_playlist", "get_devices"
   ],
   query?: string,           // For search action

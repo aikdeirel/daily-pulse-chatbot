@@ -335,6 +335,14 @@ export class SpotifyService {
     );
   }
 
+  async getTopArtists(
+    timeRange: "short_term" | "medium_term" | "long_term" = "medium_term",
+  ) {
+    return this.apiCall<{ items: any[] }>(
+      `/me/top/artists?time_range=${timeRange}&limit=10`,
+    );
+  }
+
   async getPlaylists() {
     return this.apiCall<{ items: any[] }>("/me/playlists?limit=20");
   }
