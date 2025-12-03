@@ -36,6 +36,7 @@ export const postRequestBodySchema = z.object({
     "gpt-5.1-reasoning",
     "gemma-3-27b-free",
     "glm-4.5-air-free",
+    "grok-4.1-fast-free",
   ]),
   selectedVisibilityType: z.enum(["public", "private"]),
   webSearchEnabled: z.boolean().optional().default(false),

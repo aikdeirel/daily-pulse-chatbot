@@ -77,4 +77,9 @@ export const chatModels: ChatModel[] = [
     name: "GLM-4.5 Air",
     description: "Free: Z-AI's GLM-4.5 Air model",
   },
+  {
+    id: "grok-4.1-fast-free",
+    name: "Grok-4.1 Fast",
+    description: "Free: X-AI's Grok-4.1 Fast model with tool support",
+  },
 ];
