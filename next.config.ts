@@ -23,11 +23,11 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "*.scdn.co", // Spotify CDN (album artwork, mosaics, etc.)
+        hostname: "**.scdn.co", // Spotify CDN (album artwork, mosaics, etc.) - ** matches any subdomain
       },
       {
         protocol: "https",
-        hostname: "*.spotifycdn.com", // Spotify CDN (user images, playlist covers, etc.)
+        hostname: "**.spotifycdn.com", // Spotify CDN (user images, playlist covers, etc.) - ** matches any subdomain
       },
     ],
   },
