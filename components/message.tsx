@@ -101,7 +101,9 @@ const PurePreviewMessage = ({
 			>
 				{message.role === "assistant" && (
 					<div className="flex size-10 shrink-0 items-center justify-center overflow-visible rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-500/20 text-orange-600 ring-1 ring-orange-500/30 dark:from-orange-500/30 dark:to-amber-500/30 dark:text-orange-400 dark:ring-orange-500/40">
-						<BotIcon />
+						<div className={isLoading ? "animate-pulse" : ""}>
+							<BotIcon />
+						</div>
 					</div>
 				)}
 
