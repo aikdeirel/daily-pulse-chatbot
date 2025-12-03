@@ -33,11 +33,6 @@ export const chatModels: ChatModel[] = [
     description: "Most capable Claude with reasoning enabled",
   },
   {
-    id: "gpt-oss-20b-free",
-    name: "GPT OSS 20B",
-    description: "Free open-source 20B parameter model",
-  },
-  {
     id: "gpt-5-nano",
     name: "GPT-5 Nano",
     description: "Fast and cost-effective compact model",
@@ -66,5 +61,20 @@ export const chatModels: ChatModel[] = [
     id: "gpt-5.1-reasoning",
     name: "GPT-5.1 Reasoning",
     description: "GPT-5.1 with chain-of-thought reasoning enabled",
+  },
+  {
+    id: "gpt-oss-20b-free",
+    name: "GPT OSS 20B",
+    description: "Free: Open-source 20B parameter model",
+  },
+  {
+    id: "gemma-3-27b-free",
+    name: "Gemma 3 27B",
+    description: "Free: Google's 27B parameter instruction-tuned model",
+  },
+  {
+    id: "glm-4.5-air-free",
+    name: "GLM-4.5 Air",
+    description: "Free: Z-AI's GLM-4.5 Air model",
   },
 ];

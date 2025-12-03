@@ -13,7 +13,6 @@ export const entitlementsByUserType: Record<UserType, Entitlements> = {
   guest: {
     maxMessagesPerDay: 20,
     availableChatModelIds: [
-      "gpt-oss-20b-free",
       "gpt-5-nano",
       "gpt-5.1",
       "gpt-5.1-chat",
@@ -25,6 +24,9 @@ export const entitlementsByUserType: Record<UserType, Entitlements> = {
       "gpt-5.1-reasoning",
       "claude-opus-4.5-reasoning",
       "claude-sonnet-4.5-reasoning",
+      "gpt-oss-20b-free",
+      "gemma-3-27b-free",
+      "glm-4.5-air-free",
     ],
   },
 
@@ -34,7 +36,6 @@ export const entitlementsByUserType: Record<UserType, Entitlements> = {
   regular: {
     maxMessagesPerDay: 100,
     availableChatModelIds: [
-      "gpt-oss-20b-free",
       "gpt-5-nano",
       "gpt-5.1",
       "gpt-5.1-chat",
@@ -46,6 +47,9 @@ export const entitlementsByUserType: Record<UserType, Entitlements> = {
       "gpt-5.1-reasoning",
       "claude-opus-4.5-reasoning",
       "claude-sonnet-4.5-reasoning",
+      "gpt-oss-20b-free",
+      "gemma-3-27b-free",
+      "glm-4.5-air-free",
     ],
   },
 

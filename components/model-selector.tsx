@@ -52,11 +52,11 @@ export function ModelSelector({
         )}
       >
         <Button
-          className="md:h-[34px] md:px-2"
+          className="h-[34px] px-2"
           data-testid="model-selector"
           variant="outline"
         >
-          {selectedChatModel?.name}
+          <span className="truncate">{selectedChatModel?.name}</span>
           <ChevronDownIcon />
         </Button>
       </DropdownMenuTrigger>
@@ -83,17 +83,17 @@ export function ModelSelector({
               }}
             >
               <button
-                className="group/item flex w-full flex-row items-center justify-between gap-2 sm:gap-4"
+                className="flex w-full flex-row items-center justify-between gap-2 sm:gap-4"
                 type="button"
               >
                 <div className="flex flex-col items-start gap-1">
                   <div className="text-sm sm:text-base">{chatModel.name}</div>
-                  <div className="line-clamp-2 text-muted-foreground text-xs">
+                  <div className="line-clamp-2 text-muted-foreground group-data-[active=true]:text-white text-xs">
                     {chatModel.description}
                   </div>
                 </div>
 
-                <div className="shrink-0 text-foreground opacity-0 group-data-[active=true]/item:opacity-100 dark:text-foreground">
+                <div className="shrink-0 text-foreground opacity-0 group-data-[active=true]:opacity-100 dark:text-foreground">
                   <CheckCircleFillIcon />
                 </div>
               </button>

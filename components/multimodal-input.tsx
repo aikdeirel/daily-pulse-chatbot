@@ -497,7 +497,7 @@ function PureModelSelectorCompact({
 			<Trigger asChild>
 				<Button className="h-8 px-2" variant="ghost">
 					<CpuIcon size={16} />
-					<span className="hidden font-medium text-xs sm:block">
+					<span className="truncate font-medium text-xs">
 						{selectedModel?.name}
 					</span>
 					<ChevronDownIcon size={16} />
@@ -508,7 +508,7 @@ function PureModelSelectorCompact({
 					{chatModels.map((model) => (
 						<SelectItem key={model.id} value={model.name}>
 							<div className="truncate font-medium text-xs">{model.name}</div>
-							<div className="mt-px truncate text-[10px] text-muted-foreground leading-tight">
+							<div className="mt-px truncate text-[10px] text-muted-foreground group-focus:text-white group-data-[state=checked]:text-accent-foreground leading-tight">
 								{model.description}
 							</div>
 						</SelectItem>
