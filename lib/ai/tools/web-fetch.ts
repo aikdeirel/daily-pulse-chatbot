@@ -3,20 +3,25 @@ import { z } from "zod";
 
 export const webFetch = tool({
   description:
-    "Fetch content from a URL. Use this to retrieve JSON data, text content, or check if a URL is accessible. Useful for fetching user data, API responses, or external resources mentioned in skills.",
+    "Fetch content from a specific URL (like curl). Not for web searching - only fetches one known URL. Returns JSON or text content.",
   inputSchema: z.object({
     url: z.string().url().describe("The URL to fetch content from"),
     responseType: z
       .enum(["json", "text"])
       .default("json")
-      .describe("Expected response type: 'json' for JSON data, 'text' for plain text/HTML"),
+      .describe(
+        "Expected response type: 'json' for JSON data, 'text' for plain text/HTML",
+      ),
   }),
   execute: async ({ url, responseType = "json" }) => {
     try {
       const response = await fetch(url, {
         headers: {
           "User-Agent": "Mozilla/5.0 (compatible; ChatBot/1.0)",
-          Accept: responseType === "json" ? "application/json" : "text/plain, text/html, */*",
+          Accept:
+            responseType === "json"
+              ? "application/json"
+              : "text/plain, text/html, */*",
         },
         // Timeout after 10 seconds
         signal: AbortSignal.timeout(10000),
@@ -31,7 +36,7 @@ export const webFetch = tool({
       }
 
       const contentType = response.headers.get("content-type") || "";
-      
+
       if (responseType === "json" || contentType.includes("application/json")) {
         try {
           const data = await response.json();
@@ -56,8 +61,11 @@ export const webFetch = tool({
 
       const text = await response.text();
       // Limit text response to prevent context overflow
-      const truncatedText = text.length > 50000 ? text.substring(0, 50000) + "\n...[truncated]" : text;
-      
+      const truncatedText =
+        text.length > 50000
+          ? text.substring(0, 50000) + "\n...[truncated]"
+          : text;
+
       return {
         success: true,
         data: truncatedText,
@@ -65,7 +73,8 @@ export const webFetch = tool({
         contentType,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       return {
         success: false,
         error: errorMessage,
