@@ -100,7 +100,9 @@ const PurePreviewMessage = ({
 				})}
 			>
 				{message.role === "assistant" && (
-					<div className="flex size-10 shrink-0 items-center justify-center overflow-visible rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-500/20 text-orange-600 ring-1 ring-orange-500/30 dark:from-orange-500/30 dark:to-amber-500/30 dark:text-orange-400 dark:ring-orange-500/40">
+					<div className={cn("flex size-10 shrink-0 items-center justify-center overflow-visible rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-500/20 text-orange-600 ring-1 ring-orange-500/30 dark:from-orange-500/30 dark:to-amber-500/30 dark:text-orange-400 dark:ring-orange-500/40", {
+						"animate-pulse": isLoading,
+					})}>
 						<div className={isLoading ? "animate-pulse" : ""}>
 							<BotIcon />
 						</div>
@@ -217,7 +219,7 @@ const PurePreviewMessage = ({
 							const { toolCallId, state } = part;
 
 							return (
-								<Tool defaultOpen={true} key={toolCallId}>
+								<Tool defaultOpen={false} key={toolCallId}>
 									<ToolHeader state={state} type="tool-getWeather" />
 									<ToolContent>
 										{state === "input-available" && (
@@ -286,7 +288,7 @@ const PurePreviewMessage = ({
 							const { toolCallId, state } = part;
 
 							return (
-								<Tool defaultOpen={true} key={toolCallId}>
+								<Tool defaultOpen={false} key={toolCallId}>
 									<ToolHeader state={state} type="tool-requestSuggestions" />
 									<ToolContent>
 										{state === "input-available" && (
@@ -393,7 +395,7 @@ const PurePreviewMessage = ({
 							const skillId = part.input?.skillId as string | undefined;
 
 							return (
-								<Tool defaultOpen={true} key={toolCallId}>
+								<Tool defaultOpen={false} key={toolCallId}>
 									<ToolHeader
 										state={state}
 										type="tool-useSkill"
@@ -504,7 +506,7 @@ const PurePreviewMessage = ({
 							else if (action === "get_playlist_tracks") title = "Playlist Tracks";
 
 							return (
-								<Tool defaultOpen={true} key={toolCallId}>
+								<Tool defaultOpen={false} key={toolCallId}>
 									<ToolHeader state={state} type="tool-spotify" title={title} />
 									<ToolContent>
 										{state === "input-available" && (
@@ -589,7 +591,7 @@ export const ThinkingMessage = () => {
 		>
 			<div className="flex items-start justify-start gap-3 md:gap-4">
 				<div className="flex size-10 shrink-0 items-center justify-center overflow-visible rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-500/20 text-orange-600 ring-1 ring-orange-500/30 dark:from-orange-500/30 dark:to-amber-500/30 dark:text-orange-400 dark:ring-orange-500/40">
-					<div className="animate-pulse">
+					<div className="animate-visible-pulse">
 						<BotIcon />
 					</div>
 				</div>

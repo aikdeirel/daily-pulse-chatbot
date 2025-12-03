@@ -50,13 +50,13 @@ Tailor to context if specified (e.g., "long train ride" → longer, atmospheric 
 [Brief excited intro with emoji]
 
 News: (only if web search available and news found)
-• Artist - "Title/Event" (Date) - Brief description [Link] \
-• Artist - "Title/Event" (Date) - Brief description [Link] \
+- Artist - "Title/Event" (Date) - Brief description [Link]
+- Artist - "Title/Event" (Date) - Brief description [Link]
 ...
 
 Recommendations:
-• Artist - "Album/Song" - Why this fits [Link if available] \
-• Artist - "Album/Song" - Why this fits [Link if available] \
+- Artist - "Album/Song" - Why this fits [Link if available]
+- Artist - "Album/Song" - Why this fits [Link if available]
 ...
 ```
 

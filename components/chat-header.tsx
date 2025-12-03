@@ -32,7 +32,7 @@ function PureChatHeader({
 		<header className="sticky top-0 z-10 flex items-center gap-2 border-b border-border/40 bg-background/90 px-3 py-3 backdrop-blur-md md:gap-3 md:px-4">
 			<SidebarToggle />
 
-			<Button
+			{/* <Button
 				className={`order-1 h-10 rounded-xl px-3 transition-colors md:h-fit md:px-3 ${open ? "md:hidden" : ""}`}
 				onClick={() => {
 					router.push("/");
@@ -42,7 +42,7 @@ function PureChatHeader({
 			>
 				<PlusIcon />
 				<span className="md:sr-only">New Chat</span>
-			</Button>
+			</Button> */}
 
 			{!isReadonly && (
 				<VisibilitySelector
