@@ -25,6 +25,8 @@ import {
   type DBMessage,
   document,
   message,
+  oauthConnection,
+  type OAuthConnection,
   type Suggestion,
   stream,
   suggestion,
@@ -588,5 +590,105 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
       "bad_request:database",
       "Failed to get stream ids by chat id",
     );
+  }
+}
+
+// OAuth Connection queries
+export async function getOAuthConnection(
+  userId: string,
+  provider: string,
+): Promise<OAuthConnection | undefined> {
+  try {
+    const [connection] = await db
+      .select()
+      .from(oauthConnection)
+      .where(
+        and(
+          eq(oauthConnection.userId, userId),
+          eq(oauthConnection.provider, provider),
+        ),
+      );
+    return connection;
+  } catch (_error) {
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to get OAuth connection",
+    );
+  }
+}
+
+export async function saveOAuthConnection({
+  userId,
+  provider,
+  accessToken,
+  refreshToken,
+  expiresAt,
+  scopes,
+}: {
+  userId: string;
+  provider: string;
+  accessToken: string;
+  refreshToken?: string;
+  expiresAt?: Date;
+  scopes?: string;
+}) {
+  try {
+    return await db
+      .insert(oauthConnection)
+      .values({
+        userId,
+        provider,
+        accessToken,
+        refreshToken,
+        expiresAt,
+        scopes,
+        // createdAt uses database default (defaultNow())
+        updatedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: [oauthConnection.userId, oauthConnection.provider],
+        set: {
+          accessToken,
+          refreshToken,
+          expiresAt,
+          scopes,
+          updatedAt: new Date(),
+        },
+      });
+  } catch (_error) {
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to save OAuth connection",
+    );
+  }
+}
+
+export async function deleteOAuthConnection(userId: string, provider: string) {
+  try {
+    return await db
+      .delete(oauthConnection)
+      .where(
+        and(
+          eq(oauthConnection.userId, userId),
+          eq(oauthConnection.provider, provider),
+        ),
+      );
+  } catch (_error) {
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to delete OAuth connection",
+    );
+  }
+}
+
+export async function hasOAuthConnection(
+  userId: string,
+  provider: string,
+): Promise<boolean> {
+  try {
+    const connection = await getOAuthConnection(userId, provider);
+    return !!connection;
+  } catch (_error) {
+    return false;
   }
 }

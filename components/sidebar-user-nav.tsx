@@ -1,11 +1,12 @@
 "use client";
 
-import { ChevronUp } from "lucide-react";
+import { ChevronUp, Music } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { User } from "next-auth";
 import { signOut, useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,8 +27,31 @@ export function SidebarUserNav({ user }: { user: User }) {
   const router = useRouter();
   const { data, status } = useSession();
   const { setTheme, resolvedTheme } = useTheme();
+  const [spotifyConnected, setSpotifyConnected] = useState<boolean | null>(
+    null,
+  );
 
   const isGuest = guestRegex.test(data?.user?.email ?? "");
+
+  useEffect(() => {
+    // Check if user has Spotify connected
+    async function checkSpotify() {
+      try {
+        const res = await fetch("/api/auth/spotify/status");
+        if (!res.ok) {
+          setSpotifyConnected(false);
+          return;
+        }
+        const data = await res.json();
+        setSpotifyConnected(data.connected);
+      } catch {
+        setSpotifyConnected(false);
+      }
+    }
+    if (status === "authenticated") {
+      checkSpotify();
+    }
+  }, [status]);
 
   return (
     <SidebarMenu>
@@ -70,6 +94,46 @@ export function SidebarUserNav({ user }: { user: User }) {
             data-testid="user-nav-menu"
             side="top"
           >
+            {!isGuest && (
+              <>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onSelect={async () => {
+                    if (spotifyConnected) {
+                      try {
+                        const response = await fetch("/api/auth/spotify/disconnect", {
+                          method: "POST",
+                        });
+                        if (!response.ok) {
+                          throw new Error("Failed to disconnect");
+                        }
+                        setSpotifyConnected(false);
+                        router.refresh();
+                        toast({
+                          type: "success",
+                          description: "Spotify disconnected",
+                        });
+                      } catch {
+                        toast({
+                          type: "error",
+                          description: "Failed to disconnect Spotify",
+                        });
+                      }
+                    } else {
+                      window.location.href = "/api/auth/spotify";
+                    }
+                  }}
+                >
+                  <Music className="mr-2 h-4 w-4 text-[#1DB954]" />
+                  {spotifyConnected === null
+                    ? "Loading..."
+                    : spotifyConnected
+                      ? "Disconnect Spotify"
+                      : "Connect Spotify"}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
             <DropdownMenuItem
               className="cursor-pointer"
               data-testid="user-nav-item-theme"

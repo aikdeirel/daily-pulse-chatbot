@@ -8,6 +8,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  unique,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -80,7 +81,7 @@ export const voteDeprecated = pgTable(
     return {
       pk: primaryKey({ columns: [table.chatId, table.messageId] }),
     };
-  }
+  },
 );
 
 export type VoteDeprecated = InferSelectModel<typeof voteDeprecated>;
@@ -100,7 +101,7 @@ export const vote = pgTable(
     return {
       pk: primaryKey({ columns: [table.chatId, table.messageId] }),
     };
-  }
+  },
 );
 
 export type Vote = InferSelectModel<typeof vote>;
@@ -123,7 +124,7 @@ export const document = pgTable(
     return {
       pk: primaryKey({ columns: [table.id, table.createdAt] }),
     };
-  }
+  },
 );
 
 export type Document = InferSelectModel<typeof document>;
@@ -149,7 +150,7 @@ export const suggestion = pgTable(
       columns: [table.documentId, table.documentCreatedAt],
       foreignColumns: [document.id, document.createdAt],
     }),
-  })
+  }),
 );
 
 export type Suggestion = InferSelectModel<typeof suggestion>;
@@ -167,7 +168,29 @@ export const stream = pgTable(
       columns: [table.chatId],
       foreignColumns: [chat.id],
     }),
-  })
+  }),
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+export const oauthConnection = pgTable(
+  "OAuthConnection",
+  {
+    id: uuid("id").primaryKey().notNull().defaultRandom(),
+    userId: uuid("userId")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    provider: varchar("provider", { length: 32 }).notNull(), // 'spotify'
+    accessToken: text("accessToken").notNull(),
+    refreshToken: text("refreshToken"),
+    expiresAt: timestamp("expiresAt"),
+    scopes: text("scopes"),
+    createdAt: timestamp("createdAt").notNull().defaultNow(),
+    updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  },
+  (table) => ({
+    userProvider: unique().on(table.userId, table.provider),
+  }),
+);
+
+export type OAuthConnection = InferSelectModel<typeof oauthConnection>;

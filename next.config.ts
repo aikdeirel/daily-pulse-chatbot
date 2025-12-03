@@ -21,6 +21,14 @@ const nextConfig: NextConfig = {
         //https://nextjs.org/docs/messages/next-image-unconfigured-host
         hostname: "*.public.blob.vercel-storage.com",
       },
+      {
+        protocol: "https",
+        hostname: "*.scdn.co", // Spotify CDN (album artwork, mosaics, etc.)
+      },
+      {
+        protocol: "https",
+        hostname: "*.spotifycdn.com", // Spotify CDN (user images, playlist covers, etc.)
+      },
     ],
   },
 };
