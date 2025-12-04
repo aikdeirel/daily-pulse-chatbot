@@ -3,7 +3,7 @@ import { z } from "zod";
 
 export const webFetch = tool({
   description:
-    "Fetch content from a specific URL (like curl). Not for web searching - only fetches one known URL. Returns JSON or text content.",
+    "Fetch content directly from a COMPLETE, SPECIFIC URL (API endpoint, specific webpage, or document). Requires the exact full URL to be known in advance. Example: 'https://api.example.com/users/123'. Cannot discover URLs or search the web.",
   inputSchema: z.object({
     url: z.string().url().describe("The URL to fetch content from"),
     responseType: z
