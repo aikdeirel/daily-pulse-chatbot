@@ -1,71 +1,169 @@
-<a href="https://chat.vercel.ai/">
-  <img alt="Next.js 14 and App Router-ready AI chatbot." src="app/(chat)/opengraph-image.png">
-  <h1 align="center">Chat SDK</h1>
-</a>
+<div align="center">
+  <img alt="Daily Pulse AI Chatbot" src="app/(chat)/opengraph-image.png" width="100%">
+  <h1>✨ Daily Pulse</h1>
+  <p><em>Your personal AI assistant for daily tasks, music, and creative work</em></p>
+  
+  [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+  [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org)
+  [![React](https://img.shields.io/badge/React-19-61dafb)](https://react.dev)
+</div>
 
-<p align="center">
-    Chat SDK is a free, open-source template built with Next.js and the AI SDK that helps you quickly build powerful chatbot applications.
-</p>
+---
 
-<p align="center">
-  <a href="https://chat-sdk.dev"><strong>Read Docs</strong></a> ·
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#model-providers"><strong>Model Providers</strong></a> ·
-  <a href="#deploy-your-own"><strong>Deploy Your Own</strong></a> ·
-  <a href="#running-locally"><strong>Running locally</strong></a>
-</p>
-<br/>
+## 🌟 Features
 
-## Features
+### 🤖 AI-Powered Chat
+- **Multiple LLM Providers** – Flexible model selection via AI Gateway, OpenRouter, and xAI
+- **Smart Tools** – Weather forecasts, web search, and intelligent suggestions
+- **Skills System** – Specialized capabilities for context handovers and music discovery
 
-- [Next.js](https://nextjs.org) App Router
-  - Advanced routing for seamless navigation and performance
-  - React Server Components (RSCs) and Server Actions for server-side rendering and increased performance
-- [AI SDK](https://ai-sdk.dev/docs/introduction)
-  - Unified API for generating text, structured objects, and tool calls with LLMs
-  - Hooks for building dynamic chat and generative user interfaces
-  - Supports xAI (default), OpenAI, Fireworks, and other model providers
-- [shadcn/ui](https://ui.shadcn.com)
-  - Styling with [Tailwind CSS](https://tailwindcss.com)
-  - Component primitives from [Radix UI](https://radix-ui.com) for accessibility and flexibility
-- Data Persistence
-  - [Neon Serverless Postgres](https://vercel.com/marketplace/neon) for saving chat history and user data
-  - [Vercel Blob](https://vercel.com/storage/blob) for efficient file storage
-- [Auth.js](https://authjs.dev)
-  - Simple and secure authentication
+### 🎵 Spotify Integration
+- **Now Playing** – Real-time header indicator with playback controls
+- **Music Management** – Search tracks, manage playlists, view listening history
+- **Smart Recommendations** – Personalized suggestions based on your taste
+- [📖 Full Spotify Documentation](docs/SPOTIFY_INTEGRATION.md)
 
-## Model Providers
+### 📝 Artifacts
+Create and edit interactive content directly in chat:
+- **Text Documents** – Rich markdown editing with live preview
+- **Code Snippets** – Syntax-highlighted code with multiple language support
+- **Spreadsheets** – Interactive data grids for analysis
 
-This template uses the [Vercel AI Gateway](https://vercel.com/docs/ai-gateway) to access multiple AI models through a unified interface. The default configuration includes [Qwen](https://qwen.ai) models (`qwen3-coder`) routed through the gateway.
+### 🔐 Authentication & Storage
+- **Secure Auth** – Email/password authentication via Auth.js
+- **Persistent Storage** – PostgreSQL for chat history, Redis for caching
+- **File Uploads** – Vercel Blob integration for attachments
 
-### AI Gateway Authentication
+### 📱 Modern Experience
+- **Progressive Web App** – Install as a native app on any device
+- **Responsive Design** – Beautiful UI built with Tailwind CSS and shadcn/ui
+- **Dark Mode** – System-aware theming for comfortable viewing
 
-**For Vercel deployments**: Authentication is handled automatically via OIDC tokens.
+---
 
-**For non-Vercel deployments**: You need to provide an AI Gateway API key by setting the `AI_GATEWAY_API_KEY` environment variable in your `.env.local` file.
+## 🚀 Quick Start
 
-With the [AI SDK](https://ai-sdk.dev/docs/introduction), you can also switch to direct LLM providers like [OpenAI](https://openai.com), [Anthropic](https://anthropic.com), [Cohere](https://cohere.com/), and [many more](https://ai-sdk.dev/providers/ai-sdk-providers) with just a few lines of code.
+### Prerequisites
+- Node.js 18+ and pnpm
+- PostgreSQL database (recommended: [Vercel Postgres](https://vercel.com/storage/postgres))
+- Redis instance (recommended: [Vercel KV](https://vercel.com/storage/kv))
 
-## Deploy Your Own
+### Installation
 
-You can deploy your own version of the Next.js AI Chatbot to Vercel with one click:
+1. **Clone and install dependencies**
+   ```bash
+   git clone https://github.com/aikdeirel/vercel-nextjs-ai-chatbot.git
+   cd vercel-nextjs-ai-chatbot
+   pnpm install
+   ```
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/templates/next.js/nextjs-ai-chatbot)
+2. **Configure environment variables**
+   
+   Copy `.env.example` to `.env.local` and fill in your credentials:
+   ```bash
+   cp .env.example .env.local
+   ```
+   
+   Required variables:
+   - `AUTH_SECRET` – Authentication secret (generate with `openssl rand -base64 32`)
+   - `POSTGRES_URL` – PostgreSQL connection string
+   - `REDIS_URL` – Redis connection string
+   - `AI_GATEWAY_API_KEY` – For non-Vercel deployments
+   - `OPENROUTER_API_KEY` – For LLM access via OpenRouter
+   
+   Optional (for Spotify features):
+   - `SPOTIFY_CLIENT_ID`
+   - `SPOTIFY_CLIENT_SECRET`
+   - `SPOTIFY_REDIRECT_URI`
 
-## Running locally
+3. **Set up the database**
+   ```bash
+   pnpm db:migrate
+   ```
 
-You will need to use the environment variables [defined in `.env.example`](.env.example) to run Next.js AI Chatbot. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables) for this, but a `.env` file is all that is necessary.
+4. **Start the development server**
+   ```bash
+   pnpm dev
+   ```
 
-> Note: You should not commit your `.env` file or it will expose secrets that will allow others to control access to your various AI and authentication provider accounts.
+Visit [http://localhost:3000](http://localhost:3000) to start chatting! 🎉
 
-1. Install Vercel CLI: `npm i -g vercel`
-2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
-3. Download your environment variables: `vercel env pull`
+---
+
+## 🛠️ Tech Stack
+
+<table>
+  <tr>
+    <td><strong>Framework</strong></td>
+    <td>Next.js 16 (App Router, React 19, Server Components)</td>
+  </tr>
+  <tr>
+    <td><strong>AI</strong></td>
+    <td>Vercel AI SDK with multi-provider support</td>
+  </tr>
+  <tr>
+    <td><strong>Database</strong></td>
+    <td>PostgreSQL with Drizzle ORM</td>
+  </tr>
+  <tr>
+    <td><strong>Styling</strong></td>
+    <td>Tailwind CSS + shadcn/ui components</td>
+  </tr>
+  <tr>
+    <td><strong>Auth</strong></td>
+    <td>Auth.js (NextAuth v5)</td>
+  </tr>
+  <tr>
+    <td><strong>Deployment</strong></td>
+    <td>Optimized for Vercel with edge functions</td>
+  </tr>
+</table>
+
+---
+
+## 📦 Available Scripts
 
 ```bash
-pnpm install
-pnpm db:migrate # Setup database or apply latest database changes
-pnpm dev
+pnpm dev          # Start development server with Turbopack
+pnpm build        # Build for production
+pnpm start        # Start production server
+pnpm lint         # Run Biome linter
+pnpm format       # Format code with Biome
+pnpm test         # Run Playwright E2E tests
+pnpm db:migrate   # Apply database migrations
+pnpm db:studio    # Open Drizzle Studio
 ```
 
-Your app template should now be running on [localhost:3000](http://localhost:3000).
+---
+
+## 🚢 Deployment
+
+### Deploy to Vercel
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/aikdeirel/vercel-nextjs-ai-chatbot)
+
+1. Click the button above or push to your GitHub repository
+2. Connect to Vercel and import your project
+3. Add environment variables in Vercel dashboard
+4. Deploy! Vercel handles database setup and OIDC auth automatically
+
+### Self-Hosting
+
+For non-Vercel deployments:
+- Set `AI_GATEWAY_API_KEY` for LLM access
+- Configure your own PostgreSQL and Redis instances
+- Update `SPOTIFY_REDIRECT_URI` to your production domain
+
+---
+
+## 📄 License
+
+Licensed under the [Apache License 2.0](LICENSE).
+
+Originally forked from [Vercel's AI Chatbot template](https://github.com/vercel/ai-chatbot) and customized with additional features.
+
+---
+
+<div align="center">
+  <sub>Built with ❤️ using Next.js and Vercel AI SDK</sub>
+</div>
