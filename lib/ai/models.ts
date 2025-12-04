@@ -78,8 +78,13 @@ export const chatModels: ChatModel[] = [
     description: "Free: Z-AI's GLM-4.5 Air model",
   },
   {
-    id: "qwen3-coder-free",
-    name: "Qwen3 Coder",
-    description: "Free: Qwen's Qwen3 Coder model with tool support",
+    id: "mistral-small-3.1-24b-instruct-free",
+    name: "Mistral Small 3.1 24B Instruct",
+    description: "Free: Mistral's 24B parameter instruction-tuned model",
+  },
+  {
+    id: "mistral-medium-3.1",
+    name: "Mistral Medium 3.1",
+    description: "Mistral's medium-sized model for balanced performance",
   },
 ];
