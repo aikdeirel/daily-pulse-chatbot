@@ -53,13 +53,11 @@ export const getSkillResource = ({ availableSkills }: UseSkillProps) =>
     description:
       "Load an additional resource file from a skill (e.g., reference documentation, templates). Only use this if the skill instructions reference additional files.",
     inputSchema: z.object({
-      skillId: z
-        .string()
-        .describe("The ID of the skill"),
+      skillId: z.string().describe("The ID of the skill"),
       resourcePath: z
         .string()
         .describe(
-          "The relative path to the resource file within the skill directory (e.g., 'REFERENCE.md', 'templates/example.txt')"
+          "The relative path to the resource file within the skill directory (e.g., 'REFERENCE.md', 'templates/example.txt')",
         ),
     }),
     execute: async ({ skillId, resourcePath }) => {

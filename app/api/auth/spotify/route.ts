@@ -1,7 +1,7 @@
-import { auth } from "@/app/(auth)/auth";
 import { redirect } from "next/navigation";
+import { auth } from "@/app/(auth)/auth";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 const SPOTIFY_SCOPES = [
   "user-read-playback-state",

@@ -10,13 +10,12 @@ import {
   FileTextIcon,
   GlobeIcon,
   LightbulbIcon,
+  MusicIcon,
   PencilIcon,
   SparklesIcon,
   WrenchIcon,
   XCircleIcon,
   ZapIcon,
-  Music,
-  MusicIcon
 } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -34,7 +33,7 @@ export const Tool = ({ className, ...props }: ToolProps) => (
   <Collapsible
     className={cn(
       "not-prose mb-4 w-full max-w-full overflow-hidden rounded-2xl border-2 border-border/50 bg-gradient-to-b from-muted/40 to-muted/15 shadow-sm transition-all duration-200 hover:border-orange-500/30 hover:shadow-lg",
-      className
+      className,
     )}
     {...props}
   />
@@ -113,7 +112,10 @@ function getToolIcon(type: string, className: string = "size-4"): ReactNode {
 }
 
 // Get status icon based on state
-function getStatusIcon(status: ToolUIPart["state"], className: string = "size-3.5"): ReactNode {
+function getStatusIcon(
+  status: ToolUIPart["state"],
+  className: string = "size-3.5",
+): ReactNode {
   switch (status) {
     case "input-streaming":
       return <CircleIcon className={className} />;
@@ -152,18 +154,21 @@ const statusConfigData: Record<ToolUIPart["state"], StatusConfig> = {
 
 function StatusBadge({ status }: { status: ToolUIPart["state"] }) {
   const config = statusConfigData[status];
-  const isRunning = status === "input-streaming" || status === "input-available";
+  const isRunning =
+    status === "input-streaming" || status === "input-available";
 
   return (
     <div
       className={cn(
         "flex size-7 items-center justify-center rounded-lg transition-colors",
-        config.className
+        config.className,
       )}
       title={config.label}
     >
       {isRunning ? (
-        <span className={cn("size-2.5 rounded-full animate-pulse", config.dotColor)} />
+        <span
+          className={cn("size-2.5 rounded-full animate-pulse", config.dotColor)}
+        />
       ) : (
         getStatusIcon(status, "size-4")
       )}
@@ -188,13 +193,15 @@ export const ToolHeader = ({
     <CollapsibleTrigger
       className={cn(
         "group flex w-full min-w-0 items-center gap-3 p-4 transition-colors hover:bg-muted/50",
-        className
+        className,
       )}
     >
-      <div className={cn(
-        "flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-background to-muted shadow-sm ring-1 ring-border/50",
-        config.color
-      )}>
+      <div
+        className={cn(
+          "flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-background to-muted shadow-sm ring-1 ring-border/50",
+          config.color,
+        )}
+      >
         {getToolIcon(type, "size-4")}
       </div>
       <div className="flex min-w-0 flex-1 flex-col items-start">
@@ -218,7 +225,7 @@ export const ToolContent = ({ className, ...props }: ToolContentProps) => (
     className={cn(
       "overflow-hidden border-t border-border/50 bg-background/50",
       "data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down",
-      className
+      className,
     )}
     {...props}
   />
@@ -229,7 +236,10 @@ export type ToolInputProps = ComponentProps<"div"> & {
 };
 
 export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
-  <div className={cn("space-y-4 p-5 max-w-full overflow-hidden", className)} {...props}>
+  <div
+    className={cn("space-y-4 p-5 max-w-full overflow-hidden", className)}
+    {...props}
+  >
     <div className="flex items-center gap-2">
       <div className="size-2 rounded-full bg-amber-500" />
       <h4 className="font-medium text-muted-foreground text-sm uppercase tracking-wider">
@@ -258,12 +268,17 @@ export const ToolOutput = ({
   }
 
   return (
-    <div className={cn("space-y-4 p-5 max-w-full overflow-hidden", className)} {...props}>
+    <div
+      className={cn("space-y-4 p-5 max-w-full overflow-hidden", className)}
+      {...props}
+    >
       <div className="flex items-center gap-2">
-        <div className={cn(
-          "size-2 rounded-full",
-          errorText ? "bg-red-500" : "bg-emerald-500"
-        )} />
+        <div
+          className={cn(
+            "size-2 rounded-full",
+            errorText ? "bg-red-500" : "bg-emerald-500",
+          )}
+        />
         <h4 className="font-medium text-muted-foreground text-sm uppercase tracking-wider">
           {errorText ? "Error" : "Result"}
         </h4>
@@ -273,7 +288,7 @@ export const ToolOutput = ({
           "overflow-x-auto rounded-xl text-sm ring-1 max-w-full",
           errorText
             ? "bg-red-500/10 text-red-600 ring-red-500/25 dark:text-red-400"
-            : "bg-muted/50 text-foreground ring-border/50"
+            : "bg-muted/50 text-foreground ring-border/50",
         )}
       >
         {errorText && <div className="p-4 break-words">{errorText}</div>}
@@ -287,7 +302,7 @@ export const ToolOutput = ({
 export const SkillOutput = ({
   skillId,
   skillName,
-  instructions
+  instructions,
 }: {
   skillId: string;
   skillName: string;
@@ -304,7 +319,9 @@ export const SkillOutput = ({
       <div className="flex flex-wrap items-center gap-2 mb-3">
         <SparklesIcon className="size-5 shrink-0 text-orange-500" />
         <span className="font-semibold text-base truncate">{skillName}</span>
-        <Badge variant="outline" className="text-sm shrink-0">{skillId}</Badge>
+        <Badge variant="outline" className="text-sm shrink-0">
+          {skillId}
+        </Badge>
       </div>
       <p className="text-muted-foreground text-sm line-clamp-2 break-words">
         {instructions.substring(0, 150)}...

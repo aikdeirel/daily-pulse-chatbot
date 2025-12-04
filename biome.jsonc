@@ -1,0 +1,52 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "lf"
+  },
+  "linter": {
+    "rules": {
+      "suspicious": {
+        /* Needs more work to fix */
+        "noExplicitAny": "off",
+        /* Allow for Tailwind @ rules */
+        "noUnknownAtRules": "off",
+        /* Allowing console for debugging */
+        "noConsole": "off",
+        /* Needed for generateUUID() */
+        "noBitwiseOperators": "off"
+      },
+      "security": {
+        /* Controlled script with no user input in layout.tsx */
+        "noDangerouslySetInnerHtml": "off"
+      },
+      "style": {
+        /* Allowing magic numbers */
+        "noMagicNumbers": "off",
+        /* Needs more work to fix */
+        "noNestedTernary": "off"
+      },
+      "nursery": {
+        /* Too many false positives */
+        "noUnnecessaryConditions": "off"
+      },
+      "complexity": {
+        /* Needs more work to fix */
+        "noExcessiveCognitiveComplexity": "off",
+        /* This one has false positives. It's a bit... iffy 😉 */
+        "useSimplifiedLogicExpression": "off"
+      },
+      "a11y": {
+        /* Needs more work to fix */
+        "noSvgWithoutTitle": "off"
+      }
+    }
+  }
+}

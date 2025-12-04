@@ -1,8 +1,8 @@
 import { auth } from "@/app/(auth)/auth";
-import { SpotifyService } from "@/lib/services/spotify";
 import { hasOAuthConnection } from "@/lib/db/queries";
+import { SpotifyService } from "@/lib/services/spotify";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {

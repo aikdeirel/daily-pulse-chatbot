@@ -1,7 +1,7 @@
 import { auth } from "@/app/(auth)/auth";
 import { deleteOAuthConnection } from "@/lib/db/queries";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function POST() {
   const session = await auth();
@@ -13,7 +13,7 @@ export async function POST() {
   try {
     await deleteOAuthConnection(session.user.id, "spotify");
     return Response.json({ success: true });
-  } catch (error) {
+  } catch (_error) {
     return Response.json({ error: "Failed to disconnect" }, { status: 500 });
   }
 }

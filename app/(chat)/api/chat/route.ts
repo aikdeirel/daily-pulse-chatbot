@@ -204,6 +204,7 @@ export async function POST(request: Request) {
             session,
             dataStream,
           }),
+          // biome-ignore lint/correctness/useHookAtTopLevel: useSkill is not a React hook, it's a tool function
           useSkill: useSkill({ availableSkills }),
           getSkillResource: getSkillResource({ availableSkills }),
           webFetch,

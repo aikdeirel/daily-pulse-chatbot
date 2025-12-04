@@ -1,7 +1,7 @@
 "use client";
 
 import type { ToolUIPart } from "ai";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   BookOpenIcon,
   CheckCircleIcon,
@@ -101,8 +101,10 @@ export function ToolStatus({ type, state, title }: ToolStatusProps) {
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-all",
         config.color,
-        isComplete && "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-        isError && "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400"
+        isComplete &&
+          "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+        isError &&
+          "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400",
       )}
     >
       {isRunning ? (
@@ -123,9 +125,7 @@ export function ToolStatus({ type, state, title }: ToolStatusProps) {
 export function ToolStatusBar({ children }: { children: ReactNode }) {
   return (
     <div className="flex flex-wrap items-center gap-2 py-2">
-      <AnimatePresence mode="popLayout">
-        {children}
-      </AnimatePresence>
+      <AnimatePresence mode="popLayout">{children}</AnimatePresence>
     </div>
   );
 }

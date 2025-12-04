@@ -1,8 +1,8 @@
 import { auth } from "@/app/(auth)/auth";
-import { SpotifyService } from "@/lib/services/spotify";
 import { hasOAuthConnection } from "@/lib/db/queries";
+import { SpotifyService } from "@/lib/services/spotify";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
     const spotifyService = new SpotifyService(session.user.id);
 
-    let result;
+    let result: { error?: string; success?: boolean };
     if (action === "play") {
       result = await spotifyService.play();
     } else {
