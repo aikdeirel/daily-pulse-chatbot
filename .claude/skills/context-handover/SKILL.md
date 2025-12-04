@@ -1,3 +1,4 @@
+---
 name: Context Handover
 description: Create concise handover summary for seamless continuation in new chat session
 version: 2.0.0
