@@ -13,7 +13,8 @@
 ## 🌟 Features
 
 ### 🤖 AI-Powered Chat
-- **OpenRouter Integration** – Access to multiple LLMs (Claude, GPT, Mistral, Gemma) via [OpenRouter AI SDK](https://openrouter.ai/)
+- **Vercel AI SDK Framework** – Built on Vercel AI SDK with OpenRouter provider for multi-model access
+- **Multiple LLM Models** – Claude (Opus, Sonnet, Haiku), GPT-5, Mistral, Gemma via [OpenRouter](https://openrouter.ai/)
 - **Smart Tools** – Weather forecasts, web search, and intelligent suggestions
 - **Skills System** – Specialized capabilities for context handovers and music discovery
 
@@ -98,7 +99,7 @@ Visit [http://localhost:3000](http://localhost:3000) to start chatting! 🎉
   </tr>
   <tr>
     <td><strong>AI</strong></td>
-    <td>Vercel AI SDK with OpenRouter for multi-model access</td>
+    <td>Vercel AI SDK (framework) + OpenRouter (provider)</td>
   </tr>
   <tr>
     <td><strong>Database</strong></td>
@@ -164,5 +165,5 @@ Originally forked from [Vercel's AI Chatbot template](https://github.com/vercel/
 ---
 
 <div align="center">
-  <sub>Built with ❤️ using Next.js and Vercel AI SDK</sub>
+  <sub>Built with ❤️ using Next.js, Vercel AI SDK, and OpenRouter</sub>
 </div>
