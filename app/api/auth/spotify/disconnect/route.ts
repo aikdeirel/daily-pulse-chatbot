@@ -1,6 +1,8 @@
 import { auth } from "@/app/(auth)/auth";
 import { deleteOAuthConnection } from "@/lib/db/queries";
 
+export const dynamic = 'force-dynamic';
+
 export async function POST() {
   const session = await auth();
 

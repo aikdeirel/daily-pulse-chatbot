@@ -2,6 +2,8 @@ import { auth } from "@/app/(auth)/auth";
 import { SpotifyService } from "@/lib/services/spotify";
 import { hasOAuthConnection } from "@/lib/db/queries";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const session = await auth();
