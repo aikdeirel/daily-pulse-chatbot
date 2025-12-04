@@ -95,7 +95,9 @@ export const systemPrompt = ({
 
   // Keep it minimal - modern LLMs understand tools from their descriptions alone.
   // We rely on the intelligence of the model rather than over-engineering prompts.
-  return `You are a friendly assistant! Keep your responses concise and helpful.${requestPrompt}${skillsPrompt}`;
+  return `You are a friendly assistant! Keep your responses concise and helpful.
+
+${requestPrompt}${skillsPrompt}`;
 };
 
 export const codePrompt = `
