@@ -13,7 +13,7 @@
 ## 🌟 Features
 
 ### 🤖 AI-Powered Chat
-- **Multiple LLM Providers** – Flexible model selection via AI Gateway, OpenRouter, and xAI
+- **OpenRouter Integration** – Access to multiple LLMs (Claude, GPT, Mistral, Gemma) via [OpenRouter AI SDK](https://openrouter.ai/)
 - **Smart Tools** – Weather forecasts, web search, and intelligent suggestions
 - **Skills System** – Specialized capabilities for context handovers and music discovery
 
@@ -68,8 +68,7 @@ Create and edit interactive content directly in chat:
    - `AUTH_SECRET` – Authentication secret (generate with `openssl rand -base64 32`)
    - `POSTGRES_URL` – PostgreSQL connection string
    - `REDIS_URL` – Redis connection string
-   - `AI_GATEWAY_API_KEY` – For non-Vercel deployments
-   - `OPENROUTER_API_KEY` – For LLM access via OpenRouter
+   - `OPENROUTER_API_KEY` – OpenRouter API key for LLM access ([get yours here](https://openrouter.ai/keys))
    
    Optional (for Spotify features):
    - `SPOTIFY_CLIENT_ID`
@@ -99,7 +98,7 @@ Visit [http://localhost:3000](http://localhost:3000) to start chatting! 🎉
   </tr>
   <tr>
     <td><strong>AI</strong></td>
-    <td>Vercel AI SDK with multi-provider support</td>
+    <td>Vercel AI SDK with OpenRouter for multi-model access</td>
   </tr>
   <tr>
     <td><strong>Database</strong></td>
@@ -150,7 +149,7 @@ pnpm db:studio    # Open Drizzle Studio
 ### Self-Hosting
 
 For non-Vercel deployments:
-- Set `AI_GATEWAY_API_KEY` for LLM access
+- Set `OPENROUTER_API_KEY` for LLM access ([get yours here](https://openrouter.ai/keys))
 - Configure your own PostgreSQL and Redis instances
 - Update `SPOTIFY_REDIRECT_URI` to your production domain
 
