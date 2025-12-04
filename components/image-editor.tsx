@@ -34,7 +34,7 @@ export function ImageEditor({
         </div>
       ) : (
         <picture>
-          { }
+          {}
           <img
             alt={title}
             className={cn("h-fit w-full max-w-[800px]", {

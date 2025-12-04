@@ -172,38 +172,33 @@ export class SpotifyService {
     progressMs: number;
     device?: SpotifyDevice;
   }> {
-    try {
-      const data = await this.apiCall<any>("/me/player/currently-playing");
+    const data = await this.apiCall<any>("/me/player/currently-playing");
 
-      if (!data || !data.item) {
-        return { track: null, isPlaying: false, progressMs: 0 };
-      }
-
-      return {
-        track: {
-          id: data.item.id,
-          name: data.item.name,
-          artists: data.item.artists,
-          album: data.item.album,
-          uri: data.item.uri,
-          durationMs: data.item.duration_ms,
-        },
-        isPlaying: data.is_playing,
-        progressMs: data.progress_ms,
-        device: data.device
-          ? {
-              id: data.device.id,
-              name: data.device.name,
-              type: data.device.type,
-              isActive: data.device.is_active,
-              volumePercent: data.device.volume_percent,
-            }
-          : undefined,
-      };
-    } catch (error: any) {
-      // Note: 204 status is already handled in apiCall, so it won't reach here
-      throw error;
+    if (!data || !data.item) {
+      return { track: null, isPlaying: false, progressMs: 0 };
     }
+
+    return {
+      track: {
+        id: data.item.id,
+        name: data.item.name,
+        artists: data.item.artists,
+        album: data.item.album,
+        uri: data.item.uri,
+        durationMs: data.item.duration_ms,
+      },
+      isPlaying: data.is_playing,
+      progressMs: data.progress_ms,
+      device: data.device
+        ? {
+            id: data.device.id,
+            name: data.device.name,
+            type: data.device.type,
+            isActive: data.device.is_active,
+            volumePercent: data.device.volume_percent,
+          }
+        : undefined,
+    };
   }
 
   async getDevices(): Promise<SpotifyDevice[]> {

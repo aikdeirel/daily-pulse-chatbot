@@ -1,8 +1,8 @@
+import { redirect } from "next/navigation";
 import { auth } from "@/app/(auth)/auth";
 import { saveOAuthConnection } from "@/lib/db/queries";
-import { redirect } from "next/navigation";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const session = await auth();

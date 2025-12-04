@@ -63,7 +63,7 @@ export const webFetch = tool({
       // Limit text response to prevent context overflow
       const truncatedText =
         text.length > 50000
-          ? text.substring(0, 50000) + "\n...[truncated]"
+          ? `${text.substring(0, 50000)}\n...[truncated]`
           : text;
 
       return {

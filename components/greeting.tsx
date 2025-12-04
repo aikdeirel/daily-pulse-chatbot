@@ -15,7 +15,7 @@ export const Greeting = () => {
       >
         <BotIcon size={40} />
       </motion.div>
-      
+
       <motion.div
         animate={{ opacity: 1, y: 0 }}
         className="mb-3 font-bold text-3xl md:text-5xl"
@@ -27,7 +27,7 @@ export const Greeting = () => {
           Hey there!
         </span>
       </motion.div>
-      
+
       <motion.div
         animate={{ opacity: 1, y: 0 }}
         className="max-w-md text-lg text-muted-foreground md:text-xl"
@@ -37,7 +37,7 @@ export const Greeting = () => {
       >
         What can I help you with today?
       </motion.div>
-      
+
       <motion.div
         animate={{ opacity: 1 }}
         className="mt-10 h-px w-40 bg-gradient-to-r from-transparent via-orange-500/40 to-transparent"

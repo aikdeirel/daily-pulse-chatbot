@@ -25,8 +25,8 @@ import {
   type DBMessage,
   document,
   message,
-  oauthConnection,
   type OAuthConnection,
+  oauthConnection,
   type Suggestion,
   stream,
   suggestion,
@@ -40,7 +40,10 @@ import { generateHashedPassword } from "./utils";
 // use the Drizzle adapter for Auth.js / NextAuth
 // https://authjs.dev/reference/adapter/drizzle
 
-const client = postgres(process.env.POSTGRES_URL!);
+if (!process.env.POSTGRES_URL) {
+  throw new Error("POSTGRES_URL environment variable is not set");
+}
+const client = postgres(process.env.POSTGRES_URL);
 const db = drizzle(client);
 
 export async function getUser(email: string): Promise<User[]> {

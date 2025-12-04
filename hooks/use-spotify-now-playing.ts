@@ -1,5 +1,5 @@
-import useSWR from "swr";
 import { useCallback, useEffect, useState } from "react";
+import useSWR from "swr";
 
 export interface SpotifyNowPlayingTrack {
   name: string;
@@ -99,7 +99,7 @@ export function useSpotifyNowPlaying() {
       setTimeout(() => mutate(), 500);
 
       return { success: true };
-    } catch (err) {
+    } catch (_err) {
       // Revert optimistic update on error
       mutate(data, false);
       return { success: false, error: "network_error" };

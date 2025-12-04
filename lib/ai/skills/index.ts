@@ -1,5 +1,5 @@
-import * as fs from "fs";
-import * as path from "path";
+import * as fs from "node:fs";
+import * as path from "node:path";
 import matter from "gray-matter";
 
 export interface SkillMetadata {
@@ -90,7 +90,9 @@ export async function loadSkill(skillId: string): Promise<Skill | null> {
         metadata: {
           name: data.name,
           description: data.description,
-          allowedTools: data["allowed-tools"]?.split(",").map((t: string) => t.trim()),
+          allowedTools: data["allowed-tools"]
+            ?.split(",")
+            .map((t: string) => t.trim()),
         },
         content: content.trim(),
         directory: path.join(skillsDir, skillId),
@@ -108,7 +110,7 @@ export async function loadSkill(skillId: string): Promise<Skill | null> {
  */
 export async function loadSkillResource(
   skillId: string,
-  resourcePath: string
+  resourcePath: string,
 ): Promise<string | null> {
   for (const skillsDir of SKILLS_DIRECTORIES) {
     const fullPath = path.join(skillsDir, skillId, resourcePath);
@@ -116,7 +118,7 @@ export async function loadSkillResource(
     // Security: Prevent path traversal
     const normalizedPath = path.normalize(fullPath);
     const skillBaseDir = path.join(skillsDir, skillId);
-    
+
     if (!normalizedPath.startsWith(skillBaseDir)) {
       console.warn(`Path traversal attempt blocked: ${resourcePath}`);
       return null;
@@ -127,7 +129,10 @@ export async function loadSkillResource(
     try {
       return fs.readFileSync(fullPath, "utf-8");
     } catch (error) {
-      console.warn(`Failed to load resource ${resourcePath} from skill ${skillId}:`, error);
+      console.warn(
+        `Failed to load resource ${resourcePath} from skill ${skillId}:`,
+        error,
+      );
     }
   }
 

@@ -20,7 +20,7 @@ export default function Page() {
     login,
     {
       status: "idle",
-    }
+    },
   );
 
   const { update: updateSession } = useSession();
@@ -41,7 +41,7 @@ export default function Page() {
       updateSession();
       router.refresh();
     }
-  }, [state.status]);
+  }, [state.status, router.refresh, updateSession]);
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get("email") as string);

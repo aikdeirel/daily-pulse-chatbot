@@ -6,7 +6,7 @@ import type { getWeather } from "./ai/tools/get-weather";
 import type { requestSuggestions } from "./ai/tools/request-suggestions";
 import type { spotify } from "./ai/tools/spotify";
 import type { updateDocument } from "./ai/tools/update-document";
-import type { useSkill, getSkillResource } from "./ai/tools/use-skill";
+import type { getSkillResource, useSkill } from "./ai/tools/use-skill";
 import type { webFetch } from "./ai/tools/web-fetch";
 import type { Suggestion } from "./db/schema";
 import type { AppUsage } from "./usage";

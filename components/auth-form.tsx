@@ -1,4 +1,5 @@
 import Form from "next/form";
+import { useId } from "react";
 
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -14,12 +15,15 @@ export function AuthForm({
   children: React.ReactNode;
   defaultEmail?: string;
 }) {
+  const emailId = useId();
+  const passwordId = useId();
+
   return (
     <Form action={action} className="flex flex-col gap-4 px-4 sm:px-16">
       <div className="flex flex-col gap-2">
         <Label
           className="font-normal text-zinc-600 dark:text-zinc-400"
-          htmlFor="email"
+          htmlFor={emailId}
         >
           Email Address
         </Label>
@@ -29,7 +33,7 @@ export function AuthForm({
           autoFocus
           className="bg-muted text-md md:text-sm"
           defaultValue={defaultEmail}
-          id="email"
+          id={emailId}
           name="email"
           placeholder="user@acme.com"
           required
@@ -40,14 +44,14 @@ export function AuthForm({
       <div className="flex flex-col gap-2">
         <Label
           className="font-normal text-zinc-600 dark:text-zinc-400"
-          htmlFor="password"
+          htmlFor={passwordId}
         >
           Password
         </Label>
 
         <Input
           className="bg-muted text-md md:text-sm"
-          id="password"
+          id={passwordId}
           name="password"
           required
           type="password"
