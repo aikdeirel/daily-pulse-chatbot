@@ -8,7 +8,8 @@ const withSerwist = withSerwistInit({
 });
 
 const nextConfig: NextConfig = {
-  cacheComponents: true,
+  // Disable cacheComponents to resolve conflict with dynamic route configs
+  cacheComponents: false,
   // Required for Next.js 16+ when @serwist/next adds webpack config
   turbopack: {},
   images: {
