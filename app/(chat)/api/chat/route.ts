@@ -276,7 +276,6 @@ export async function POST(request: Request) {
         const result = streamText({
           model: getLanguageModel(selectedChatModel, webSearchEnabled),
           system: systemPrompt({
-            selectedChatModel,
             requestHints,
             skills: availableSkills,
           }),

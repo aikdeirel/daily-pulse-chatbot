@@ -84,22 +84,18 @@ ${skillList}
 };
 
 export const systemPrompt = ({
-  selectedChatModel,
   requestHints,
   skills = [],
 }: {
-  selectedChatModel: string;
   requestHints: RequestHints;
   skills?: SkillSummary[];
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
   const skillsPrompt = getSkillsPrompt(skills);
 
-  if (selectedChatModel === "chat-model-reasoning") {
-    return `${regularPrompt}\n\n${requestPrompt}${skillsPrompt}`;
-  }
-
-  return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}${skillsPrompt}`;
+  // Keep it minimal - modern LLMs understand tools from their descriptions alone.
+  // We rely on the intelligence of the model rather than over-engineering prompts.
+  return `You are a friendly assistant! Keep your responses concise and helpful.${requestPrompt}${skillsPrompt}`;
 };
 
 export const codePrompt = `
