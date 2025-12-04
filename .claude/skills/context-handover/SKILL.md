@@ -1,7 +1,6 @@
----
 name: Context Handover
 description: Create concise handover summary for seamless continuation in new chat session
-version: 1.0.0
+version: 2.0.0
 triggers:
   - handover
   - context summary
@@ -13,66 +12,119 @@ triggers:
 
 # Context Handover Skill
 
-Create a context handover summary for a new chat session.
+Create context handover for new chat session - works for any conversation type.
 
 ## Goal
 
-Enable seamless continuation of work in a fresh chat instance.
+Enable seamless continuation in fresh chat. Works for: projects, research, planning, coding, decisions, etc.
 
 ## Output Structure
 
 Generate summary with exactly these 3 sections:
 
-### 1. [[Current Status]]
+### 1. [[Current Situation]]
 
-- Where we are right now
-- What's working, what's broken
-- Blockers if any
+- Where we are now
+- What's decided/done
+- Open questions/blockers
 
-### 2. [[Core Code/Logic]]
+### 2. [[Key Info]]
 
-- Key snippets decided so far
-- Architecture decisions
-- File paths modified
-- Critical config
+- Important decisions made
+- Critical facts/links/references
+- Names, dates, numbers
+- File paths (if relevant)
+- Key quotes or requirements
 
 ### 3. [[Next Steps]]
 
-- What exactly needs to be done next
+- What needs doing next
 - Priority order
-- Dependencies between tasks
+- Open tasks
 
 ## Style Constraints
 
 - **Extremely concise** - sacrifice grammar for brevity
 - **Telegraphic style** - no filler words
-- Use bullet points, not paragraphs
-- Code snippets: only critical parts, with file paths
+- Bullet points only, no prose
 - Max ~500 words total
+- Include only actionable/critical info
 
-## Example Output
+## Example Outputs
 
+### Example 1: Travel Planning
 ```
-## [[Current Status]]
-- Auth system: DONE, JWT + refresh tokens
-- API routes: 3/5 complete
-- Blocker: DB migration failing on prod
+## [[Current Situation]]
+- Destination: Barcelona, June 15-22
+- Budget: €1500/person, 2 people
+- Flights booked (Lufthansa LH1134)
+- Blocker: hotel not confirmed yet
 
-## [[Core Code/Logic]]
-`/lib/auth.ts` - main auth logic
-`/app/api/auth/[...nextauth]/route.ts` - NextAuth config
-Key decision: using Drizzle ORM, not Prisma
+## [[Key Info]]
+- Must-see: Sagrada Familia, Park Güell, Gothic Quarter
+- Restaurant rec: Cervecería Catalana (from Maria)
+- Hotel shortlist: Hotel Jazz (€120/night), Praktik Rambla (€95/night)
+- Rail pass: €50 for week, covers all metro
 
 ## [[Next Steps]]
-1. Fix DB migration (check connection string)
-2. Complete `/api/users` endpoint
-3. Add rate limiting middleware
+1. Book hotel by tomorrow (prices rise)
+2. Reserve Sagrada Familia tickets (time slot 10am preferred)
+3. Check travel insurance options
+```
+
+### Example 2: Research Task
+```
+## [[Current Situation]]
+- Topic: AI coding assistants comparison
+- Tested: Cursor, Windsurf, Cline, Kilo Code
+- Winner so far: Kilo Code (BYOK + OpenRouter)
+- Still need: pricing breakdown
+
+## [[Key Info]]
+- Cursor: $20/month, proprietary models
+- Windsurf: $15/month, limited free tier
+- Kilo Code: BYOK, transparent costs via OpenRouter
+- Key factor: want cost control + transparency
+- Source: Reddit r/LocalLLaMA thread (Dec 2024)
+
+## [[Next Steps]]
+1. Calculate monthly costs for Kilo Code usage
+2. Test Roo Code as final alternative
+3. Write comparison doc for team
+```
+
+### Example 3: Coding Project
+```
+## [[Current Situation]]
+- Building: Spotify stats dashboard (Next.js + React)
+- Auth: OAuth working, tokens refreshing
+- DB: Supabase connected
+- Blocker: top artists API pagination broken
+
+## [[Key Info]]
+`/lib/spotify.ts` - main API logic
+`/app/api/auth/callback/route.ts` - OAuth handler
+Using: SWR for data fetching, Tailwind CSS
+Bug: only returns 20 artists, need 50
+
+## [[Next Steps]]
+1. Fix pagination in getTopArtists()
+2. Add caching layer (Redis?)
+3. Deploy to Vercel
 ```
 
 ## When to Use
 
-- User asks to "save progress"
-- Switching to new chat due to context limits
+- Context window filling up
 - End of work session
-- Before major refactoring
-- Handing off to another person/session
+- Before switching topics
+- User asks to "save progress"
+- Handing off to someone else
+- Major topic shift coming
+
+## Important
+
+- Adapt sections to conversation type
+- Skip irrelevant sections (e.g., no code paths for travel planning)
+- Focus on what's needed to continue seamlessly
+- Include only info that would be hard to reconstruct
