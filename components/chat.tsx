@@ -3,9 +3,8 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
-import { unstable_serialize } from "swr/infinite";
 import { ChatHeader } from "@/components/chat-header";
 import {
   AlertDialog,
@@ -29,7 +28,6 @@ import { Artifact } from "./artifact";
 import { useDataStream } from "./data-stream-provider";
 import { Messages } from "./messages";
 import { MultimodalInput } from "./multimodal-input";
-import { getChatHistoryPaginationKey } from "./sidebar-history";
 import { toast } from "./toast";
 import type { VisibilityType } from "./visibility-selector";
 
@@ -57,6 +55,14 @@ export function Chat({
 
   const { mutate } = useSWRConfig();
   const { setDataStream } = useDataStream();
+
+  const revalidateSidebarHistory = useCallback(() => {
+    return mutate(
+      (key) => typeof key === "string" && key.startsWith("$inf$/api/history"),
+      undefined,
+      { revalidate: true },
+    );
+  }, [mutate]);
 
   const [input, setInput] = useState<string>("");
   const [usage, setUsage] = useState<AppUsage | undefined>(initialLastContext);
@@ -108,9 +114,22 @@ export function Chat({
       if (dataPart.type === "data-usage") {
         setUsage(dataPart.data);
       }
+
+      const eventType = (dataPart as { type?: string }).type;
+
+      if (eventType === "data-chat-created") {
+        // Immediate refresh to show "New Chat" in sidebar
+        revalidateSidebarHistory();
+        // Delayed refresh to catch the generated title (title gen takes ~2-3 sec)
+        setTimeout(revalidateSidebarHistory, 4000);
+      }
+
+      if (eventType === "data-chat-title-updated") {
+        revalidateSidebarHistory();
+      }
     },
     onFinish: () => {
-      mutate(unstable_serialize(getChatHistoryPaginationKey));
+      revalidateSidebarHistory();
     },
     onError: (error) => {
       if (error instanceof ChatSDKError) {

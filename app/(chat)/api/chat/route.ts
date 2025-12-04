@@ -40,6 +40,7 @@ import {
   saveChat,
   saveMessages,
   updateChatLastContextById,
+  updateChatTitleById,
 } from "@/lib/db/queries";
 import type { DBMessage } from "@/lib/db/schema";
 import { ChatSDKError } from "@/lib/errors";
@@ -139,6 +140,7 @@ export async function POST(request: Request) {
 
     const chat = await getChatById({ id });
     let messagesFromDb: DBMessage[] = [];
+    let isNewChat = false;
 
     if (chat) {
       if (chat.userId !== session.user.id) {
@@ -147,14 +149,13 @@ export async function POST(request: Request) {
       // Only fetch messages if chat already exists
       messagesFromDb = await getMessagesByChatId({ id });
     } else {
-      const title = await generateTitleFromUserMessage({
-        message,
-      });
-
+      isNewChat = true;
+      // Create chat immediately with temporary title to avoid blocking
+      // Title will be generated asynchronously after streaming starts
       await saveChat({
         id,
         userId: session.user.id,
-        title,
+        title: "New Chat",
         visibility: selectedVisibilityType,
       });
       // New chat - no need to fetch messages, it's empty
@@ -194,6 +195,42 @@ export async function POST(request: Request) {
 
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
+        // Notify client immediately that a new chat was created
+        // so the sidebar can be updated optimistically
+        if (isNewChat) {
+          dataStream.write({
+            type: "data-chat-created",
+            data: { id, title: "New Chat" },
+          });
+
+          const titleGenerationPromise = (async () => {
+            try {
+              console.log(
+                "DEBUG: Starting background title generation for chat:",
+                id,
+              );
+              const title = await generateTitleFromUserMessage({ message });
+              console.log("DEBUG: Generated title:", title);
+              await updateChatTitleById({ chatId: id, title });
+              console.log("DEBUG: Title updated successfully");
+              dataStream.write({
+                type: "data-chat-title-updated",
+                data: { id, title },
+              });
+            } catch (err) {
+              console.warn("Failed to generate/update chat title:", err);
+            }
+          })();
+
+          after(async () => {
+            try {
+              await titleGenerationPromise;
+            } catch (err) {
+              console.warn("Title generation promise failed:", err);
+            }
+          });
+        }
+
         // Always define all tools (including skill tools)
         // Skills are discovered at runtime, tools are always available
         const tools = {
