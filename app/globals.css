@@ -462,3 +462,36 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Mobile keyboard fix - KISS solution */
+@layer utilities {
+  /* Ensure the main chat container doesn't get hidden by keyboard */
+  .keyboard-aware-container {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Add safe area padding for mobile keyboards */
+  .mobile-keyboard-safe {
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+  }
+
+  /* Ensure input area stays visible */
+  .keyboard-input-fix {
+    position: relative;
+    z-index: 10;
+    transition: padding-bottom 0.3s ease;
+  }
+
+  /* Mobile-specific adjustments */
+  @media (hover: none) and (pointer: coarse) {
+    .keyboard-aware-container {
+      height: 100dvh;
+    }
+
+    .mobile-keyboard-safe {
+      padding-bottom: env(safe-area-inset-bottom, 60px);
+    }
+  }
+}
