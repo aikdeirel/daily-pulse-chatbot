@@ -27,7 +27,8 @@ export const entitlementsByUserType: Record<UserType, Entitlements> = {
       "gpt-oss-20b-free",
       "gemma-3-27b-free",
       "glm-4.5-air-free",
-      "qwen3-coder-free",
+      "mistral-small-3.1-24b-instruct-free",
+      "mistral-medium-3.1",
     ],
   },
 
@@ -51,7 +52,8 @@ export const entitlementsByUserType: Record<UserType, Entitlements> = {
       "gpt-oss-20b-free",
       "gemma-3-27b-free",
       "glm-4.5-air-free",
-      "qwen3-coder-free",
+      "mistral-small-3.1-24b-instruct-free",
+      "mistral-medium-3.1",
     ],
   },
 

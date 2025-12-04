@@ -26,7 +26,9 @@ const modelIdToOpenRouter: Record<string, string> = {
   "claude-sonnet-4.5-reasoning": "anthropic/claude-sonnet-4.5",
   "gemma-3-27b-free": "google/gemma-3-27b-it:free",
   "glm-4.5-air-free": "z-ai/glm-4.5-air:free",
-  "qwen3-coder-free": "qwen/qwen3-coder:free",
+  "mistral-small-3.1-24b-instruct-free":
+    "mistralai/mistral-small-3.1-24b-instruct:free",
+  "mistral-medium-3.1": "mistralai/mistral-medium-3.1",
   "title-model": "openai/gpt-5-nano",
   "artifact-model": "anthropic/claude-haiku-4.5",
 };
@@ -147,8 +149,11 @@ export const myProvider = isTestEnvironment
         // Z-AI models
         "glm-4.5-air-free": openrouter("z-ai/glm-4.5-air:free"),
 
-        // X-AI models
-        "qwen3-coder-free": openrouter("qwen/qwen3-coder:free"),
+        // Mistral models
+        "mistral-small-3.1-24b-instruct-free": openrouter(
+          "mistralai/mistral-small-3.1-24b-instruct:free",
+        ),
+        "mistral-medium-3.1": openrouter("mistralai/mistral-medium-3.1"),
 
         // Special purpose models
         "title-model": openrouter("openai/gpt-5-nano"),
