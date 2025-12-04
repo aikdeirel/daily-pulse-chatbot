@@ -335,7 +335,7 @@ function PureMultimodalInput({
             ))}
           </div>
         )}
-        <div className="flex flex-row items-start gap-1 sm:gap-2">
+        <div className="flex flex-row items-start gap-1 sm:gap-2 mb-3">
           <PromptInputTextarea
             autoFocus
             className="grow resize-none border-0! border-none! bg-transparent py-1 text-base outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-scrollbar]:hidden"
