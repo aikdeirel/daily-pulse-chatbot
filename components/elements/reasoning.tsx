@@ -10,7 +10,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import { ThinkingMessage } from "../message";
+import { ThinkingText } from "../message";
 import { Response } from "./response";
 
 type ReasoningContextValue = {
@@ -128,7 +128,10 @@ export const ReasoningTrigger = memo(
         {children ?? (
           <>
             {isStreaming || duration === 0 ? (
-              <ThinkingMessage />
+              <>
+                <BrainIcon className="size-4 text-orange-600 dark:text-orange-400" />
+                <ThinkingText />
+              </>
             ) : (
               <>
                 <BrainIcon className="size-4 text-orange-600 dark:text-orange-400" />
