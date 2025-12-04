@@ -95,7 +95,6 @@ export async function POST(request: Request) {
 
   try {
     const json = await request.json();
-    console.log("DEBUG: Received request body:", JSON.stringify(json, null, 2));
     requestBody = postRequestBodySchema.parse(json);
   } catch (error) {
     console.error("DEBUG: Schema validation failed:", error);
@@ -116,10 +115,6 @@ export async function POST(request: Request) {
       selectedVisibilityType: VisibilityType;
       webSearchEnabled: boolean;
     } = requestBody;
-
-    console.log(
-      `DEBUG: Processing chat request with model: ${selectedChatModel}`,
-    );
 
     const session = await auth();
 
@@ -205,14 +200,8 @@ export async function POST(request: Request) {
 
           const titleGenerationPromise = (async () => {
             try {
-              console.log(
-                "DEBUG: Starting background title generation for chat:",
-                id,
-              );
               const title = await generateTitleFromUserMessage({ message });
-              console.log("DEBUG: Generated title:", title);
               await updateChatTitleById({ chatId: id, title });
-              console.log("DEBUG: Title updated successfully");
               dataStream.write({
                 type: "data-chat-title-updated",
                 data: { id, title },
@@ -262,7 +251,6 @@ export async function POST(request: Request) {
 
         if (modelsWithoutToolSupport.includes(selectedChatModel)) {
           activeTools = [];
-          console.log(`DEBUG: Disabling tools for model: ${selectedChatModel}`);
         } else if (availableSkills.length > 0) {
           activeTools = [
             "getWeather",
@@ -285,7 +273,6 @@ export async function POST(request: Request) {
           ];
         }
 
-        console.log(`DEBUG: Getting language model for: ${selectedChatModel}`);
         const result = streamText({
           model: getLanguageModel(selectedChatModel, webSearchEnabled),
           system: systemPrompt({

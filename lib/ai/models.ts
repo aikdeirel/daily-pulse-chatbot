@@ -78,8 +78,8 @@ export const chatModels: ChatModel[] = [
     description: "Free: Z-AI's GLM-4.5 Air model",
   },
   {
-    id: "grok-4.1-fast-free",
-    name: "Grok-4.1 Fast",
-    description: "Free: X-AI's Grok-4.1 Fast model with tool support",
+    id: "qwen3-coder-free",
+    name: "Qwen3 Coder",
+    description: "Free: Qwen's Qwen3 Coder model with tool support",
   },
 ];

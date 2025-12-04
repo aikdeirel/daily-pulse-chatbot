@@ -26,7 +26,7 @@ const modelIdToOpenRouter: Record<string, string> = {
   "claude-sonnet-4.5-reasoning": "anthropic/claude-sonnet-4.5",
   "gemma-3-27b-free": "google/gemma-3-27b-it:free",
   "glm-4.5-air-free": "z-ai/glm-4.5-air:free",
-  "grok-4.1-fast-free": "x-ai/grok-4.1-fast:free",
+  "qwen3-coder-free": "qwen/qwen3-coder:free",
   "title-model": "openai/gpt-5-nano",
   "artifact-model": "anthropic/claude-haiku-4.5",
 };
@@ -55,7 +55,6 @@ const WEB_SEARCH_PLUGIN = {
  * Get a language model with optional web search enabled
  */
 export function getLanguageModel(modelId: string, webSearchEnabled = false) {
-  console.log(`DEBUG: getLanguageModel called with modelId: ${modelId}`);
   if (isTestEnvironment) {
     const {
       chatModel,
@@ -73,9 +72,6 @@ export function getLanguageModel(modelId: string, webSearchEnabled = false) {
   }
 
   const openRouterModelId = modelIdToOpenRouter[modelId];
-  console.log(
-    `DEBUG: OpenRouter model mapping: ${modelId} -> ${openRouterModelId}`,
-  );
   if (!openRouterModelId) {
     throw new Error(`Unknown model ID: ${modelId}`);
   }
@@ -152,7 +148,7 @@ export const myProvider = isTestEnvironment
         "glm-4.5-air-free": openrouter("z-ai/glm-4.5-air:free"),
 
         // X-AI models
-        "grok-4.1-fast-free": openrouter("x-ai/grok-4.1-fast:free"),
+        "qwen3-coder-free": openrouter("qwen/qwen3-coder:free"),
 
         // Special purpose models
         "title-model": openrouter("openai/gpt-5-nano"),

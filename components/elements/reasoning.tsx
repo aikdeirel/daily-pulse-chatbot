@@ -10,6 +10,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
+import { ThinkingMessage } from "../message";
 import { Response } from "./response";
 
 type ReasoningContextValue = {
@@ -126,22 +127,22 @@ export const ReasoningTrigger = memo(
       >
         {children ?? (
           <>
-            <BrainIcon className="size-4 text-orange-600 dark:text-orange-400" />
             {isStreaming || duration === 0 ? (
-              <p className="font-medium text-orange-700 dark:text-orange-300">
-                Thinking...
-              </p>
+              <ThinkingMessage />
             ) : (
-              <p className="font-medium text-orange-700 dark:text-orange-300">
-                Thought for {duration}s
-              </p>
+              <>
+                <BrainIcon className="size-4 text-orange-600 dark:text-orange-400" />
+                <p className="font-medium text-orange-700 dark:text-orange-300">
+                  Thought for {duration}s
+                </p>
+                <ChevronDownIcon
+                  className={cn(
+                    "size-4 text-orange-600 transition-transform dark:text-orange-400",
+                    isOpen ? "rotate-180" : "rotate-0",
+                  )}
+                />
+              </>
             )}
-            <ChevronDownIcon
-              className={cn(
-                "size-4 text-orange-600 transition-transform dark:text-orange-400",
-                isOpen ? "rotate-180" : "rotate-0",
-              )}
-            />
           </>
         )}
       </CollapsibleTrigger>
