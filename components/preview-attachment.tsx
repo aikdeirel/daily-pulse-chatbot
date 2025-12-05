@@ -28,6 +28,10 @@ export const PreviewAttachment = ({
           src={url}
           width={64}
         />
+      ) : contentType === "application/pdf" ? (
+        <div className="flex size-full items-center justify-center text-muted-foreground text-xs">
+          PDF
+        </div>
       ) : (
         <div className="flex size-full items-center justify-center text-muted-foreground text-xs">
           File
