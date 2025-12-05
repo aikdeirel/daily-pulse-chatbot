@@ -35,6 +35,10 @@ import {
   spotifyTracks,
   spotifyUser,
 } from "@/lib/ai/tools/spotify";
+import {
+  getSpotifyToolNamesForGroups,
+  type SpotifyToolGroupId,
+} from "@/lib/ai/tools/spotify/groups";
 import { updateDocument } from "@/lib/ai/tools/update-document";
 import { getSkillResource, useSkill } from "@/lib/ai/tools/use-skill";
 import { webFetch } from "@/lib/ai/tools/web-fetch";
@@ -116,12 +120,14 @@ export async function POST(request: Request) {
       selectedChatModel,
       selectedVisibilityType,
       webSearchEnabled,
+      spotifyToolGroups,
     }: {
       id: string;
       message: ChatMessage;
       selectedChatModel: ChatModel["id"];
       selectedVisibilityType: VisibilityType;
       webSearchEnabled: boolean;
+      spotifyToolGroups: SpotifyToolGroupId[];
     } = requestBody;
 
     const session = await auth();
@@ -230,7 +236,7 @@ export async function POST(request: Request) {
 
         // Always define all tools (including skill tools)
         // Skills are discovered at runtime, tools are always available
-        const tools = {
+        const baseTools = {
           getWeather,
           createDocument: createDocument({ session, dataStream }),
           updateDocument: updateDocument({ session, dataStream }),
@@ -242,7 +248,9 @@ export async function POST(request: Request) {
           useSkill: useSkill({ availableSkills }),
           getSkillResource: getSkillResource({ availableSkills }),
           webFetch,
-          // Spotify tools (separated by domain)
+        };
+
+        const spotifyTools = {
           spotifyAlbums: spotifyAlbums({ userId: session.user.id }),
           spotifyArtists: spotifyArtists({ userId: session.user.id }),
           spotifyPlayback: spotifyPlayback({ userId: session.user.id }),
@@ -250,6 +258,23 @@ export async function POST(request: Request) {
           spotifyPlaylists: spotifyPlaylists({ userId: session.user.id }),
           spotifyTracks: spotifyTracks({ userId: session.user.id }),
           spotifyUser: spotifyUser({ userId: session.user.id }),
+        };
+
+        const selectedSpotifyToolNames = getSpotifyToolNamesForGroups(
+          spotifyToolGroups,
+        ) as (keyof typeof spotifyTools)[];
+
+        const selectedSpotifyTools: Partial<typeof spotifyTools> = {};
+        for (const toolName of selectedSpotifyToolNames) {
+          const tool = spotifyTools[toolName];
+          if (tool) {
+            selectedSpotifyTools[toolName] = tool;
+          }
+        }
+
+        const tools = {
+          ...baseTools,
+          ...selectedSpotifyTools,
         };
 
         // Determine which tools to activate
@@ -264,37 +289,30 @@ export async function POST(request: Request) {
           "gpt-oss-20b-free",
         ];
 
-        const spotifyTools = [
-          "spotifyAlbums",
-          "spotifyArtists",
-          "spotifyPlayback",
-          "spotifyQueue",
-          "spotifyPlaylists",
-          "spotifyTracks",
-          "spotifyUser",
-        ] as ToolName[];
+        const baseActiveTools: ToolName[] = [
+          "getWeather",
+          "createDocument",
+          "updateDocument",
+          "requestSuggestions",
+          "webFetch",
+        ];
+
+        const skillActiveTools: ToolName[] =
+          availableSkills.length > 0
+            ? (["useSkill", "getSkillResource"] as ToolName[])
+            : [];
+
+        const spotifyActiveTools = selectedSpotifyToolNames
+          .filter((toolName) => toolName in selectedSpotifyTools)
+          .map((toolName) => toolName as ToolName);
 
         if (modelsWithoutToolSupport.includes(selectedChatModel)) {
           activeTools = [];
-        } else if (availableSkills.length > 0) {
-          activeTools = [
-            "getWeather",
-            "createDocument",
-            "updateDocument",
-            "requestSuggestions",
-            "useSkill",
-            "getSkillResource",
-            "webFetch",
-            ...spotifyTools,
-          ];
         } else {
           activeTools = [
-            "getWeather",
-            "createDocument",
-            "updateDocument",
-            "requestSuggestions",
-            "webFetch",
-            ...spotifyTools,
+            ...baseActiveTools,
+            ...skillActiveTools,
+            ...spotifyActiveTools,
           ];
         }
 
@@ -303,6 +321,7 @@ export async function POST(request: Request) {
           system: systemPrompt({
             requestHints,
             skills: availableSkills,
+            spotifyGroups: spotifyToolGroups,
           }),
           messages: convertToModelMessages(uiMessages),
           stopWhen: stepCountIs(5),

@@ -17,6 +17,7 @@ import { imageArtifact } from "@/artifacts/image/client";
 import { sheetArtifact } from "@/artifacts/sheet/client";
 import { textArtifact } from "@/artifacts/text/client";
 import { useArtifact } from "@/hooks/use-artifact";
+import type { SpotifyToolGroupId } from "@/lib/ai/tools/spotify/groups";
 import type { Document, Vote } from "@/lib/db/schema";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import { fetcher } from "@/lib/utils";
@@ -70,6 +71,8 @@ function PureArtifact({
   selectedModelId,
   webSearchEnabled,
   onWebSearchToggle,
+  spotifyToolGroups,
+  onSpotifyToolGroupsChange,
 }: {
   chatId: string;
   input: string;
@@ -88,6 +91,8 @@ function PureArtifact({
   selectedModelId: string;
   webSearchEnabled: boolean;
   onWebSearchToggle: (enabled: boolean) => void;
+  spotifyToolGroups: SpotifyToolGroupId[];
+  onSpotifyToolGroupsChange: (groups: SpotifyToolGroupId[]) => void;
 }) {
   const { artifact, setArtifact, metadata, setMetadata } = useArtifact();
 
@@ -351,6 +356,8 @@ function PureArtifact({
                     stop={stop}
                     webSearchEnabled={webSearchEnabled}
                     onWebSearchToggle={onWebSearchToggle}
+                    spotifyToolGroups={spotifyToolGroups}
+                    onSpotifyToolGroupsChange={onSpotifyToolGroupsChange}
                   />
                 </div>
               </div>
@@ -528,6 +535,9 @@ export const Artifact = memo(PureArtifact, (prevProps, nextProps) => {
     return false;
   }
   if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType) {
+    return false;
+  }
+  if (!equal(prevProps.spotifyToolGroups, nextProps.spotifyToolGroups)) {
     return false;
   }
 

@@ -5,10 +5,15 @@ import { DefaultChatTransport } from "ai";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
+import { useLocalStorage } from "usehooks-ts";
 import { ChatHeader } from "@/components/chat-header";
 import { useArtifactSelector } from "@/hooks/use-artifact";
 import { useAutoResume } from "@/hooks/use-auto-resume";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
+import {
+  SPOTIFY_TOOL_GROUP_STORAGE_KEY,
+  type SpotifyToolGroupId,
+} from "@/lib/ai/tools/spotify/groups";
 import type { Vote } from "@/lib/db/schema";
 import { ChatSDKError } from "@/lib/errors";
 import type { Attachment, ChatMessage } from "@/lib/types";
@@ -58,8 +63,12 @@ export function Chat({
   const [usage, setUsage] = useState<AppUsage | undefined>(initialLastContext);
   const [currentModelId, setCurrentModelId] = useState(initialChatModel);
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
+  const [spotifyToolGroups, setSpotifyToolGroups] = useLocalStorage<
+    SpotifyToolGroupId[]
+  >(SPOTIFY_TOOL_GROUP_STORAGE_KEY, []);
   const currentModelIdRef = useRef(currentModelId);
   const webSearchEnabledRef = useRef(webSearchEnabled);
+  const spotifyToolGroupsRef = useRef<SpotifyToolGroupId[]>(spotifyToolGroups);
 
   useEffect(() => {
     currentModelIdRef.current = currentModelId;
@@ -68,6 +77,10 @@ export function Chat({
   useEffect(() => {
     webSearchEnabledRef.current = webSearchEnabled;
   }, [webSearchEnabled]);
+
+  useEffect(() => {
+    spotifyToolGroupsRef.current = spotifyToolGroups;
+  }, [spotifyToolGroups]);
 
   const {
     messages,
@@ -93,6 +106,7 @@ export function Chat({
             selectedChatModel: currentModelIdRef.current,
             selectedVisibilityType: visibilityType,
             webSearchEnabled: webSearchEnabledRef.current,
+            spotifyToolGroups: spotifyToolGroupsRef.current,
             ...request.body,
           },
         };
@@ -222,6 +236,8 @@ export function Chat({
               setAttachments={setAttachments}
               setInput={setInput}
               setMessages={setMessages}
+              spotifyToolGroups={spotifyToolGroups}
+              onSpotifyToolGroupsChange={setSpotifyToolGroups}
               status={status}
               stop={stop}
               usage={usage}
@@ -250,6 +266,8 @@ export function Chat({
         votes={votes}
         webSearchEnabled={webSearchEnabled}
         onWebSearchToggle={setWebSearchEnabled}
+        spotifyToolGroups={spotifyToolGroups}
+        onSpotifyToolGroupsChange={setSpotifyToolGroups}
       />
     </>
   );

@@ -1,6 +1,8 @@
 import type { Geo } from "@vercel/functions";
 import type { ArtifactKind } from "@/components/artifact";
 import type { SkillSummary } from "@/lib/ai/skills";
+import type { SpotifyToolGroupId } from "@/lib/ai/tools/spotify/groups";
+import { getSpotifyPromptForGroups } from "@/lib/ai/tools/spotify/groups";
 
 export const artifactsPrompt = `
 Artifacts is a special user interface mode that helps users with writing, editing, and other content creation tasks. When artifact is open, it is on the right side of the screen, while the conversation is on the left side. When creating or updating documents, changes are reflected in real-time on the artifacts and visible to the user.
@@ -86,18 +88,21 @@ ${skillList}
 export const systemPrompt = ({
   requestHints,
   skills = [],
+  spotifyGroups = [],
 }: {
   requestHints: RequestHints;
   skills?: SkillSummary[];
+  spotifyGroups?: SpotifyToolGroupId[];
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
   const skillsPrompt = getSkillsPrompt(skills);
+  const spotifyPrompt = getSpotifyPromptForGroups(spotifyGroups);
 
   // Keep it minimal - modern LLMs understand tools from their descriptions alone.
   // We rely on the intelligence of the model rather than over-engineering prompts.
   return `${regularPrompt}
 
-${requestPrompt}${skillsPrompt}`;
+${requestPrompt}${skillsPrompt}${spotifyPrompt}`;
 };
 
 export const codePrompt = `

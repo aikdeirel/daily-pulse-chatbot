@@ -249,6 +249,51 @@ export const LogoAnthropic = () => {
   );
 };
 
+export const SpotifyIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      aria-hidden="true"
+      height={size}
+      role="img"
+      viewBox="0 0 16 16"
+      width={size}
+    >
+      <circle
+        cx="8"
+        cy="8"
+        fill="none"
+        r="6.5"
+        stroke="currentColor"
+        strokeWidth="1.2"
+      />
+      <path
+        d="M4.25 6.5c2.35-.95 5.35-.66 7.5.64"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeOpacity="0.9"
+        strokeWidth="1.2"
+      />
+      <path
+        d="M4.7 8.65c1.97-.67 4.25-.45 5.8.41"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeOpacity="0.8"
+        strokeWidth="1.05"
+      />
+      <path
+        d="M5.1 10.7c1.25-.42 2.64-.3 3.6.27"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeOpacity="0.7"
+        strokeWidth="0.95"
+      />
+    </svg>
+  );
+};
+
 export const RouteIcon = ({ size = 16 }: { size?: number }) => {
   return (
     <svg

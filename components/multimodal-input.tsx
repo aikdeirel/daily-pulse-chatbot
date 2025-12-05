@@ -21,6 +21,7 @@ import { useLocalStorage, useWindowSize } from "usehooks-ts";
 import { saveChatModelAsCookie } from "@/app/(chat)/actions";
 import { SelectItem } from "@/components/ui/select";
 import { chatModels } from "@/lib/ai/models";
+import type { SpotifyToolGroupId } from "@/lib/ai/tools/spotify/groups";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { cn } from "@/lib/utils";
@@ -43,6 +44,7 @@ import {
   StopIcon,
 } from "./icons";
 import { PreviewAttachment } from "./preview-attachment";
+import { SpotifyToolSelector } from "./spotify-tool-selector";
 import { SuggestedActions } from "./suggested-actions";
 import { Button } from "./ui/button";
 import type { VisibilityType } from "./visibility-selector";
@@ -65,6 +67,8 @@ function PureMultimodalInput({
   usage,
   webSearchEnabled,
   onWebSearchToggle,
+  spotifyToolGroups,
+  onSpotifyToolGroupsChange,
 }: {
   chatId: string;
   input: string;
@@ -83,6 +87,8 @@ function PureMultimodalInput({
   usage?: AppUsage;
   webSearchEnabled: boolean;
   onWebSearchToggle: (enabled: boolean) => void;
+  spotifyToolGroups: SpotifyToolGroupId[];
+  onSpotifyToolGroupsChange: (groups: SpotifyToolGroupId[]) => void;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -358,6 +364,11 @@ function PureMultimodalInput({
               selectedModelId={selectedModelId}
               status={status}
             />
+            <SpotifyToolSelector
+              disabled={status !== "ready"}
+              onChange={onSpotifyToolGroupsChange}
+              selectedGroupIds={spotifyToolGroups}
+            />
             <WebSearchToggle
               enabled={webSearchEnabled}
               onToggle={onWebSearchToggle}
@@ -406,6 +417,9 @@ export const MultimodalInput = memo(
       return false;
     }
     if (prevProps.webSearchEnabled !== nextProps.webSearchEnabled) {
+      return false;
+    }
+    if (!equal(prevProps.spotifyToolGroups, nextProps.spotifyToolGroups)) {
       return false;
     }
 

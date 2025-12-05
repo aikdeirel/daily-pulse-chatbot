@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  type SpotifyToolGroupId,
+  spotifyToolGroupIds,
+} from "@/lib/ai/tools/spotify/groups";
 
 const textPartSchema = z.object({
   type: z.enum(["text"]),
@@ -41,6 +45,10 @@ export const postRequestBodySchema = z.object({
   ]),
   selectedVisibilityType: z.enum(["public", "private"]),
   webSearchEnabled: z.boolean().optional().default(false),
+  spotifyToolGroups: z
+    .array(z.enum(spotifyToolGroupIds))
+    .optional()
+    .default([] as SpotifyToolGroupId[]),
 });
 
 export type PostRequestBody = z.infer<typeof postRequestBodySchema>;

@@ -8,6 +8,16 @@ This document describes the Spotify integration for AI agents, providing guidanc
 
 ## Quick Reference for AI Agents
 
+### Tool Group Selector
+
+The chat UI now exposes a "Spotify" button next to the web search toggle. When clicked, users can enable any of three tool groups (persisted per browser, defaulting to disabled):
+
+1. **Discovery & Research** – `spotifyArtists`, `spotifyAlbums`, `spotifyTracks`, `spotifyUser`
+2. **Playback Control** – `spotifyPlayback`
+3. **Playlists & Queue** – `spotifyPlaylists`, `spotifyQueue`
+
+Only the enabled groups are injected into the system prompt and made available as tools, keeping context compact.
+
 ### Available Tools & Actions
 
 The Spotify integration is split into 7 specialized tools:
