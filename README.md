@@ -6,7 +6,7 @@
   [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
   [![Next.js](https://img.shields.io/badge/Next.js-16.0.7-black)](https://nextjs.org)
   [![React](https://img.shields.io/badge/React-19.2.1-61dafb)](https://react.dev)
-  [![Security](https://img.shields.io/badge/CVE--2025--55182-Patched-green.svg)](SECURITY.md)
+  [![Security](https://img.shields.io/badge/Security-Patched-green.svg)](SECURITY.md)
 </div>
 
 ---

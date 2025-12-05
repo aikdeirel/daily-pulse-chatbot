@@ -26,7 +26,7 @@ A critical remote code execution (RCE) vulnerability was discovered in React Ser
 
 The vulnerability exists in React Server Components implementation where specially crafted HTTP requests to Server Function endpoints could lead to unsafe deserialization, allowing remote code execution. The vulnerability affected:
 
-- React versions: 19.0.0, 19.1.0, 19.1.1, and 19.2.0
+- React versions: 19.0.0, 19.1.0, 19.1.1, and 19.2.0 (19.2.0 was the last vulnerable version)
 - Next.js versions: ≥14.3.0-canary.77, ≥15.x, and ≥16.x (prior to patches)
 - React packages: `react-server-dom-parcel`, `react-server-dom-webpack`, `react-server-dom-turbopack`
 
