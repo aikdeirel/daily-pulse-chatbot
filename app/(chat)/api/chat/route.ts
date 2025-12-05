@@ -268,7 +268,7 @@ export async function POST(request: Request) {
         for (const toolName of selectedSpotifyToolNames) {
           const tool = spotifyTools[toolName];
           if (tool) {
-            selectedSpotifyTools[toolName] = tool;
+            (selectedSpotifyTools[toolName] as any) = tool;
           }
         }
 
