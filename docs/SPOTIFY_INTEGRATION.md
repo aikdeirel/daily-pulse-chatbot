@@ -29,7 +29,6 @@ The Spotify integration is split into 7 specialized tools:
 | `get_multiple_artists` | Get multiple artists (max 50) | `artistIds` | No |
 | `get_artist_albums` | Get artist's albums | `artistId` | No |
 | `get_artist_top_tracks` | Get artist's top tracks | `artistId` | No |
-| `get_related_artists` | Get similar artists | `artistId` | No |
 
 **Optional params:** `includeGroups`, `limit`, `offset`, `market`
 
@@ -224,7 +223,7 @@ lib/
 │   └── spotify/
 │       ├── index.ts            # Exports all Spotify tools
 │       ├── spotify-albums.ts   # Album operations (4 actions)
-│       ├── spotify-artists.ts  # Artist operations (5 actions)
+│       ├── spotify-artists.ts  # Artist operations (4 actions)
 │       ├── spotify-playback.ts # Playback control (11 actions)
 │       ├── spotify-queue.ts    # Queue management (2 actions)
 │       ├── spotify-playlists.ts# Playlist operations (8 actions)

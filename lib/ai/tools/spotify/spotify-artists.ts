@@ -14,7 +14,6 @@ export const spotifyArtists = ({ userId }: SpotifyToolProps) =>
 - "get_multiple_artists": Get details of multiple artists (up to 50) by IDs
 - "get_artist_albums": Get albums by an artist
 - "get_artist_top_tracks": Get an artist's top tracks in a market
-- "get_related_artists": Get artists similar to a given artist
 
 All actions work without Spotify Premium.`,
 
@@ -24,13 +23,12 @@ All actions work without Spotify Premium.`,
         "get_multiple_artists",
         "get_artist_albums",
         "get_artist_top_tracks",
-        "get_related_artists",
       ]),
       artistId: z
         .string()
         .optional()
         .describe(
-          "Artist ID (required for get_artist, get_artist_albums, get_artist_top_tracks, get_related_artists)",
+          "Artist ID (required for get_artist, get_artist_albums, get_artist_top_tracks)",
         ),
       artistIds: z
         .array(z.string())
@@ -140,17 +138,6 @@ All actions work without Spotify Premium.`,
               market || "US",
             );
             return { action: "get_artist_top_tracks", artistId, tracks };
-          }
-
-          case "get_related_artists": {
-            if (!artistId) {
-              return {
-                error: "missing_artist_id",
-                message: "Artist ID is required for get_related_artists",
-              };
-            }
-            const artists = await service.getRelatedArtists(artistId);
-            return { action: "get_related_artists", artistId, artists };
           }
 
           default:

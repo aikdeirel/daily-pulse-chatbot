@@ -5,7 +5,7 @@ description: Music news and recommendations based on Spotify listening history. 
 
 # Music Discover
 
-Personalized music news and recommendations using Spotify data and related artists.
+Personalized music news and recommendations using Spotify data and listening history.
 
 **TOOL RESTRICTION:** Never use the `webFetch` tool for web searching. Use the model's built-in web search if available.
 
@@ -19,11 +19,10 @@ Use `spotifyUser` tool:
 
 **If Spotify not connected** (error: `"not_connected"`): Tell user to connect Spotify from the sidebar menu, then skip to Step 3 with generic recommendations.
 
-### Step 2: Find Similar Artists & New Releases
+### Step 2: Find New Releases
 
 Use `spotifyArtists` tool on top 2-3 artists:
-- `get_related_artists` → algorithmically similar artists
-- `get_artist_albums` (includeGroups: `["album", "single"]`, limit: 5) → recent releases from related artists
+- `get_artist_albums` (includeGroups: `["album", "single"]`, limit: 5) → recent releases from favorite artists
 
 ### Step 3: Search for News
 
@@ -45,10 +44,9 @@ Skip the news section if no relevant news found.
 
 Provide 3-5 recommendations based on:
 
-1. **Related artists** from Spotify's `get_related_artists` data
-2. **New releases** from related artists (from Step 2)
-3. **Deep cuts** from known artists (lesser-known albums)
-4. **Genre exploration** based on top artists' genres
+1. **New releases** from favorite artists (from Step 2)
+2. **Deep cuts** from known artists (lesser-known albums)
+3. **Genre exploration** based on top artists' genres
 
 Tailor to context if specified (e.g., "long train ride" → longer, atmospheric albums).
 

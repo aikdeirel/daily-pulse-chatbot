@@ -554,9 +554,7 @@ const PurePreviewMessage = ({
                         ? "Artist Albums"
                         : action === "get_artist_top_tracks"
                           ? "Artist Top Tracks"
-                          : action === "get_related_artists"
-                            ? "Related Artists"
-                            : "Artists";
+                          : "Artists";
               } else if (type === "tool-spotifyPlayback") {
                 title =
                   action === "get_current_playback"

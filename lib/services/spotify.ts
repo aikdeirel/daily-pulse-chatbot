@@ -784,22 +784,6 @@ export class SpotifyService {
     }));
   }
 
-  async getRelatedArtists(artistId: string): Promise<SpotifyArtist[]> {
-    const data = await this.apiCall<{ artists: any[] }>(
-      `/artists/${artistId}/related-artists`,
-    );
-    return data.artists.map((artist) => ({
-      id: artist.id,
-      name: artist.name,
-      genres: artist.genres,
-      images: artist.images,
-      popularity: artist.popularity,
-      followers: artist.followers?.total || 0,
-      uri: artist.uri,
-      externalUrl: artist.external_urls?.spotify,
-    }));
-  }
-
   async seekToPosition(
     positionMs: number,
     deviceId?: string,
