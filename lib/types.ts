@@ -4,7 +4,15 @@ import type { ArtifactKind } from "@/components/artifact";
 import type { createDocument } from "./ai/tools/create-document";
 import type { getWeather } from "./ai/tools/get-weather";
 import type { requestSuggestions } from "./ai/tools/request-suggestions";
-import type { spotify } from "./ai/tools/spotify";
+import type {
+  spotifyAlbums,
+  spotifyArtists,
+  spotifyPlayback,
+  spotifyPlaylists,
+  spotifyQueue,
+  spotifyTracks,
+  spotifyUser,
+} from "./ai/tools/spotify";
 import type { updateDocument } from "./ai/tools/update-document";
 import type { getSkillResource, useSkill } from "./ai/tools/use-skill";
 import type { webFetch } from "./ai/tools/web-fetch";
@@ -28,7 +36,13 @@ type requestSuggestionsTool = InferUITool<
 type useSkillTool = InferUITool<ReturnType<typeof useSkill>>;
 type getSkillResourceTool = InferUITool<ReturnType<typeof getSkillResource>>;
 type webFetchTool = InferUITool<typeof webFetch>;
-type spotifyTool = InferUITool<ReturnType<typeof spotify>>;
+type spotifyAlbumsTool = InferUITool<ReturnType<typeof spotifyAlbums>>;
+type spotifyArtistsTool = InferUITool<ReturnType<typeof spotifyArtists>>;
+type spotifyPlaybackTool = InferUITool<ReturnType<typeof spotifyPlayback>>;
+type spotifyQueueTool = InferUITool<ReturnType<typeof spotifyQueue>>;
+type spotifyPlaylistsTool = InferUITool<ReturnType<typeof spotifyPlaylists>>;
+type spotifyTracksTool = InferUITool<ReturnType<typeof spotifyTracks>>;
+type spotifyUserTool = InferUITool<ReturnType<typeof spotifyUser>>;
 
 export type ChatTools = {
   getWeather: weatherTool;
@@ -38,7 +52,13 @@ export type ChatTools = {
   useSkill: useSkillTool;
   getSkillResource: getSkillResourceTool;
   webFetch: webFetchTool;
-  spotify: spotifyTool;
+  spotifyAlbums: spotifyAlbumsTool;
+  spotifyArtists: spotifyArtistsTool;
+  spotifyPlayback: spotifyPlaybackTool;
+  spotifyQueue: spotifyQueueTool;
+  spotifyPlaylists: spotifyPlaylistsTool;
+  spotifyTracks: spotifyTracksTool;
+  spotifyUser: spotifyUserTool;
 };
 
 export type CustomUIDataTypes = {

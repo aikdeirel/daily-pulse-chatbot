@@ -5,7 +5,7 @@ description: Music news and recommendations based on Spotify listening history. 
 
 # Music Discover
 
-Personalized music news and recommendations based on the user's Spotify top tracks and top artists.
+Personalized music news and recommendations using Spotify data and related artists.
 
 **TOOL RESTRICTION:** Never use the `webFetch` tool for web searching. Use the model's built-in web search if available.
 
@@ -13,11 +13,19 @@ Personalized music news and recommendations based on the user's Spotify top trac
 
 ### Step 1: Fetch User's Music Profile
 
-Call the `spotify` tool with action: `top_tracks` to get the user's top 10 most-played tracks, and action: `top_artists` to get the user's top 10 most-listened artists.
+Use `spotifyUser` tool:
+- `get_top_tracks` (timeRange: `short_term`) → recent favorites
+- `get_top_artists` (timeRange: `medium_term`) → overall taste
 
 **If Spotify not connected** (error: `"not_connected"`): Tell user to connect Spotify from the sidebar menu, then skip to Step 3 with generic recommendations.
 
-### Step 2: Search for News
+### Step 2: Find Similar Artists & New Releases
+
+Use `spotifyArtists` tool on top 2-3 artists:
+- `get_related_artists` → algorithmically similar artists
+- `get_artist_albums` (includeGroups: `["album", "single"]`, limit: 5) → recent releases from related artists
+
+### Step 3: Search for News
 
 **If web search is available:** Search for recent news about the user's top artists:
 
@@ -31,18 +39,26 @@ Skip the news section if no relevant news found.
 **If web search is NOT available:**
 
 1. Tell the user: "Web search is not enabled. Enable it in settings for current music news."
-2. Skip to Step 3 with internal knowledge only.
+2. Continue without news section.
 
-### Step 3: Generate Recommendations
+### Step 4: Generate Recommendations
 
-Always provide 3-5 recommendations based on:
+Provide 3-5 recommendations based on:
 
-1. **Similar artists** to user's top artists (from `top_artists` data)
-2. **New releases** from similar artists (last 2-3 months)
+1. **Related artists** from Spotify's `get_related_artists` data
+2. **New releases** from related artists (from Step 2)
 3. **Deep cuts** from known artists (lesser-known albums)
 4. **Genre exploration** based on top artists' genres
 
 Tailor to context if specified (e.g., "long train ride" → longer, atmospheric albums).
+
+### Step 5: Offer Actions (Optional)
+
+After showing recommendations, ask if user wants to:
+- **Play now** or **add to queue** → use `spotifyPlayback` (play) or `spotifyQueue` (add_to_queue)
+- **Create a "Discoveries" playlist** → use `spotifyPlaylists` (create_playlist + add_tracks)
+
+Requires Premium for playback. Playlist creation works for all users.
 
 ## Output Format
 
@@ -51,13 +67,13 @@ Tailor to context if specified (e.g., "long train ride" → longer, atmospheric 
 
 News: (only if web search available and news found)
 - Artist - "Title/Event" (Date) - Brief description [Link]
-- Artist - "Title/Event" (Date) - Brief description [Link]
 ...
 
 Recommendations:
 - Artist - "Album/Song" - Why this fits [Link if available]
-- Artist - "Album/Song" - Why this fits [Link if available]
 ...
+
+[Optional: Offer to play, queue, or create playlist]
 ```
 
 **Keep it short:** Readable in under 30 seconds.

@@ -26,7 +26,15 @@ import { discoverSkills } from "@/lib/ai/skills";
 import { createDocument } from "@/lib/ai/tools/create-document";
 import { getWeather } from "@/lib/ai/tools/get-weather";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
-import { spotify } from "@/lib/ai/tools/spotify";
+import {
+  spotifyAlbums,
+  spotifyArtists,
+  spotifyPlayback,
+  spotifyPlaylists,
+  spotifyQueue,
+  spotifyTracks,
+  spotifyUser,
+} from "@/lib/ai/tools/spotify";
 import { updateDocument } from "@/lib/ai/tools/update-document";
 import { getSkillResource, useSkill } from "@/lib/ai/tools/use-skill";
 import { webFetch } from "@/lib/ai/tools/web-fetch";
@@ -234,7 +242,14 @@ export async function POST(request: Request) {
           useSkill: useSkill({ availableSkills }),
           getSkillResource: getSkillResource({ availableSkills }),
           webFetch,
-          spotify: spotify({ userId: session.user.id }),
+          // Spotify tools (separated by domain)
+          spotifyAlbums: spotifyAlbums({ userId: session.user.id }),
+          spotifyArtists: spotifyArtists({ userId: session.user.id }),
+          spotifyPlayback: spotifyPlayback({ userId: session.user.id }),
+          spotifyQueue: spotifyQueue({ userId: session.user.id }),
+          spotifyPlaylists: spotifyPlaylists({ userId: session.user.id }),
+          spotifyTracks: spotifyTracks({ userId: session.user.id }),
+          spotifyUser: spotifyUser({ userId: session.user.id }),
         };
 
         // Determine which tools to activate
@@ -249,6 +264,16 @@ export async function POST(request: Request) {
           "gpt-oss-20b-free",
         ];
 
+        const spotifyTools = [
+          "spotifyAlbums",
+          "spotifyArtists",
+          "spotifyPlayback",
+          "spotifyQueue",
+          "spotifyPlaylists",
+          "spotifyTracks",
+          "spotifyUser",
+        ] as ToolName[];
+
         if (modelsWithoutToolSupport.includes(selectedChatModel)) {
           activeTools = [];
         } else if (availableSkills.length > 0) {
@@ -260,7 +285,7 @@ export async function POST(request: Request) {
             "useSkill",
             "getSkillResource",
             "webFetch",
-            "spotify",
+            ...spotifyTools,
           ];
         } else {
           activeTools = [
@@ -269,7 +294,7 @@ export async function POST(request: Request) {
             "updateDocument",
             "requestSuggestions",
             "webFetch",
-            "spotify",
+            ...spotifyTools,
           ];
         }
 

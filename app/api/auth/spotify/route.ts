@@ -11,7 +11,10 @@ const SPOTIFY_SCOPES = [
   "playlist-modify-public",
   "playlist-modify-private",
   "user-library-read",
+  "user-library-modify",
   "user-top-read",
+  "user-follow-read",
+  "user-follow-modify",
 ].join(" ");
 
 export async function GET() {
