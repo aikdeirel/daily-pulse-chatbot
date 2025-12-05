@@ -24,9 +24,7 @@ services:
       - "6334:6334"
     volumes:
       - qdrant_data:/qdrant/storage
-    environment:
-      QDRANT__SERVICE__HTTP_PORT: "6333"
-      QDRANT__SERVICE__GRPC_PORT: "6334"
+      - ./qdrant-config.yaml:/qdrant/config/production.yaml
 
 volumes:
   postgres_data:
