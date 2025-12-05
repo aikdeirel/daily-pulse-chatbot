@@ -1,6 +1,39 @@
+# Sub-Agent Task: Documentation Update
+
+> **Priority**: 4 (Must run LAST after all other sub-agents complete)
+> **Estimated Complexity**: Medium
+> **Files to Modify**: 1
+
+---
+
+## 🎯 Objective
+
+Update the `docs/SPOTIFY_INTEGRATION.md` documentation to reflect all new tools, actions, and endpoints added by the previous sub-agents.
+
+---
+
+## 📋 Tasks
+
+1. Update Quick Reference table with all new actions
+2. Update Tool Parameters section with new input schemas
+3. Update Error Handling section with new error codes
+4. Update File Structure section with new directory layout
+5. Update OAuth Scopes section with new scopes
+6. Add documentation for each new tool category
+7. Update Architecture diagram
+
+---
+
+## 📁 File to Modify
+
+### `docs/SPOTIFY_INTEGRATION.md`
+
+**Complete rewrite of the document with all new tools:**
+
+```markdown
 # Spotify Integration Documentation
 
-> **Status:** ✅ Fully Implemented | Last Updated: 2025-12-05
+> **Status:** ✅ Fully Implemented | Last Updated: 2025-12-XX
 
 This document describes the Spotify integration for AI agents, providing guidance on available tools, actions, and common usage patterns.
 
@@ -20,8 +53,6 @@ The Spotify integration is split into 7 specialized tools:
 | `get_album_tracks` | Get tracks from an album | `albumId` | No |
 | `check_saved_albums` | Check if albums are saved | `albumIds` | No |
 
-**Optional params:** `limit`, `offset`, `market`
-
 #### spotifyArtists
 | Action | Description | Required Params | Premium |
 |--------|-------------|-----------------|---------|
@@ -30,8 +61,6 @@ The Spotify integration is split into 7 specialized tools:
 | `get_artist_albums` | Get artist's albums | `artistId` | No |
 | `get_artist_top_tracks` | Get artist's top tracks | `artistId` | No |
 | `get_related_artists` | Get similar artists | `artistId` | No |
-
-**Optional params:** `includeGroups`, `limit`, `offset`, `market`
 
 #### spotifyPlayback
 | Action | Description | Required Params | Premium |
@@ -48,19 +77,11 @@ The Spotify integration is split into 7 specialized tools:
 | `toggle_shuffle` | Toggle shuffle | `shuffleState` | **Yes** |
 | `transfer_playback` | Switch playback device | `deviceId` | **Yes** |
 
-**Parameter details:**
-- `repeatState`: `"track"` | `"context"` | `"off"`
-- `shuffleState`: `true` | `false`
-- `volumePercent`: 0-100
-- `positionMs`: position in milliseconds
-
 #### spotifyQueue
 | Action | Description | Required Params | Premium |
 |--------|-------------|-----------------|---------|
 | `get_queue` | Get playback queue | None | No |
 | `add_to_queue` | Add track to queue | `uri` | **Yes** |
-
-**Note:** `uri` must be a track URI (e.g., `spotify:track:xxx`)
 
 #### spotifyPlaylists
 | Action | Description | Required Params | Premium |
@@ -74,8 +95,6 @@ The Spotify integration is split into 7 specialized tools:
 | `remove_tracks` | Remove tracks from playlist | `playlistId`, `trackUris` | No |
 | `reorder_tracks` | Reorder/replace tracks | `playlistId` + params | No |
 
-**Optional params:** `playlistDescription`, `isPublic`, `limit`, `offset`, `rangeStart`, `insertBefore`, `rangeLength`, `snapshotId`
-
 #### spotifyTracks
 | Action | Description | Required Params | Premium |
 |--------|-------------|-----------------|---------|
@@ -85,8 +104,6 @@ The Spotify integration is split into 7 specialized tools:
 | `save_tracks` | Like tracks | `trackIds` | No |
 | `remove_saved_tracks` | Unlike tracks | `trackIds` | No |
 | `check_saved_tracks` | Check if tracks liked | `trackIds` | No |
-
-**Optional params:** `limit`, `offset`, `market`
 
 #### spotifyUser
 | Action | Description | Required Params | Premium |
@@ -102,10 +119,6 @@ The Spotify integration is split into 7 specialized tools:
 | `check_following_artists` | Check if following artists | `artistIds` | No |
 | `check_following_users` | Check if following users | `userIds` | No |
 
-**Parameter details:**
-- `timeRange`: `"short_term"` (~4 weeks) | `"medium_term"` (~6 months) | `"long_term"` (years)
-- `limit`, `after` (cursor for pagination)
-
 ---
 
 ## Common User Requests & Tool Usage
@@ -114,8 +127,9 @@ The Spotify integration is split into 7 specialized tools:
 User: "What's playing on Spotify?"
 → spotifyPlayback: action: "get_current_playback"
 
-User: "Show me albums by Taylor Swift"
-→ spotifyArtists: action: "get_artist_albums", artistId: "xxx"
+User: "Search for Taylor Swift"
+→ spotifyArtists: action: "get_artist" (after finding ID via search)
+   Or use general search endpoint if available
 
 User: "Show my top artists"
 → spotifyUser: action: "get_top_artists"
@@ -135,20 +149,8 @@ User: "Like this song"
 User: "Follow this artist"
 → spotifyUser: action: "follow_artists", artistIds: ["xxx"]
 
-User: "Get my playlists"
-→ spotifyPlaylists: action: "get_my_playlists"
-
-User: "Show me the queue"
-→ spotifyQueue: action: "get_queue"
-
-User: "Set volume to 50%"
-→ spotifyPlayback: action: "set_volume", volumePercent: 50
-
-User: "Turn on shuffle"
-→ spotifyPlayback: action: "toggle_shuffle", shuffleState: true
-
-User: "Pause the music"
-→ spotifyPlayback: action: "pause"
+User: "Show me albums by [artist]"
+→ spotifyArtists: action: "get_artist_albums", artistId: "xxx"
 ```
 
 ---
@@ -166,11 +168,8 @@ User: "Pause the music"
 | `permission_denied` | Can't modify resource | User doesn't own playlist |
 | `missing_scopes` | Token lacks permissions | Disconnect and reconnect Spotify |
 | `missing_{param}` | Required parameter absent | Include the parameter |
-| `too_many_ids` | Exceeded ID limit | Reduce array size (see limits per action) |
-| `invalid_uri` | Invalid Spotify URI format | Use correct format (spotify:track:xxx) |
-| `invalid_volume` | Volume out of range | Use value between 0-100 |
+| `too_many_ids` | Exceeded ID limit | Reduce array size |
 | `api_error` | Generic Spotify error | Check error message |
-| `unknown_action` | Invalid action name | Check available actions for the tool |
 
 ### Scope-Related Errors
 
@@ -190,7 +189,7 @@ Some actions require specific OAuth scopes. If a user connected before these sco
 ┌─────────────────────────────────────────────────────────────────────┐
 │                         AI Tool Layer                                │
 │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐   │
-│  │spotifyAlbums│ │spotifyArtists│ │spotifyPlayback│ │ spotifyQueue │   │
+│  │ spotifyAlbums │ │spotifyArtists│ │spotifyPlayback│ │ spotifyQueue │   │
 │  └──────┬──────┘ └──────┬──────┘ └──────┬───────┘ └──────┬──────┘   │
 │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐                    │
 │  │spotifyPlaylists│ │spotifyTracks│ │ spotifyUser │                    │
@@ -201,9 +200,6 @@ Some actions require specific OAuth scopes. If a user connected before these sco
 ┌─────────────────────────────────────────────────────────────────────┐
 │              Service Layer: lib/services/spotify.ts                  │
 │              SpotifyService class - ALL API methods                  │
-│  • Token management (auto-refresh with 5-min buffer)                │
-│  • Premium detection (403 → premium_required error)                 │
-│  • Device handling (404 → returns available devices)                │
 └─────────────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -223,19 +219,16 @@ lib/
 ├── ai/tools/
 │   └── spotify/
 │       ├── index.ts            # Exports all Spotify tools
-│       ├── spotify-albums.ts   # Album operations (4 actions)
-│       ├── spotify-artists.ts  # Artist operations (5 actions)
-│       ├── spotify-playback.ts # Playback control (11 actions)
-│       ├── spotify-queue.ts    # Queue management (2 actions)
-│       ├── spotify-playlists.ts# Playlist operations (8 actions)
-│       ├── spotify-tracks.ts   # Track operations (6 actions)
-│       └── spotify-user.ts     # User profile & following (10 actions)
+│       ├── spotify-albums.ts   # Album operations
+│       ├── spotify-artists.ts  # Artist operations
+│       ├── spotify-playback.ts # Playback control
+│       ├── spotify-queue.ts    # Queue management
+│       ├── spotify-playlists.ts# Playlist operations
+│       ├── spotify-tracks.ts   # Track operations
+│       └── spotify-user.ts     # User profile & following
 └── db/
     ├── schema.ts               # oauthConnection table
     └── queries.ts              # OAuth CRUD functions
-
-hooks/
-└── use-spotify-now-playing.ts  # SWR hook for header indicator
 
 app/api/auth/spotify/
 ├── route.ts                    # OAuth initiation
@@ -246,20 +239,13 @@ app/api/auth/spotify/
 app/api/spotify/
 ├── now-playing/route.ts        # GET - current playback
 └── playback/route.ts           # POST - play/pause control
-
-components/
-├── spotify-player.tsx          # UI component for tool output
-├── spotify-now-playing-indicator.tsx  # Header indicator
-├── chat-header.tsx             # Includes the indicator
-├── message.tsx                 # Tool rendering
-└── sidebar-user-nav.tsx        # Connect/disconnect menu
 ```
 
 ---
 
 ## OAuth Scopes
 
-The integration requests these 11 Spotify API scopes:
+The integration requests these Spotify API scopes:
 
 | Scope | Purpose |
 |-------|---------|
@@ -287,30 +273,6 @@ SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
 SPOTIFY_REDIRECT_URI=http://localhost:3000/api/auth/spotify/callback
 ```
 
-For production, update `SPOTIFY_REDIRECT_URI` to your production domain.
-
----
-
-## Header Now Playing Indicator
-
-The application displays a real-time "Now Playing" indicator in the header.
-
-### Features
-
-- **Real-time updates**: Polls the Spotify API every 5 seconds
-- **Responsive design**: Adapts to mobile and desktop layouts
-- **Marquee animation**: Long track names scroll horizontally on mobile
-- **Playback control**: Click to play/pause (Premium users only)
-- **Visual feedback**: Animated equalizer bars when playing
-- **Smart polling**: Pauses when browser tab is hidden
-
-### UI Behavior
-
-| Screen Size | Display |
-|-------------|---------|
-| Mobile | Album art + scrolling text + equalizer |
-| Desktop | Album art + full track info + equalizer |
-
 ---
 
 ## Known Limitations
@@ -324,12 +286,6 @@ Playback control (play, pause, skip, seek, volume, repeat, shuffle, queue) requi
 ### Rate Limits
 Spotify API has rate limits. Heavy usage may result in temporary 429 errors.
 
-### ID Limits
-- Albums: max 20 IDs per request
-- Artists: max 50 IDs per request
-- Tracks: max 50 IDs per request
-- Users/Artists to follow: max 50 IDs per request
-
 ---
 
 ## Troubleshooting
@@ -342,69 +298,35 @@ Spotify API has rate limits. Heavy usage may result in temporary 429 errors.
 | Can't modify playlist | Check ownership or missing scopes |
 | Follow/unfollow fails | Disconnect and reconnect Spotify |
 | Images not loading | Check next.config.ts image domains |
-| "Missing scopes" errors | Disconnect and reconnect to grant new scopes |
+```
 
 ---
 
-## Workflow Examples
+## ✅ Acceptance Criteria
 
-### Creating a Playlist with Tracks
+1. [ ] Quick Reference tables updated with all 7 tools and all actions
+2. [ ] Common User Requests section updated with new tool names
+3. [ ] Error Handling section includes new error codes
+4. [ ] Architecture diagram shows new tool structure
+5. [ ] File Structure shows new directory layout
+6. [ ] OAuth Scopes includes new scopes
+7. [ ] All action/parameter names are accurate
+8. [ ] Premium requirements correctly indicated
 
-```
-1. Create playlist:
-   spotifyPlaylists: action: "create_playlist",
-                     playlistName: "Workout Mix",
-                     playlistDescription: "High energy tracks"
-   → Returns playlist with ID
+---
 
-2. Add tracks (using track URIs):
-   spotifyPlaylists: action: "add_tracks",
-                     playlistId: "playlist_id_from_step_1",
-                     trackUris: ["spotify:track:xxx", "spotify:track:yyy"]
-   → Confirms tracks added
-```
+## 🔗 Dependencies
 
-### Finding and Playing an Artist's Top Tracks
+**Must wait for completion of ALL other sub-agents:**
+- `01-oauth-scopes-subagent.md` - For new scopes
+- `02-albums-tool-subagent.md` through `08-user-tool-subagent.md` - For tool details
+- `09-tool-registration-subagent.md` - For file structure
 
-```
-1. Get artist details (if you have the ID):
-   spotifyArtists: action: "get_artist", artistId: "xxx"
-   → Returns artist info
+---
 
-2. Get their top tracks:
-   spotifyArtists: action: "get_artist_top_tracks", artistId: "xxx"
-   → Returns top 10 tracks with URIs
+## 📝 Notes
 
-3. Play a track:
-   spotifyPlayback: action: "play", uri: "spotify:track:yyy"
-   → Starts playback (Premium required)
-```
-
-### Managing User's Library
-
-```
-1. Check if tracks are liked:
-   spotifyTracks: action: "check_saved_tracks", trackIds: ["xxx", "yyy"]
-   → Returns array of booleans
-
-2. Like a track:
-   spotifyTracks: action: "save_tracks", trackIds: ["xxx"]
-   → Confirms track saved
-
-3. Get user's liked songs:
-   spotifyTracks: action: "get_saved_tracks", limit: 20
-   → Returns saved tracks with pagination info
-```
-
-### Exploring Artist's Discography
-
-```
-1. Get artist's albums:
-   spotifyArtists: action: "get_artist_albums",
-                   artistId: "xxx",
-                   includeGroups: ["album", "single"]
-   → Returns albums and singles
-
-2. Get tracks from an album:
-   spotifyAlbums: action: "get_album_tracks", albumId: "yyy"
-   → Returns album tracks with URIs
+- The documentation should serve as a reference for AI agents
+- Keep action names and parameter names EXACTLY as implemented
+- Include premium requirements for each action
+- Document any edge cases or special behaviors

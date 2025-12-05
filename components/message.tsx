@@ -499,42 +499,174 @@ const PurePreviewMessage = ({
               );
             }
 
-            // Spotify Tool
-            if (type === "tool-spotify") {
-              const { toolCallId, state } = part;
-              const action = part.input?.action as string | undefined;
+            // Spotify Tools (all 7 domain-specific tools)
+            const spotifyToolTypes = [
+              "tool-spotifyAlbums",
+              "tool-spotifyArtists",
+              "tool-spotifyPlayback",
+              "tool-spotifyQueue",
+              "tool-spotifyPlaylists",
+              "tool-spotifyTracks",
+              "tool-spotifyUser",
+            ] as const;
 
-              // Determine title based on action
+            if (
+              spotifyToolTypes.includes(
+                type as (typeof spotifyToolTypes)[number],
+              )
+            ) {
+              // Type assertion needed because TypeScript can't narrow with includes()
+              const spotifyPart = part as {
+                toolCallId: string;
+                state:
+                  | "input-streaming"
+                  | "input-available"
+                  | "output-available"
+                  | "output-error";
+                input?: { action?: string };
+                output?: Record<string, unknown>;
+              };
+              const { toolCallId, state } = spotifyPart;
+              const action = spotifyPart.input?.action as string | undefined;
+
+              // Determine title based on tool type and action
               let title = "Spotify";
-              if (action === "search")
-                title = `Searching: ${part.input?.query || ""}`;
-              else if (action === "now_playing") title = "Now Playing";
-              else if (action === "play") title = "Playing";
-              else if (action === "pause") title = "Pausing";
-              else if (action === "top_tracks") title = "Top Tracks";
-              else if (action === "top_artists") title = "Top Artists";
-              else if (action === "playlists") title = "Playlists";
-              else if (action === "get_devices") title = "Devices";
-              else if (action === "next") title = "Next Track";
-              else if (action === "previous") title = "Previous Track";
-              else if (action === "create_playlist")
-                title = "Creating Playlist";
-              else if (action === "add_tracks_to_playlist")
-                title = "Adding to Playlist";
-              else if (action === "get_playlist_tracks")
-                title = "Playlist Tracks";
+
+              // Tool-specific titles
+              if (type === "tool-spotifyAlbums") {
+                title =
+                  action === "get_album"
+                    ? "Album Details"
+                    : action === "get_multiple_albums"
+                      ? "Albums"
+                      : action === "get_album_tracks"
+                        ? "Album Tracks"
+                        : action === "check_saved_albums"
+                          ? "Checking Saved Albums"
+                          : "Albums";
+              } else if (type === "tool-spotifyArtists") {
+                title =
+                  action === "get_artist"
+                    ? "Artist Details"
+                    : action === "get_multiple_artists"
+                      ? "Artists"
+                      : action === "get_artist_albums"
+                        ? "Artist Albums"
+                        : action === "get_artist_top_tracks"
+                          ? "Artist Top Tracks"
+                          : action === "get_related_artists"
+                            ? "Related Artists"
+                            : "Artists";
+              } else if (type === "tool-spotifyPlayback") {
+                title =
+                  action === "get_current_playback"
+                    ? "Now Playing"
+                    : action === "get_devices"
+                      ? "Devices"
+                      : action === "play"
+                        ? "Playing"
+                        : action === "pause"
+                          ? "Pausing"
+                          : action === "skip_to_next"
+                            ? "Next Track"
+                            : action === "skip_to_previous"
+                              ? "Previous Track"
+                              : action === "seek"
+                                ? "Seeking"
+                                : action === "set_volume"
+                                  ? "Volume"
+                                  : action === "set_repeat_mode"
+                                    ? "Repeat Mode"
+                                    : action === "toggle_shuffle"
+                                      ? "Shuffle"
+                                      : action === "transfer_playback"
+                                        ? "Transfer Playback"
+                                        : "Playback";
+              } else if (type === "tool-spotifyQueue") {
+                title =
+                  action === "get_queue"
+                    ? "Queue"
+                    : action === "add_to_queue"
+                      ? "Adding to Queue"
+                      : "Queue";
+              } else if (type === "tool-spotifyPlaylists") {
+                title =
+                  action === "get_my_playlists"
+                    ? "Playlists"
+                    : action === "get_playlist"
+                      ? "Playlist Details"
+                      : action === "get_playlist_tracks"
+                        ? "Playlist Tracks"
+                        : action === "create_playlist"
+                          ? "Creating Playlist"
+                          : action === "change_details"
+                            ? "Updating Playlist"
+                            : action === "add_tracks"
+                              ? "Adding to Playlist"
+                              : action === "remove_tracks"
+                                ? "Removing from Playlist"
+                                : action === "reorder_tracks"
+                                  ? "Reordering Playlist"
+                                  : "Playlists";
+              } else if (type === "tool-spotifyTracks") {
+                title =
+                  action === "get_track"
+                    ? "Track Details"
+                    : action === "get_multiple_tracks"
+                      ? "Tracks"
+                      : action === "get_saved_tracks"
+                        ? "Saved Tracks"
+                        : action === "save_tracks"
+                          ? "Saving Tracks"
+                          : action === "remove_saved_tracks"
+                            ? "Removing Tracks"
+                            : action === "check_saved_tracks"
+                              ? "Checking Saved Tracks"
+                              : "Tracks";
+              } else if (type === "tool-spotifyUser") {
+                title =
+                  action === "get_profile"
+                    ? "Profile"
+                    : action === "get_top_tracks"
+                      ? "Top Tracks"
+                      : action === "get_top_artists"
+                        ? "Top Artists"
+                        : action === "get_followed_artists"
+                          ? "Followed Artists"
+                          : action === "follow_artists"
+                            ? "Following Artists"
+                            : action === "follow_users"
+                              ? "Following Users"
+                              : action === "unfollow_artists"
+                                ? "Unfollowing Artists"
+                                : action === "unfollow_users"
+                                  ? "Unfollowing Users"
+                                  : action === "check_following_artists"
+                                    ? "Checking Following"
+                                    : action === "check_following_users"
+                                      ? "Checking Following"
+                                      : "User";
+              }
 
               return (
                 <Tool defaultOpen={false} key={toolCallId}>
-                  <ToolHeader state={state} type="tool-spotify" title={title} />
+                  <ToolHeader state={state} type={type} title={title} />
                   <ToolContent>
                     {state === "input-available" && (
-                      <ToolInput input={part.input} />
+                      <ToolInput input={spotifyPart.input} />
                     )}
-                    {state === "output-available" && (
+                    {state === "output-available" && spotifyPart.output && (
                       <ToolOutput
                         errorText={undefined}
-                        output={<SpotifyPlayer data={part.output} />}
+                        output={
+                          <SpotifyPlayer
+                            data={
+                              spotifyPart.output as Parameters<
+                                typeof SpotifyPlayer
+                              >[0]["data"]
+                            }
+                          />
+                        }
                       />
                     )}
                   </ToolContent>
