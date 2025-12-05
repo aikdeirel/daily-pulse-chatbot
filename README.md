@@ -4,8 +4,9 @@
   <p><em>Your personal AI assistant for daily tasks, music, and creative work</em></p>
   
   [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-  [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org)
-  [![React](https://img.shields.io/badge/React-19-61dafb)](https://react.dev)
+  [![Next.js](https://img.shields.io/badge/Next.js-16.0.7-black)](https://nextjs.org)
+  [![React](https://img.shields.io/badge/React-19.2.1-61dafb)](https://react.dev)
+  [![Security](https://img.shields.io/badge/CVE--2025--55182-Patched-green.svg)](SECURITY.md)
 </div>
 
 ---
@@ -153,6 +154,17 @@ For non-Vercel deployments:
 - Set `OPENROUTER_API_KEY` for LLM access ([get yours here](https://openrouter.ai/keys))
 - Configure your own PostgreSQL and Redis instances
 - Update `SPOTIFY_REDIRECT_URI` to your production domain
+
+---
+
+## 🔒 Security
+
+This project uses patched versions of React and Next.js to protect against critical vulnerabilities including **CVE-2025-55182** (React Server Components RCE).
+
+- **Next.js 16.0.7** - Patched against CVE-2025-66478
+- **React 19.2.1** - Patched against CVE-2025-55182
+
+For detailed security information, vulnerability status, and best practices, see [SECURITY.md](SECURITY.md).
 
 ---
 
