@@ -1,4 +1,4 @@
-export const DEFAULT_CHAT_MODEL: string = "mistral-small-3.1-24b-instruct-free";
+export const DEFAULT_CHAT_MODEL: string = "mistral-medium-3.1";
 
 export type ChatModel = {
   id: string;
