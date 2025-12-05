@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,18 +28,43 @@ export function SpotifyToolSelector({
   onChange: (next: SpotifyToolGroupId[]) => void;
   disabled?: boolean;
 }) {
+  // Track if component has mounted (client-side only)
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Use empty array during SSR to match initial localStorage state
+  const effectiveSelectedGroupIds = mounted ? selectedGroupIds : [];
+
+  // Use useMemo to stabilize the selection calculation
   const selection = useMemo(
-    () => new Set(selectedGroupIds),
-    [selectedGroupIds],
+    () => new Set(effectiveSelectedGroupIds),
+    [effectiveSelectedGroupIds],
   );
   const totalGroups = spotifyToolGroups.length;
   const enabledCount = selection.size;
   const isNoneEnabled = enabledCount === 0;
   const isAllEnabled = enabledCount === totalGroups && totalGroups > 0;
 
-  const summary = isNoneEnabled
-    ? "Spotify tools disabled"
-    : `${enabledCount}/${totalGroups} groups enabled`;
+  // Use useMemo to stabilize the summary text to prevent hydration mismatches
+  const summary = useMemo(() => {
+    return isNoneEnabled
+      ? "Spotify tools disabled"
+      : `${enabledCount}/${totalGroups} groups enabled`;
+  }, [isNoneEnabled, enabledCount, totalGroups]);
+
+  // Use useMemo to stabilize button classes to prevent hydration mismatches
+  const buttonClasses = useMemo(() => {
+    if (isAllEnabled) {
+      return "bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25 dark:text-emerald-400";
+    } else if (isNoneEnabled) {
+      return "hover:bg-accent";
+    } else {
+      return "bg-[#1DB954]/15 text-[#1DB954] hover:bg-[#1DB954]/25 dark:text-[#1DB954]";
+    }
+  }, [isAllEnabled, isNoneEnabled]);
 
   const handleToggle = (groupId: SpotifyToolGroupId, checked: boolean) => {
     const next = new Set(selection);
@@ -65,11 +90,7 @@ export function SpotifyToolSelector({
         <Button
           className={cn(
             "aspect-square h-8 rounded-lg p-1 transition-colors",
-            isAllEnabled
-              ? "bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25 dark:text-emerald-400"
-              : isNoneEnabled
-                ? "hover:bg-accent"
-                : "bg-amber-500/15 text-amber-600 hover:bg-amber-500/25 dark:text-amber-400",
+            buttonClasses,
           )}
           data-testid="spotify-groups-toggle"
           disabled={disabled}
