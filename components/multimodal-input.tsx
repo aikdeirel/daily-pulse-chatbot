@@ -455,7 +455,7 @@ function PureAttachmentsButton({
 
   return (
     <Button
-      className="aspect-square h-8 rounded-lg p-1 transition-colors hover:bg-accent"
+      className="aspect-square h-8 shrink-0 rounded-lg p-1 transition-colors hover:bg-accent"
       data-testid="attachments-button"
       disabled={status !== "ready" || isReasoningModel}
       onClick={(event) => {
@@ -503,9 +503,12 @@ function PureModelSelectorCompact({
       value={selectedModel?.name}
     >
       <Trigger asChild>
-        <Button className="h-8 max-w-[230px] px-2" variant="ghost">
+        <Button
+          className="h-8 min-w-0 max-w-full flex-1 shrink overflow-hidden px-2 text-left sm:max-w-[230px]"
+          variant="ghost"
+        >
           <CpuIcon size={16} />
-          <span className="truncate font-medium text-xs">
+          <span className="min-w-0 flex-1 truncate text-xs font-medium">
             {selectedModel?.name}
           </span>
           <ChevronDownIcon size={16} />
@@ -538,7 +541,7 @@ function PureStopButton({
 }) {
   return (
     <Button
-      className="size-7 rounded-full bg-foreground p-1 text-background transition-colors duration-200 hover:bg-foreground/90 disabled:bg-muted disabled:text-muted-foreground"
+      className="size-7 shrink-0 rounded-full bg-foreground p-1 text-background transition-colors duration-200 hover:bg-foreground/90 disabled:bg-muted disabled:text-muted-foreground"
       data-testid="stop-button"
       onClick={(event) => {
         event.preventDefault();
@@ -565,7 +568,7 @@ function PureWebSearchToggle({
   return (
     <Button
       className={cn(
-        "aspect-square h-8 rounded-lg p-1 transition-colors",
+        "aspect-square h-8 shrink-0 rounded-lg p-1 transition-colors",
         enabled
           ? "bg-sky-500/15 text-sky-600 hover:bg-sky-500/25 dark:text-sky-400"
           : "hover:bg-accent",

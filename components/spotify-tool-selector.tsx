@@ -89,7 +89,7 @@ export function SpotifyToolSelector({
       <DropdownMenuTrigger asChild>
         <Button
           className={cn(
-            "aspect-square h-8 rounded-lg p-1 transition-colors",
+            "aspect-square h-8 shrink-0 rounded-lg p-1 transition-colors",
             buttonClasses,
           )}
           data-testid="spotify-groups-toggle"
