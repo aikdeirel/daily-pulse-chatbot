@@ -157,6 +157,6 @@ Example: If user asks "How do I sort an array in JavaScript?", respond with "Jav
 
 Rules:
 - Maximum 80 characters
-- No quotes, colons, semicolons, or special punctuation
+- No quotes or special punctuation (including colons, semicolons)
 - Use plain, simple language
 - Just describe the topic, never answer it`;
