@@ -125,11 +125,17 @@ const PurePreviewMessage = ({
             </div>
             {/* Show skeleton while title is generating, actual title otherwise */}
             {isTitleGenerating ? (
-              <div className="flex items-center gap-2" aria-live="polite">
-                <div className="h-4 w-32 animate-pulse rounded-md bg-orange-500/20 dark:bg-orange-500/30" aria-hidden="true" />
-                <span className="text-xs text-orange-500/60 dark:text-orange-400/60 animate-pulse">
+              <div className="flex items-center gap-2">
+                <div
+                  className="h-4 w-32 animate-pulse rounded-md bg-orange-500/20 dark:bg-orange-500/30"
+                  aria-hidden="true"
+                />
+                <span className="text-xs text-orange-500/60 dark:text-orange-400/60 animate-pulse" aria-hidden="true">
                   generating title...
                 </span>
+                <output aria-live="polite" className="sr-only">
+                  Generating chat title
+                </output>
               </div>
             ) : threadName ? (
               <span className="text-sm font-medium text-orange-600 dark:text-orange-400">
