@@ -180,7 +180,8 @@ export function Chat({
 
       if (eventType === "data-chat-title-updated") {
         // Update the global title context for reactive updates
-        const titleData = (dataPart as { data: TitleUpdateData }).data;
+        const titleData = (dataPart as unknown as { data: TitleUpdateData })
+          .data;
         if (titleData?.id === id) {
           setTitle(id, titleData.title);
           // Optimistically update the SWR cache for instant sidebar update
