@@ -62,7 +62,7 @@ export function GoogleToolSelector({
     } else if (isNoneEnabled) {
       return "hover:bg-accent";
     } else {
-      return "bg-gradient-to-br from-[#4285F4]/70 via-[#EA4335]/70 to-[#FBBC05]/70 text-white hover:opacity-90";
+      return "bg-gradient-to-br from-[#4285F4] via-[#EA4335] to-[#FBBC05] text-white hover:opacity-90";
     }
   }, [isAllEnabled, isNoneEnabled]);
 
