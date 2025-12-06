@@ -133,13 +133,4 @@ const PureChatItem = ({
   );
 };
 
-export const ChatItem = memo(PureChatItem, (prevProps, nextProps) => {
-  if (prevProps.isActive !== nextProps.isActive) {
-    return false;
-  }
-  // Re-render when title changes (for title generation updates)
-  if (prevProps.chat.title !== nextProps.chat.title) {
-    return false;
-  }
-  return true;
-});
+export const ChatItem = memo(PureChatItem);

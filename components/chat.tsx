@@ -5,6 +5,7 @@ import { DefaultChatTransport } from "ai";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
+import { unstable_serialize } from "swr/infinite";
 import { useLocalStorage } from "usehooks-ts";
 import { ChatHeader } from "@/components/chat-header";
 import { useArtifactSelector } from "@/hooks/use-artifact";
@@ -28,6 +29,7 @@ import { useChatTitle, useTitleForChat } from "./chat-title-context";
 import { useDataStream } from "./data-stream-provider";
 import { Messages } from "./messages";
 import { MultimodalInput } from "./multimodal-input";
+import { getChatHistoryPaginationKey } from "./sidebar-history";
 import { toast } from "./toast";
 import type { VisibilityType } from "./visibility-selector";
 
@@ -81,7 +83,7 @@ export function Chat({
   const updateTitleInCache = useCallback(
     (chatId: string, newTitle: string) => {
       mutate(
-        (key) => typeof key === "string" && key.startsWith("$inf$/api/history"),
+        unstable_serialize(getChatHistoryPaginationKey),
         (
           data:
             | { chats: { id: string; title: string }[]; hasMore: boolean }[]
@@ -94,6 +96,32 @@ export function Chat({
               chat.id === chatId ? { ...chat, title: newTitle } : chat,
             ),
           }));
+        },
+        { revalidate: false }, // Don't revalidate, we already have the correct data
+      );
+    },
+    [mutate],
+  );
+
+  // Optimistically add a new chat to the SWR cache for instant sidebar update
+  const addChatToCache = useCallback(
+    (chatId: string, newTitle: string) => {
+      mutate(
+        unstable_serialize(getChatHistoryPaginationKey),
+        (
+          data:
+            | { chats: { id: string; title: string }[]; hasMore: boolean }[]
+            | undefined,
+        ) => {
+          if (!data) return data;
+          const newChat = { id: chatId, title: newTitle };
+          return [
+            {
+              ...data[0],
+              chats: [newChat, ...data[0].chats],
+            },
+            ...data.slice(1),
+          ];
         },
         { revalidate: false }, // Don't revalidate, we already have the correct data
       );
@@ -174,18 +202,17 @@ export function Chat({
       if (eventType === "data-chat-created") {
         // Mark the title as generating in the global context
         setTitleGenerating(id);
-        // Immediate refresh to show "New Chat" in sidebar
-        revalidateSidebarHistory();
+        // Optimistically add new chat to sidebar
+        addChatToCache(id, "New Chat");
       }
 
       if (eventType === "data-chat-title-updated") {
-        // Update the global title context for reactive updates
         const titleData = (dataPart as unknown as { data: TitleUpdateData })
           .data;
         if (titleData?.id === id) {
           setTitle(id, titleData.title);
-          // Optimistically update the SWR cache for instant sidebar update
           updateTitleInCache(id, titleData.title);
+          revalidateSidebarHistory();
         }
       }
     },

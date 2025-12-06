@@ -211,7 +211,8 @@ export async function POST(request: Request) {
     let finalMergedUsage: AppUsage | undefined;
 
     const stream = createUIMessageStream({
-      execute: ({ writer: dataStream }) => {
+      execute: async ({ writer: dataStream }) => {
+        let titleGenerationPromise: Promise<void> | undefined;
         // Notify client immediately that a new chat was created
         // so the sidebar can be updated optimistically
         if (isNewChat) {
@@ -220,7 +221,7 @@ export async function POST(request: Request) {
             data: { id, title: "New Chat" },
           });
 
-          const titleGenerationPromise = (async () => {
+          titleGenerationPromise = (async () => {
             try {
               const title = await generateTitleFromUserMessage({ message });
               await updateChatTitleById({ chatId: id, title });
@@ -232,14 +233,6 @@ export async function POST(request: Request) {
               console.warn("Failed to generate/update chat title:", err);
             }
           })();
-
-          after(async () => {
-            try {
-              await titleGenerationPromise;
-            } catch (err) {
-              console.warn("Title generation promise failed:", err);
-            }
-          });
         }
 
         // Always define all tools (including skill tools)
@@ -426,6 +419,8 @@ export async function POST(request: Request) {
             sendSources: true,
           }),
         );
+
+        if (titleGenerationPromise) await titleGenerationPromise;
       },
       generateId: generateUUID,
       onFinish: async ({ messages }) => {

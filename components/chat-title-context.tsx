@@ -21,6 +21,7 @@ interface ChatTitleState {
 }
 
 interface ChatTitleContextType {
+  titleStates: ChatTitleState;
   // Get the current title state for a chat
   getTitleState: (
     chatId: string,
@@ -51,19 +52,20 @@ export function ChatTitleProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setTitle = useCallback((chatId: string, title: string) => {
-    setTitleStates((prev) => ({
-      ...prev,
-      [chatId]: { title, isGenerating: false },
-    }));
+    setTitleStates((prev) => {
+      const next = { ...prev, [chatId]: { title, isGenerating: false } };
+      return next;
+    });
   }, []);
 
   const contextValue = useMemo(
     () => ({
+      titleStates,
       getTitleState,
       setTitleGenerating,
       setTitle,
     }),
-    [getTitleState, setTitleGenerating, setTitle],
+    [titleStates, getTitleState, setTitleGenerating, setTitle],
   );
 
   return (
@@ -86,7 +88,7 @@ export function useTitleForChat(chatId: string, initialTitle?: string) {
   const context = useContext(ChatTitleContext);
 
   // Get the title state - either from context or compute from initial values
-  const titleState = context?.getTitleState(chatId);
+  const titleState = context?.titleStates[chatId];
 
   // If we have a state in context, use it
   if (titleState) {
