@@ -1,7 +1,4 @@
-export const googleToolGroupIds = [
-  "calendar_management",
-  "event_management",
-] as const;
+export const googleToolGroupIds = ["calendar_management"] as const;
 
 export type GoogleToolGroupId = (typeof googleToolGroupIds)[number];
 
@@ -21,19 +18,11 @@ export const googleToolGroups: GoogleToolGroup[] = [
   {
     id: "calendar_management",
     label: "Calendar Management",
-    description: "List, retrieve, and manage user calendars.",
-    prompt:
-      "Use when the user needs to work with calendars (list, get details, manage).",
-    tools: ["googleCalendars"],
-  },
-  {
-    id: "event_management",
-    label: "Event Management",
     description:
-      "Create, read, update, delete, and search calendar events with date range and query support.",
+      "List, retrieve, and manage user calendars. Create, read, update, delete, and search calendar events.",
     prompt:
-      "Use when the user needs to manage calendar events (create, search, update, delete). For date filtering always supply timeMin/timeMax (RFC3339); only use the q parameter for free-text searches over summary/description/location/attendees.",
-    tools: ["googleEvents"],
+      "Use when the user needs to work with calendars and events (list, get details, manage, create, search, update, delete). For date filtering always supply timeMin/timeMax (RFC3339); only use the q parameter for free-text searches over summary/description/location/attendees.",
+    tools: ["googleCalendars", "googleEvents"],
   },
 ];
 
@@ -74,5 +63,5 @@ export const getGooglePromptForGroups = (ids: GoogleToolGroupId[]): string => {
     .map((group) => `- ${group.label}: ${group.prompt}`)
     .join("\n");
 
-  return `\n## Google Calendar Capabilities\n\n${rows}\n`;
+  return `\n## Google Capabilities\n\n${rows}\n`;
 };
