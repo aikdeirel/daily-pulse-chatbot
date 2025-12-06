@@ -19,6 +19,7 @@ type MessagesProps = {
   isArtifactVisible: boolean;
   selectedModelId: string;
   threadName?: string;
+  isTitleGenerating?: boolean;
 };
 
 function PureMessages({
@@ -31,6 +32,7 @@ function PureMessages({
   isReadonly,
   selectedModelId: _selectedModelId,
   threadName,
+  isTitleGenerating,
 }: MessagesProps) {
   const {
     containerRef: messagesContainerRef,
@@ -55,6 +57,7 @@ function PureMessages({
             chatId={chatId}
             isLoading={status === "streaming" && messages.length - 1 === index}
             isReadonly={isReadonly}
+            isTitleGenerating={isTitleGenerating}
             key={message.id}
             message={message}
             regenerate={regenerate}
@@ -103,6 +106,9 @@ export const Messages = memo(PureMessages, (prevProps, nextProps) => {
     return false;
   }
   if (prevProps.threadName !== nextProps.threadName) {
+    return false;
+  }
+  if (prevProps.isTitleGenerating !== nextProps.isTitleGenerating) {
     return false;
   }
 

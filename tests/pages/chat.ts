@@ -262,4 +262,34 @@ export class ChatPage {
       element.scrollTop = 0;
     });
   }
+
+  async getMessageTitle(): Promise<string | null> {
+    const titleElement = this.page.locator('[data-testid="message-title"]');
+    return (await titleElement.isVisible())
+      ? await titleElement.innerText()
+      : null;
+  }
+
+  async isTitleGeneratingInMessage(): Promise<boolean> {
+    const generatingElement = this.page.locator(
+      '[data-testid="message-title-generating"]',
+    );
+    return await generatingElement.isVisible();
+  }
+
+  async getSidebarChatTitle(): Promise<string | null> {
+    const titleElement = this.page.locator(
+      '[data-testid="sidebar-history-item-title"]',
+    );
+    return (await titleElement.isVisible())
+      ? await titleElement.innerText()
+      : null;
+  }
+
+  async isTitleGeneratingInSidebar(): Promise<boolean> {
+    const generatingElement = this.page.locator(
+      '[data-testid="sidebar-history-item-generating"]',
+    );
+    return await generatingElement.isVisible();
+  }
 }

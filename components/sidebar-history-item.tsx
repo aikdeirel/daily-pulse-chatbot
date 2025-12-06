@@ -1,7 +1,9 @@
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { memo } from "react";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
 import type { Chat } from "@/lib/db/schema";
+import { useTitleForChat } from "./chat-title-context";
 import {
   CheckCircleFillIcon,
   GlobeIcon,
@@ -42,11 +44,30 @@ const PureChatItem = ({
     initialVisibilityType: chat.visibility,
   });
 
+  // Use the context-based title state for reactive updates
+  const { title: displayTitle, isGenerating: isTitleGenerating } =
+    useTitleForChat(chat.id, chat.title);
+
   return (
-    <SidebarMenuItem>
+    <SidebarMenuItem data-testid="sidebar-history-item">
       <SidebarMenuButton asChild isActive={isActive}>
         <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
-          <span>{chat.title}</span>
+          {isTitleGenerating ? (
+            <motion.div
+              className="flex items-center gap-2 w-full"
+              data-testid="sidebar-history-item-generating"
+              initial={{ opacity: 0.5 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="h-4 flex-1 max-w-[120px] animate-pulse rounded bg-sidebar-accent-foreground/20" />
+              <span className="text-[10px] text-sidebar-foreground/40 animate-pulse shrink-0"></span>
+            </motion.div>
+          ) : (
+            <span data-testid="sidebar-history-item-title">
+              {displayTitle || chat.title}
+            </span>
+          )}
         </Link>
       </SidebarMenuButton>
 
@@ -114,6 +135,10 @@ const PureChatItem = ({
 
 export const ChatItem = memo(PureChatItem, (prevProps, nextProps) => {
   if (prevProps.isActive !== nextProps.isActive) {
+    return false;
+  }
+  // Re-render when title changes (for title generation updates)
+  if (prevProps.chat.title !== nextProps.chat.title) {
     return false;
   }
   return true;
