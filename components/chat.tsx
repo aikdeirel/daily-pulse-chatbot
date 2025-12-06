@@ -38,6 +38,7 @@ export function Chat({
   isReadonly,
   autoResume,
   initialLastContext,
+  threadName,
 }: {
   id: string;
   initialMessages: ChatMessage[];
@@ -46,6 +47,7 @@ export function Chat({
   isReadonly: boolean;
   autoResume: boolean;
   initialLastContext?: AppUsage;
+  threadName?: string;
 }) {
   const { visibilityType } = useChatVisibility({
     chatId: id,
@@ -232,6 +234,7 @@ export function Chat({
           selectedModelId={initialChatModel}
           setMessages={setMessages}
           status={status}
+          threadName={threadName}
           votes={votes}
         />
 

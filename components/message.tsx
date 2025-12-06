@@ -45,6 +45,7 @@ const PurePreviewMessage = ({
   regenerate,
   isReadonly,
   requiresScrollPadding: _requiresScrollPadding,
+  threadName,
 }: {
   chatId: string;
   message: ChatMessage;
@@ -54,6 +55,7 @@ const PurePreviewMessage = ({
   regenerate: UseChatHelpers<ChatMessage>["regenerate"];
   isReadonly: boolean;
   requiresScrollPadding: boolean;
+  threadName?: string;
 }) => {
   const [mode, setMode] = useState<"view" | "edit">("view");
 
@@ -102,666 +104,642 @@ const PurePreviewMessage = ({
       data-role={message.role}
       data-testid={`message-${message.role}`}
     >
-      <div
-        className={cn("flex w-full max-w-full items-start gap-3 md:gap-4", {
-          "justify-start": true,
-        })}
-      >
-        {message.role === "assistant" && (
-          <div
-            className={cn(
-              "flex size-10 shrink-0 items-center justify-center overflow-visible rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-500/20 text-orange-600 ring-1 ring-orange-500/30 dark:from-orange-500/30 dark:to-amber-500/30 dark:text-orange-400 dark:ring-orange-500/40",
-              {
-                "animate-pulse": isLoading,
-              },
-            )}
-          >
-            <div className={isLoading ? "animate-pulse" : ""}>
-              <BotIcon />
-            </div>
-          </div>
-        )}
-
-        {message.role === "user" && (
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-600/20 to-orange-600/20 text-amber-700 ring-1 ring-amber-600/30 dark:from-amber-500/30 dark:to-orange-500/30 dark:text-amber-400 dark:ring-amber-500/40">
-            <span className="text-base font-semibold">
-              <UserIcon />
-            </span>
-          </div>
-        )}
-
-        <div
-          className={cn("flex flex-col min-w-0 flex-1", {
-            "gap-3 md:gap-4": message.parts?.some(
-              (p) => p.type === "text" && p.text?.trim(),
-            ),
-            "w-full max-w-full": true,
-          })}
-        >
-          {attachmentsFromMessage.length > 0 && (
+      {/* Assistant message layout: header row + full-width content */}
+      {message.role === "assistant" && (
+        <div className="flex w-full flex-col gap-2">
+          {/* Header row: icon + thread name */}
+          <div className="flex items-center gap-3 md:gap-4 mb-2">
             <div
-              className="flex flex-row justify-start gap-2"
-              data-testid={"message-attachments"}
+              className={cn(
+                "flex size-10 shrink-0 items-center justify-center overflow-visible rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-500/20 text-orange-600 ring-1 ring-orange-500/30 dark:from-orange-500/30 dark:to-amber-500/30 dark:text-orange-400 dark:ring-orange-500/40",
+                {
+                  "animate-pulse": isLoading,
+                },
+              )}
             >
-              {attachmentsFromMessage.map((attachment) => (
-                <PreviewAttachment
-                  attachment={{
-                    name: attachment.filename ?? "file",
-                    contentType: attachment.mediaType,
-                    url: attachment.url,
-                  }}
-                  key={attachment.url}
-                />
-              ))}
+              <div className={isLoading ? "animate-pulse" : ""}>
+                <BotIcon />
+              </div>
             </div>
-          )}
-
-          {message.parts?.map((part, index) => {
-            const { type } = part;
-            const key = `message-${message.id}-part-${index}`;
-
-            // Skip source-url parts - they're rendered in WebSearchSources
-            const p = part as Record<string, unknown>;
-            if (p.type === "source-url") {
-              return null;
-            }
-
-            if (type === "reasoning" && part.text?.trim().length > 0) {
-              return (
-                <MessageReasoning
-                  isLoading={isLoading}
-                  key={key}
-                  reasoning={part.text}
-                />
-              );
-            }
-
-            if (type === "text") {
-              if (mode === "view") {
-                return (
-                  <div key={key}>
-                    <MessageContent
-                      className={cn({
-                        "w-fit break-words rounded-2xl px-5 py-3 text-left text-white shadow-lg shadow-orange-500/20 dark:shadow-orange-500/15":
-                          message.role === "user",
-                        "bg-transparent px-0 py-0 text-left text-base leading-relaxed":
-                          message.role === "assistant",
-                      })}
-                      data-testid="message-content"
-                      style={
-                        message.role === "user"
-                          ? {
-                              background:
-                                "linear-gradient(135deg, hsl(25 85% 50%) 0%, hsl(30 90% 45%) 50%, hsl(20 80% 40%) 100%)",
-                            }
-                          : undefined
-                      }
-                    >
-                      <Response
-                        components={
-                          message.role === "user"
-                            ? userMessageComponents
-                            : undefined
-                        }
-                      >
-                        {sanitizeText(part.text)}
-                      </Response>
-                    </MessageContent>
-                  </div>
-                );
-              }
-
-              if (mode === "edit") {
-                return (
-                  <div
-                    className="flex w-full flex-row items-start gap-3"
-                    key={key}
-                  >
-                    <div className="size-8" />
-                    <div className="min-w-0 flex-1">
-                      <MessageEditor
-                        key={message.id}
-                        message={message}
-                        regenerate={regenerate}
-                        setMessages={setMessages}
-                        setMode={setMode}
-                      />
-                    </div>
-                  </div>
-                );
-              }
-            }
-
-            if (type === "tool-getWeather") {
-              const { toolCallId, state } = part;
-
-              return (
-                <Tool defaultOpen={false} key={toolCallId}>
-                  <ToolHeader state={state} type="tool-getWeather" />
-                  <ToolContent>
-                    {state === "input-available" && (
-                      <ToolInput input={part.input} />
-                    )}
-                    {state === "output-available" && (
-                      <ToolOutput
-                        errorText={undefined}
-                        output={<Weather weatherAtLocation={part.output} />}
-                      />
-                    )}
-                  </ToolContent>
-                </Tool>
-              );
-            }
-
-            if (type === "tool-createDocument") {
-              const { toolCallId } = part;
-
-              if (part.output && "error" in part.output) {
-                return (
-                  <div
-                    className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-500 dark:bg-red-950/50"
-                    key={toolCallId}
-                  >
-                    Error creating document: {String(part.output.error)}
-                  </div>
-                );
-              }
-
-              return (
-                <DocumentPreview
-                  isReadonly={isReadonly}
-                  key={toolCallId}
-                  result={part.output}
-                />
-              );
-            }
-
-            if (type === "tool-updateDocument") {
-              const { toolCallId } = part;
-
-              if (part.output && "error" in part.output) {
-                return (
-                  <div
-                    className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-500 dark:bg-red-950/50"
-                    key={toolCallId}
-                  >
-                    Error updating document: {String(part.output.error)}
-                  </div>
-                );
-              }
-
-              return (
-                <div className="relative" key={toolCallId}>
-                  <DocumentPreview
-                    args={{ ...part.output, isUpdate: true }}
-                    isReadonly={isReadonly}
-                    result={part.output}
+            {threadName && (
+              <span className="text-sm font-medium text-orange-600 dark:text-orange-400">
+                {threadName}
+              </span>
+            )}
+          </div>
+          {/* Content row: full width */}
+          <div
+            className={cn("flex flex-col w-full", {
+              "gap-3 md:gap-4": message.parts?.some(
+                (p) => p.type === "text" && p.text?.trim(),
+              ),
+            })}
+          >
+            {attachmentsFromMessage.length > 0 && (
+              <div
+                className="flex flex-row justify-start gap-2"
+                data-testid={"message-attachments"}
+              >
+                {attachmentsFromMessage.map((attachment) => (
+                  <PreviewAttachment
+                    attachment={{
+                      name: attachment.filename ?? "file",
+                      contentType: attachment.mediaType,
+                      url: attachment.url,
+                    }}
+                    key={attachment.url}
                   />
-                </div>
-              );
-            }
+                ))}
+              </div>
+            )}
 
-            if (type === "tool-requestSuggestions") {
-              const { toolCallId, state } = part;
+            {message.parts?.map((part, index) => {
+              const { type } = part;
+              const key = `message-${message.id}-part-${index}`;
 
-              return (
-                <Tool defaultOpen={false} key={toolCallId}>
-                  <ToolHeader state={state} type="tool-requestSuggestions" />
-                  <ToolContent>
-                    {state === "input-available" && (
-                      <ToolInput input={part.input} />
-                    )}
-                    {state === "output-available" && (
-                      <ToolOutput
-                        errorText={undefined}
-                        output={
-                          "error" in part.output ? (
-                            <div className="rounded border p-2 text-red-500">
-                              Error: {String(part.output.error)}
-                            </div>
-                          ) : (
-                            <DocumentToolResult
-                              isReadonly={isReadonly}
-                              result={part.output}
-                              type="request-suggestions"
-                            />
-                          )
-                        }
-                      />
-                    )}
-                  </ToolContent>
-                </Tool>
-              );
-            }
+              // Skip source-url parts - they're rendered in WebSearchSources
+              const p = part as Record<string, unknown>;
+              if (p.type === "source-url") {
+                return null;
+              }
 
-            // Web Fetch Tool
-            if (type === "tool-webFetch") {
-              const { toolCallId, state } = part;
-              const url = part.input?.url as string | undefined;
+              if (type === "reasoning" && part.text?.trim().length > 0) {
+                return (
+                  <MessageReasoning
+                    isLoading={isLoading}
+                    key={key}
+                    reasoning={part.text}
+                  />
+                );
+              }
 
-              // Extract domain from URL for display
-              let domain = "URL";
-              if (url) {
-                try {
-                  domain = new URL(url).hostname;
-                } catch {
-                  domain = url.substring(0, 30);
+              if (type === "text") {
+                if (mode === "view") {
+                  return (
+                    <div className="w-full" key={key}>
+                      <MessageContent
+                        className="w-full bg-transparent px-0 py-0 text-left text-base leading-relaxed"
+                        data-testid="message-content"
+                      >
+                        <Response>{sanitizeText(part.text)}</Response>
+                      </MessageContent>
+                    </div>
+                  );
+                }
+
+                if (mode === "edit") {
+                  return (
+                    <div
+                      className="flex w-full flex-row items-start gap-3"
+                      key={key}
+                    >
+                      <div className="size-8" />
+                      <div className="min-w-0 flex-1">
+                        <MessageEditor
+                          key={message.id}
+                          message={message}
+                          regenerate={regenerate}
+                          setMessages={setMessages}
+                          setMode={setMode}
+                        />
+                      </div>
+                    </div>
+                  );
                 }
               }
 
-              return (
-                <Tool defaultOpen={false} key={toolCallId}>
-                  <ToolHeader
-                    state={state}
-                    type="tool-webFetch"
-                    title={`Fetching: ${domain}`}
-                    description={url || "Loading web content"}
-                  />
-                  <ToolContent>
-                    {(state === "input-available" ||
-                      state === "input-streaming") && (
-                      <ToolInput input={part.input} />
-                    )}
-                    {state === "output-available" && (
-                      <ToolOutput
-                        errorText={
-                          part.output && "error" in part.output
-                            ? String(part.output.error)
-                            : part.output && part.output.success === false
-                              ? String(part.output.error || "Request failed")
-                              : undefined
-                        }
-                        output={
-                          part.output?.success ? (
-                            <div className="p-3 max-w-full overflow-hidden">
-                              <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
-                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-emerald-600 dark:text-emerald-400 shrink-0">
-                                  ✓ Success
-                                </span>
-                                <span className="truncate min-w-0">
-                                  {part.output.url}
-                                </span>
-                              </div>
-                              <pre className="max-h-48 max-w-full overflow-auto rounded bg-muted/50 p-2 text-xs whitespace-pre-wrap break-words">
-                                {typeof part.output.data === "object"
-                                  ? JSON.stringify(
-                                      part.output.data,
-                                      null,
-                                      2,
-                                    ).substring(0, 1000)
-                                  : String(part.output.data).substring(0, 1000)}
-                                {(typeof part.output.data === "object"
-                                  ? JSON.stringify(part.output.data).length >
-                                    1000
-                                  : String(part.output.data).length > 1000) &&
-                                  "\n..."}
-                              </pre>
-                            </div>
-                          ) : null
-                        }
-                      />
-                    )}
-                  </ToolContent>
-                </Tool>
-              );
-            }
+              // Tool components for assistant messages
+              if (type === "tool-getWeather") {
+                const { toolCallId, state } = part;
 
-            // Skill Tools - useSkill
-            if (type === "tool-useSkill") {
-              const { toolCallId, state } = part;
-              const skillId = part.input?.skillId as string | undefined;
-
-              return (
-                <Tool defaultOpen={false} key={toolCallId}>
-                  <ToolHeader
-                    state={state}
-                    type="tool-useSkill"
-                    title={skillId ? `Loading: ${skillId}` : "Loading Skill"}
-                    description="Activating specialized skill instructions"
-                  />
-                  <ToolContent>
-                    {state === "input-available" && (
-                      <ToolInput input={part.input} />
-                    )}
-                    {state === "output-available" &&
-                      (part.output && "error" in part.output ? (
+                return (
+                  <Tool defaultOpen={false} key={toolCallId}>
+                    <ToolHeader state={state} type="tool-getWeather" />
+                    <ToolContent>
+                      {state === "input-available" && (
+                        <ToolInput input={part.input} />
+                      )}
+                      {state === "output-available" && (
                         <ToolOutput
-                          errorText={String(part.output.error)}
-                          output={null}
+                          errorText={undefined}
+                          output={<Weather weatherAtLocation={part.output} />}
                         />
-                      ) : part.output && "instructions" in part.output ? (
-                        <SkillOutput
-                          skillId={part.output.skillId as string}
-                          skillName={part.output.name as string}
-                          instructions={part.output.instructions as string}
-                        />
-                      ) : (
+                      )}
+                    </ToolContent>
+                  </Tool>
+                );
+              }
+
+              if (type === "tool-createDocument") {
+                const { toolCallId } = part;
+
+                if (part.output && "error" in part.output) {
+                  return (
+                    <div
+                      className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-500 dark:bg-red-950/50"
+                      key={toolCallId}
+                    >
+                      Error creating document: {String(part.output.error)}
+                    </div>
+                  );
+                }
+
+                return (
+                  <DocumentPreview
+                    isReadonly={isReadonly}
+                    key={toolCallId}
+                    result={part.output}
+                  />
+                );
+              }
+
+              if (type === "tool-updateDocument") {
+                const { toolCallId } = part;
+
+                if (part.output && "error" in part.output) {
+                  return (
+                    <div
+                      className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-500 dark:bg-red-950/50"
+                      key={toolCallId}
+                    >
+                      Error updating document: {String(part.output.error)}
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="relative" key={toolCallId}>
+                    <DocumentPreview
+                      args={{ ...part.output, isUpdate: true }}
+                      isReadonly={isReadonly}
+                      result={part.output}
+                    />
+                  </div>
+                );
+              }
+
+              if (type === "tool-requestSuggestions") {
+                const { toolCallId, state } = part;
+
+                return (
+                  <Tool defaultOpen={false} key={toolCallId}>
+                    <ToolHeader state={state} type="tool-requestSuggestions" />
+                    <ToolContent>
+                      {state === "input-available" && (
+                        <ToolInput input={part.input} />
+                      )}
+                      {state === "output-available" && (
                         <ToolOutput
                           errorText={undefined}
                           output={
-                            <pre className="p-3 text-xs max-w-full overflow-auto whitespace-pre-wrap break-words">
-                              {JSON.stringify(part.output, null, 2)}
-                            </pre>
+                            "error" in part.output ? (
+                              <div className="rounded border p-2 text-red-500">
+                                Error: {String(part.output.error)}
+                              </div>
+                            ) : (
+                              <DocumentToolResult
+                                isReadonly={isReadonly}
+                                result={part.output}
+                                type="request-suggestions"
+                              />
+                            )
                           }
                         />
-                      ))}
-                  </ToolContent>
-                </Tool>
-              );
-            }
-
-            // Skill Tools - getSkillResource
-            if (type === "tool-getSkillResource") {
-              const { toolCallId, state } = part;
-              const resourcePath = part.input?.resourcePath as
-                | string
-                | undefined;
-
-              return (
-                <Tool defaultOpen={false} key={toolCallId}>
-                  <ToolHeader
-                    state={state}
-                    type="tool-getSkillResource"
-                    title={
-                      resourcePath
-                        ? `Resource: ${resourcePath}`
-                        : "Skill Resource"
-                    }
-                    description="Loading additional skill documentation"
-                  />
-                  <ToolContent>
-                    {state === "input-available" && (
-                      <ToolInput input={part.input} />
-                    )}
-                    {state === "output-available" && (
-                      <ToolOutput
-                        errorText={
-                          part.output && "error" in part.output
-                            ? String(part.output.error)
-                            : undefined
-                        }
-                        output={
-                          part.output && "content" in part.output ? (
-                            <pre className="max-h-48 max-w-full overflow-auto p-3 text-xs whitespace-pre-wrap break-words">
-                              {(part.output.content as string).substring(
-                                0,
-                                500,
-                              )}
-                              {(part.output.content as string).length > 500
-                                ? "..."
-                                : ""}
-                            </pre>
-                          ) : null
-                        }
-                      />
-                    )}
-                  </ToolContent>
-                </Tool>
-              );
-            }
-
-            // Spotify Tools (all 7 domain-specific tools)
-            const spotifyToolTypes = [
-              "tool-spotifyAlbums",
-              "tool-spotifyArtists",
-              "tool-spotifyPlayback",
-              "tool-spotifyQueue",
-              "tool-spotifyPlaylists",
-              "tool-spotifyTracks",
-              "tool-spotifyUser",
-            ] as const;
-
-            if (
-              spotifyToolTypes.includes(
-                type as (typeof spotifyToolTypes)[number],
-              )
-            ) {
-              // Type assertion needed because TypeScript can't narrow with includes()
-              const spotifyPart = part as {
-                toolCallId: string;
-                state:
-                  | "input-streaming"
-                  | "input-available"
-                  | "output-available"
-                  | "output-error";
-                input?: { action?: string };
-                output?: Record<string, unknown>;
-              };
-              const { toolCallId, state } = spotifyPart;
-              const action = spotifyPart.input?.action as string | undefined;
-
-              // Determine title based on tool type and action
-              let title = "Spotify";
-
-              // Tool-specific titles
-              if (type === "tool-spotifyAlbums") {
-                title =
-                  action === "get_album"
-                    ? "Album Details"
-                    : action === "get_multiple_albums"
-                      ? "Albums"
-                      : action === "get_album_tracks"
-                        ? "Album Tracks"
-                        : action === "check_saved_albums"
-                          ? "Checking Saved Albums"
-                          : "Albums";
-              } else if (type === "tool-spotifyArtists") {
-                title =
-                  action === "get_artist"
-                    ? "Artist Details"
-                    : action === "get_multiple_artists"
-                      ? "Artists"
-                      : action === "get_artist_albums"
-                        ? "Artist Albums"
-                        : action === "get_artist_top_tracks"
-                          ? "Artist Top Tracks"
-                          : "Artists";
-              } else if (type === "tool-spotifyPlayback") {
-                title =
-                  action === "get_current_playback"
-                    ? "Now Playing"
-                    : action === "get_devices"
-                      ? "Devices"
-                      : action === "play"
-                        ? "Playing"
-                        : action === "pause"
-                          ? "Pausing"
-                          : action === "skip_to_next"
-                            ? "Next Track"
-                            : action === "skip_to_previous"
-                              ? "Previous Track"
-                              : action === "seek"
-                                ? "Seeking"
-                                : action === "set_volume"
-                                  ? "Volume"
-                                  : action === "set_repeat_mode"
-                                    ? "Repeat Mode"
-                                    : action === "toggle_shuffle"
-                                      ? "Shuffle"
-                                      : action === "transfer_playback"
-                                        ? "Transfer Playback"
-                                        : "Playback";
-              } else if (type === "tool-spotifyQueue") {
-                title =
-                  action === "get_queue"
-                    ? "Queue"
-                    : action === "add_to_queue"
-                      ? "Adding to Queue"
-                      : "Queue";
-              } else if (type === "tool-spotifyPlaylists") {
-                title =
-                  action === "get_my_playlists"
-                    ? "Playlists"
-                    : action === "get_playlist"
-                      ? "Playlist Details"
-                      : action === "get_playlist_tracks"
-                        ? "Playlist Tracks"
-                        : action === "create_playlist"
-                          ? "Creating Playlist"
-                          : action === "change_details"
-                            ? "Updating Playlist"
-                            : action === "add_tracks"
-                              ? "Adding to Playlist"
-                              : action === "remove_tracks"
-                                ? "Removing from Playlist"
-                                : action === "reorder_tracks"
-                                  ? "Reordering Playlist"
-                                  : "Playlists";
-              } else if (type === "tool-spotifyTracks") {
-                title =
-                  action === "get_track"
-                    ? "Track Details"
-                    : action === "get_multiple_tracks"
-                      ? "Tracks"
-                      : action === "get_saved_tracks"
-                        ? "Saved Tracks"
-                        : action === "save_tracks"
-                          ? "Saving Tracks"
-                          : action === "remove_saved_tracks"
-                            ? "Removing Tracks"
-                            : action === "check_saved_tracks"
-                              ? "Checking Saved Tracks"
-                              : "Tracks";
-              } else if (type === "tool-spotifyUser") {
-                title =
-                  action === "get_profile"
-                    ? "Profile"
-                    : action === "get_top_tracks"
-                      ? "Top Tracks"
-                      : action === "get_top_artists"
-                        ? "Top Artists"
-                        : action === "get_followed_artists"
-                          ? "Followed Artists"
-                          : action === "follow_artists"
-                            ? "Following Artists"
-                            : action === "follow_users"
-                              ? "Following Users"
-                              : action === "unfollow_artists"
-                                ? "Unfollowing Artists"
-                                : action === "unfollow_users"
-                                  ? "Unfollowing Users"
-                                  : action === "check_following_artists"
-                                    ? "Checking Following"
-                                    : action === "check_following_users"
-                                      ? "Checking Following"
-                                      : "User";
+                      )}
+                    </ToolContent>
+                  </Tool>
+                );
               }
 
-              return (
-                <Tool defaultOpen={false} key={toolCallId}>
-                  <ToolHeader state={state} type={type} title={title} />
-                  <ToolContent>
-                    {state === "input-available" && (
-                      <ToolInput input={spotifyPart.input} />
-                    )}
-                    {state === "output-available" && spotifyPart.output && (
-                      <ToolOutput
-                        errorText={undefined}
-                        output={
-                          <SpotifyPlayer
-                            data={
-                              spotifyPart.output as Parameters<
-                                typeof SpotifyPlayer
-                              >[0]["data"]
-                            }
-                          />
-                        }
-                      />
-                    )}
-                  </ToolContent>
-                </Tool>
-              );
-            }
-            // Google Calendar Tools (googleCalendars and googleEvents)
-            const googleCalendarToolTypes = [
-              "tool-googleCalendars",
-              "tool-googleEvents",
-            ] as const;
+              // Web Fetch Tool
+              if (type === "tool-webFetch") {
+                const { toolCallId, state } = part;
+                const url = part.input?.url as string | undefined;
 
-            if (
-              googleCalendarToolTypes.includes(
-                type as (typeof googleCalendarToolTypes)[number],
-              )
-            ) {
-              // Type assertion needed because TypeScript can't narrow with includes()
-              const googleCalendarPart = part as {
-                toolCallId: string;
-                state:
-                  | "input-streaming"
-                  | "input-available"
-                  | "output-available"
-                  | "output-error";
-                input?: { action?: string };
-                output?: Record<string, unknown>;
-              };
-              const { toolCallId, state } = googleCalendarPart;
-              const action = googleCalendarPart.input?.action as
-                | string
-                | undefined;
+                // Extract domain from URL for display
+                let domain = "URL";
+                if (url) {
+                  try {
+                    domain = new URL(url).hostname;
+                  } catch {
+                    domain = url.substring(0, 30);
+                  }
+                }
 
-              // Determine title based on tool type and action
-              let title = "Google Calendar";
-
-              // Tool-specific titles
-              if (type === "tool-googleCalendars") {
-                title =
-                  action === "list_calendars"
-                    ? "Listing calendars"
-                    : action === "get_calendar"
-                      ? "Getting calendar details"
-                      : "Google Calendar";
-              } else if (type === "tool-googleEvents") {
-                title =
-                  action === "list_events"
-                    ? "Listing events"
-                    : action === "create_event"
-                      ? "Creating event"
-                      : action === "update_event"
-                        ? "Updating event"
-                        : action === "delete_event"
-                          ? "Deleting event"
-                          : "Google Events";
-              }
-
-              return (
-                <Tool defaultOpen={false} key={toolCallId}>
-                  <ToolHeader state={state} type={type} title={title} />
-                  <ToolContent>
-                    {state === "input-available" && (
-                      <ToolInput input={googleCalendarPart.input} />
-                    )}
-                    {state === "output-available" &&
-                      googleCalendarPart.output && (
+                return (
+                  <Tool defaultOpen={false} key={toolCallId}>
+                    <ToolHeader
+                      state={state}
+                      type="tool-webFetch"
+                      title={`Fetching: ${domain}`}
+                      description={url || "Loading web content"}
+                    />
+                    <ToolContent>
+                      {(state === "input-available" ||
+                        state === "input-streaming") && (
+                        <ToolInput input={part.input} />
+                      )}
+                      {state === "output-available" && (
                         <ToolOutput
                           errorText={
-                            googleCalendarPart.output &&
-                            "error" in googleCalendarPart.output
-                              ? String(googleCalendarPart.output.error)
+                            part.output && "error" in part.output
+                              ? String(part.output.error)
+                              : part.output && part.output.success === false
+                                ? String(part.output.error || "Request failed")
+                                : undefined
+                          }
+                          output={
+                            part.output?.success ? (
+                              <div className="p-3 max-w-full overflow-hidden">
+                                <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-emerald-600 dark:text-emerald-400 shrink-0">
+                                    ✓ Success
+                                  </span>
+                                  <span className="truncate min-w-0">
+                                    {part.output.url}
+                                  </span>
+                                </div>
+                                <pre className="max-h-48 max-w-full overflow-auto rounded bg-muted/50 p-2 text-xs whitespace-pre-wrap break-words">
+                                  {typeof part.output.data === "object"
+                                    ? JSON.stringify(
+                                        part.output.data,
+                                        null,
+                                        2,
+                                      ).substring(0, 1000)
+                                    : String(part.output.data).substring(
+                                        0,
+                                        1000,
+                                      )}
+                                  {(typeof part.output.data === "object"
+                                    ? JSON.stringify(part.output.data).length >
+                                      1000
+                                    : String(part.output.data).length > 1000) &&
+                                    "\n..."}
+                                </pre>
+                              </div>
+                            ) : null
+                          }
+                        />
+                      )}
+                    </ToolContent>
+                  </Tool>
+                );
+              }
+
+              // Skill Tools - useSkill
+              if (type === "tool-useSkill") {
+                const { toolCallId, state } = part;
+                const skillId = part.input?.skillId as string | undefined;
+
+                return (
+                  <Tool defaultOpen={false} key={toolCallId}>
+                    <ToolHeader
+                      state={state}
+                      type="tool-useSkill"
+                      title={skillId ? `Loading: ${skillId}` : "Loading Skill"}
+                      description="Activating specialized skill instructions"
+                    />
+                    <ToolContent>
+                      {state === "input-available" && (
+                        <ToolInput input={part.input} />
+                      )}
+                      {state === "output-available" &&
+                        (part.output && "error" in part.output ? (
+                          <ToolOutput
+                            errorText={String(part.output.error)}
+                            output={null}
+                          />
+                        ) : part.output && "instructions" in part.output ? (
+                          <SkillOutput
+                            skillId={part.output.skillId as string}
+                            skillName={part.output.name as string}
+                            instructions={part.output.instructions as string}
+                          />
+                        ) : (
+                          <ToolOutput
+                            errorText={undefined}
+                            output={
+                              <pre className="p-3 text-xs max-w-full overflow-auto whitespace-pre-wrap break-words">
+                                {JSON.stringify(part.output, null, 2)}
+                              </pre>
+                            }
+                          />
+                        ))}
+                    </ToolContent>
+                  </Tool>
+                );
+              }
+
+              // Skill Tools - getSkillResource
+              if (type === "tool-getSkillResource") {
+                const { toolCallId, state } = part;
+                const resourcePath = part.input?.resourcePath as
+                  | string
+                  | undefined;
+
+                return (
+                  <Tool defaultOpen={false} key={toolCallId}>
+                    <ToolHeader
+                      state={state}
+                      type="tool-getSkillResource"
+                      title={
+                        resourcePath
+                          ? `Resource: ${resourcePath}`
+                          : "Skill Resource"
+                      }
+                      description="Loading additional skill documentation"
+                    />
+                    <ToolContent>
+                      {state === "input-available" && (
+                        <ToolInput input={part.input} />
+                      )}
+                      {state === "output-available" && (
+                        <ToolOutput
+                          errorText={
+                            part.output && "error" in part.output
+                              ? String(part.output.error)
                               : undefined
                           }
                           output={
-                            <GoogleCalendarDisplay
+                            part.output && "content" in part.output ? (
+                              <pre className="max-h-48 max-w-full overflow-auto p-3 text-xs whitespace-pre-wrap break-words">
+                                {(part.output.content as string).substring(
+                                  0,
+                                  500,
+                                )}
+                                {(part.output.content as string).length > 500
+                                  ? "..."
+                                  : ""}
+                              </pre>
+                            ) : null
+                          }
+                        />
+                      )}
+                    </ToolContent>
+                  </Tool>
+                );
+              }
+
+              // Spotify Tools (all 7 domain-specific tools)
+              const spotifyToolTypes = [
+                "tool-spotifyAlbums",
+                "tool-spotifyArtists",
+                "tool-spotifyPlayback",
+                "tool-spotifyQueue",
+                "tool-spotifyPlaylists",
+                "tool-spotifyTracks",
+                "tool-spotifyUser",
+              ] as const;
+
+              if (
+                spotifyToolTypes.includes(
+                  type as (typeof spotifyToolTypes)[number],
+                )
+              ) {
+                // Type assertion needed because TypeScript can't narrow with includes()
+                const spotifyPart = part as {
+                  toolCallId: string;
+                  state:
+                    | "input-streaming"
+                    | "input-available"
+                    | "output-available"
+                    | "output-error";
+                  input?: { action?: string };
+                  output?: Record<string, unknown>;
+                };
+                const { toolCallId, state } = spotifyPart;
+                const action = spotifyPart.input?.action as string | undefined;
+
+                // Determine title based on tool type and action
+                let title = "Spotify";
+
+                // Tool-specific titles
+                if (type === "tool-spotifyAlbums") {
+                  title =
+                    action === "get_album"
+                      ? "Album Details"
+                      : action === "get_multiple_albums"
+                        ? "Albums"
+                        : action === "get_album_tracks"
+                          ? "Album Tracks"
+                          : action === "check_saved_albums"
+                            ? "Checking Saved Albums"
+                            : "Albums";
+                } else if (type === "tool-spotifyArtists") {
+                  title =
+                    action === "get_artist"
+                      ? "Artist Details"
+                      : action === "get_multiple_artists"
+                        ? "Artists"
+                        : action === "get_artist_albums"
+                          ? "Artist Albums"
+                          : action === "get_artist_top_tracks"
+                            ? "Artist Top Tracks"
+                            : "Artists";
+                } else if (type === "tool-spotifyPlayback") {
+                  title =
+                    action === "get_current_playback"
+                      ? "Now Playing"
+                      : action === "get_devices"
+                        ? "Devices"
+                        : action === "play"
+                          ? "Playing"
+                          : action === "pause"
+                            ? "Pausing"
+                            : action === "skip_to_next"
+                              ? "Next Track"
+                              : action === "skip_to_previous"
+                                ? "Previous Track"
+                                : action === "seek"
+                                  ? "Seeking"
+                                  : action === "set_volume"
+                                    ? "Volume"
+                                    : action === "set_repeat_mode"
+                                      ? "Repeat Mode"
+                                      : action === "toggle_shuffle"
+                                        ? "Shuffle"
+                                        : action === "transfer_playback"
+                                          ? "Transfer Playback"
+                                          : "Playback";
+                } else if (type === "tool-spotifyQueue") {
+                  title =
+                    action === "get_queue"
+                      ? "Queue"
+                      : action === "add_to_queue"
+                        ? "Adding to Queue"
+                        : "Queue";
+                } else if (type === "tool-spotifyPlaylists") {
+                  title =
+                    action === "get_my_playlists"
+                      ? "Playlists"
+                      : action === "get_playlist"
+                        ? "Playlist Details"
+                        : action === "get_playlist_tracks"
+                          ? "Playlist Tracks"
+                          : action === "create_playlist"
+                            ? "Creating Playlist"
+                            : action === "change_details"
+                              ? "Updating Playlist"
+                              : action === "add_tracks"
+                                ? "Adding to Playlist"
+                                : action === "remove_tracks"
+                                  ? "Removing from Playlist"
+                                  : action === "reorder_tracks"
+                                    ? "Reordering Playlist"
+                                    : "Playlists";
+                } else if (type === "tool-spotifyTracks") {
+                  title =
+                    action === "get_track"
+                      ? "Track Details"
+                      : action === "get_multiple_tracks"
+                        ? "Tracks"
+                        : action === "get_saved_tracks"
+                          ? "Saved Tracks"
+                          : action === "save_tracks"
+                            ? "Saving Tracks"
+                            : action === "remove_saved_tracks"
+                              ? "Removing Tracks"
+                              : action === "check_saved_tracks"
+                                ? "Checking Saved Tracks"
+                                : "Tracks";
+                } else if (type === "tool-spotifyUser") {
+                  title =
+                    action === "get_profile"
+                      ? "Profile"
+                      : action === "get_top_tracks"
+                        ? "Top Tracks"
+                        : action === "get_top_artists"
+                          ? "Top Artists"
+                          : action === "get_followed_artists"
+                            ? "Followed Artists"
+                            : action === "follow_artists"
+                              ? "Following Artists"
+                              : action === "follow_users"
+                                ? "Following Users"
+                                : action === "unfollow_artists"
+                                  ? "Unfollowing Artists"
+                                  : action === "unfollow_users"
+                                    ? "Unfollowing Users"
+                                    : action === "check_following_artists"
+                                      ? "Checking Following"
+                                      : action === "check_following_users"
+                                        ? "Checking Following"
+                                        : "User";
+                }
+
+                return (
+                  <Tool defaultOpen={false} key={toolCallId}>
+                    <ToolHeader state={state} type={type} title={title} />
+                    <ToolContent>
+                      {state === "input-available" && (
+                        <ToolInput input={spotifyPart.input} />
+                      )}
+                      {state === "output-available" && spotifyPart.output && (
+                        <ToolOutput
+                          errorText={undefined}
+                          output={
+                            <SpotifyPlayer
                               data={
-                                googleCalendarPart.output as Parameters<
-                                  typeof GoogleCalendarDisplay
+                                spotifyPart.output as Parameters<
+                                  typeof SpotifyPlayer
                                 >[0]["data"]
                               }
                             />
                           }
                         />
                       )}
-                  </ToolContent>
-                </Tool>
-              );
-            }
+                    </ToolContent>
+                  </Tool>
+                );
+              }
+              // Google Calendar Tools (googleCalendars and googleEvents)
+              const googleCalendarToolTypes = [
+                "tool-googleCalendars",
+                "tool-googleEvents",
+              ] as const;
 
-            return null;
-          })}
+              if (
+                googleCalendarToolTypes.includes(
+                  type as (typeof googleCalendarToolTypes)[number],
+                )
+              ) {
+                // Type assertion needed because TypeScript can't narrow with includes()
+                const googleCalendarPart = part as {
+                  toolCallId: string;
+                  state:
+                    | "input-streaming"
+                    | "input-available"
+                    | "output-available"
+                    | "output-error";
+                  input?: { action?: string };
+                  output?: Record<string, unknown>;
+                };
+                const { toolCallId, state } = googleCalendarPart;
+                const action = googleCalendarPart.input?.action as
+                  | string
+                  | undefined;
 
-          {/* Web Search Sources - full panel shown only after completion */}
-          {message.role === "assistant" &&
-            sourcesFromMessage.length > 0 &&
-            !isLoading && (
+                // Determine title based on tool type and action
+                let title = "Google Calendar";
+
+                // Tool-specific titles
+                if (type === "tool-googleCalendars") {
+                  title =
+                    action === "list_calendars"
+                      ? "Listing calendars"
+                      : action === "get_calendar"
+                        ? "Getting calendar details"
+                        : "Google Calendar";
+                } else if (type === "tool-googleEvents") {
+                  title =
+                    action === "list_events"
+                      ? "Listing events"
+                      : action === "create_event"
+                        ? "Creating event"
+                        : action === "update_event"
+                          ? "Updating event"
+                          : action === "delete_event"
+                            ? "Deleting event"
+                            : "Google Events";
+                }
+
+                return (
+                  <Tool defaultOpen={false} key={toolCallId}>
+                    <ToolHeader state={state} type={type} title={title} />
+                    <ToolContent>
+                      {state === "input-available" && (
+                        <ToolInput input={googleCalendarPart.input} />
+                      )}
+                      {state === "output-available" &&
+                        googleCalendarPart.output && (
+                          <ToolOutput
+                            errorText={
+                              googleCalendarPart.output &&
+                              "error" in googleCalendarPart.output
+                                ? String(googleCalendarPart.output.error)
+                                : undefined
+                            }
+                            output={
+                              <GoogleCalendarDisplay
+                                data={
+                                  googleCalendarPart.output as Parameters<
+                                    typeof GoogleCalendarDisplay
+                                  >[0]["data"]
+                                }
+                              />
+                            }
+                          />
+                        )}
+                    </ToolContent>
+                  </Tool>
+                );
+              }
+
+              return null;
+            })}
+
+            {/* Web Search Sources - full panel shown only after completion */}
+            {sourcesFromMessage.length > 0 && !isLoading && (
               <WebSearch defaultOpen={false}>
                 <WebSearchHeader
                   isSearching={false}
@@ -773,18 +751,115 @@ const PurePreviewMessage = ({
               </WebSearch>
             )}
 
-          {!isReadonly && (
-            <MessageActions
-              chatId={chatId}
-              isLoading={isLoading}
-              key={`action-${message.id}`}
-              message={message}
-              setMode={setMode}
-              vote={vote}
-            />
-          )}
+            {!isReadonly && (
+              <MessageActions
+                chatId={chatId}
+                isLoading={isLoading}
+                key={`action-${message.id}`}
+                message={message}
+                setMode={setMode}
+                vote={vote}
+              />
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* User message layout: icon + content side by side */}
+      {message.role === "user" && (
+        <div className="flex w-full max-w-full items-start gap-3 md:gap-4">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-600/20 to-orange-600/20 text-amber-700 ring-1 ring-amber-600/30 dark:from-amber-500/30 dark:to-orange-500/30 dark:text-amber-400 dark:ring-amber-500/40">
+            <span className="text-base font-semibold">
+              <UserIcon />
+            </span>
+          </div>
+          <div
+            className={cn("flex flex-col min-w-0 flex-1", {
+              "gap-3 md:gap-4": message.parts?.some(
+                (p) => p.type === "text" && p.text?.trim(),
+              ),
+              "w-full max-w-full": true,
+            })}
+          >
+            {attachmentsFromMessage.length > 0 && (
+              <div
+                className="flex flex-row justify-start gap-2"
+                data-testid={"message-attachments"}
+              >
+                {attachmentsFromMessage.map((attachment) => (
+                  <PreviewAttachment
+                    attachment={{
+                      name: attachment.filename ?? "file",
+                      contentType: attachment.mediaType,
+                      url: attachment.url,
+                    }}
+                    key={attachment.url}
+                  />
+                ))}
+              </div>
+            )}
+
+            {message.parts?.map((part, index) => {
+              const { type } = part;
+              const key = `message-${message.id}-part-${index}`;
+
+              if (type === "text") {
+                if (mode === "view") {
+                  return (
+                    <div key={key}>
+                      <MessageContent
+                        className="w-fit break-words rounded-2xl px-5 py-3 text-left text-white shadow-lg shadow-orange-500/20 dark:shadow-orange-500/15"
+                        data-testid="message-content"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, hsl(25 85% 50%) 0%, hsl(30 90% 45%) 50%, hsl(20 80% 40%) 100%)",
+                        }}
+                      >
+                        <Response components={userMessageComponents}>
+                          {sanitizeText(part.text)}
+                        </Response>
+                      </MessageContent>
+                    </div>
+                  );
+                }
+
+                if (mode === "edit") {
+                  return (
+                    <div
+                      className="flex w-full flex-row items-start gap-3"
+                      key={key}
+                    >
+                      <div className="size-8" />
+                      <div className="min-w-0 flex-1">
+                        <MessageEditor
+                          key={message.id}
+                          message={message}
+                          regenerate={regenerate}
+                          setMessages={setMessages}
+                          setMode={setMode}
+                        />
+                      </div>
+                    </div>
+                  );
+                }
+              }
+
+              return null;
+            })}
+
+            {!isReadonly && (
+              <MessageActions
+                chatId={chatId}
+                isLoading={isLoading}
+                key={`action-${message.id}`}
+                message={message}
+                setMode={setMode}
+                vote={vote}
+              />
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -805,6 +880,9 @@ export const PreviewMessage = memo(
       return false;
     }
     if (!equal(prevProps.vote, nextProps.vote)) {
+      return false;
+    }
+    if (prevProps.threadName !== nextProps.threadName) {
       return false;
     }
 

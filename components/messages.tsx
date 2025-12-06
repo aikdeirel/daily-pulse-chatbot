@@ -18,6 +18,7 @@ type MessagesProps = {
   isReadonly: boolean;
   isArtifactVisible: boolean;
   selectedModelId: string;
+  threadName?: string;
 };
 
 function PureMessages({
@@ -29,6 +30,7 @@ function PureMessages({
   regenerate,
   isReadonly,
   selectedModelId: _selectedModelId,
+  threadName,
 }: MessagesProps) {
   const {
     containerRef: messagesContainerRef,
@@ -60,6 +62,7 @@ function PureMessages({
               hasSentMessage && index === messages.length - 1
             }
             setMessages={setMessages}
+            threadName={threadName}
             vote={
               votes
                 ? votes.find((vote) => vote.messageId === message.id)
@@ -97,6 +100,9 @@ export const Messages = memo(PureMessages, (prevProps, nextProps) => {
     return false;
   }
   if (!equal(prevProps.votes, nextProps.votes)) {
+    return false;
+  }
+  if (prevProps.threadName !== nextProps.threadName) {
     return false;
   }
 
