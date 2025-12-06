@@ -17,7 +17,7 @@ import {
   googleToolGroups,
 } from "@/lib/ai/tools/google/groups";
 import { cn } from "@/lib/utils";
-import { CalendarIcon } from "./icons";
+import { GoogleIcon } from "./icons";
 
 export function GoogleToolSelector({
   selectedGroupIds,
@@ -97,12 +97,12 @@ export function GoogleToolSelector({
           title={summary}
           variant="ghost"
         >
-          <CalendarIcon size={16} />
+          <GoogleIcon size={16} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-72 p-2">
         <DropdownMenuLabel className="text-xs text-muted-foreground">
-          Google Calendar tool groups
+          Google tool groups
           <div className="font-medium text-foreground">{summary}</div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
