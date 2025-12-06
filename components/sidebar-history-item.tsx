@@ -61,9 +61,7 @@ const PureChatItem = ({
               transition={{ duration: 0.3 }}
             >
               <div className="h-4 flex-1 max-w-[120px] animate-pulse rounded bg-sidebar-accent-foreground/20" />
-              <span className="text-[10px] text-sidebar-foreground/40 animate-pulse shrink-0">
-                generating...
-              </span>
+              <span className="text-[10px] text-sidebar-foreground/40 animate-pulse shrink-0"></span>
             </motion.div>
           ) : (
             <span data-testid="sidebar-history-item-title">
