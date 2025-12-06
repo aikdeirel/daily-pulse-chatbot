@@ -58,11 +58,11 @@ export function GoogleToolSelector({
   // Use useMemo to stabilize button classes to prevent hydration mismatches
   const buttonClasses = useMemo(() => {
     if (isAllEnabled) {
-      return "bg-[#4285F4]/15 text-[#4285F4] hover:bg-[#4285F4]/25 dark:text-[#4285F4]";
+      return "bg-gradient-to-br from-[#4285F4] via-[#EA4335] to-[#FBBC05] text-white hover:opacity-90";
     } else if (isNoneEnabled) {
       return "hover:bg-accent";
     } else {
-      return "bg-[#4285F4]/10 text-[#4285F4] hover:bg-[#4285F4]/20 dark:text-[#4285F4]";
+      return "bg-gradient-to-br from-[#4285F4]/70 via-[#EA4335]/70 to-[#FBBC05]/70 text-white hover:opacity-90";
     }
   }, [isAllEnabled, isNoneEnabled]);
 
