@@ -149,9 +149,14 @@ export const updateDocumentPrompt = (
 ${currentContent}`;
 };
 
-export const titlePrompt = `Generate a concise title for this conversation based on the user's message. 
+export const titlePrompt = `You must generate ONLY a short title (not an answer or solution) for this conversation.
+
+CRITICAL: Do NOT answer the question. Do NOT solve the problem. Do NOT explain anything. ONLY create a brief title that describes what the user is asking about.
+
+Example: If user asks "How do I sort an array in JavaScript?", respond with "JavaScript Array Sorting" NOT with actual code or explanations.
+
 Rules:
-- Create ONLY a title, do NOT solve or answer the user's question
 - Maximum 80 characters
-- No quotes, colons, or special formatting
-- Use plain descriptive text only`;
+- No quotes, colons, semicolons, or special punctuation
+- Use plain, simple language
+- Just describe the topic, never answer it`;
