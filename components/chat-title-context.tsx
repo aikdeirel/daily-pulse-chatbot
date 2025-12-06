@@ -9,6 +9,10 @@ import {
   useState,
 } from "react";
 
+function isTitleGenerating(initialTitle?: string): boolean {
+  return !initialTitle || initialTitle === "New Chat";
+}
+
 interface ChatTitleState {
   [chatId: string]: {
     title: string;
@@ -25,14 +29,6 @@ interface ChatTitleContextType {
   setTitleGenerating: (chatId: string) => void;
   // Set the generated title
   setTitle: (chatId: string, title: string) => void;
-  // Subscribe to title changes (returns current state)
-  useTitleForChat: (
-    chatId: string,
-    initialTitle?: string,
-  ) => {
-    title: string | undefined;
-    isGenerating: boolean;
-  };
 }
 
 const ChatTitleContext = createContext<ChatTitleContextType | null>(null);
@@ -58,35 +54,13 @@ export function ChatTitleProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
-  // Custom hook to use title for a specific chat
-  const useTitleForChat = useCallback(
-    (chatId: string, initialTitle?: string) => {
-      const state = titleStates[chatId];
-
-      // If we have a state in context, use it
-      if (state) {
-        return state;
-      }
-
-      // If initial title is "New Chat" or undefined, it's generating
-      const isGenerating = !initialTitle || initialTitle === "New Chat";
-
-      return {
-        title: initialTitle,
-        isGenerating,
-      };
-    },
-    [titleStates],
-  );
-
   const contextValue = useMemo(
     () => ({
       getTitleState,
       setTitleGenerating,
       setTitle,
-      useTitleForChat,
     }),
-    [getTitleState, setTitleGenerating, setTitle, useTitleForChat],
+    [getTitleState, setTitleGenerating, setTitle],
   );
 
   return (
@@ -117,7 +91,7 @@ export function useTitleForChat(chatId: string, initialTitle?: string) {
   }
 
   // If initial title is "New Chat" or undefined, it's generating
-  const isGenerating = !initialTitle || initialTitle === "New Chat";
+  const isGenerating = isTitleGenerating(initialTitle);
 
   return {
     title: initialTitle,
