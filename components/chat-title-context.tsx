@@ -9,6 +9,10 @@ import {
   useState,
 } from "react";
 
+function isTitleGenerating(initialTitle?: string): boolean {
+  return !initialTitle || initialTitle === "New Chat";
+}
+
 interface ChatTitleState {
   [chatId: string]: {
     title: string;
@@ -40,9 +44,12 @@ const ChatTitleContext = createContext<ChatTitleContextType | null>(null);
 export function ChatTitleProvider({ children }: { children: ReactNode }) {
   const [titleStates, setTitleStates] = useState<ChatTitleState>({});
 
-  function getTitleState(chatId: string) {
-    return titleStates[chatId];
-  }
+  const getTitleState = useCallback(
+    (chatId: string) => {
+      return titleStates[chatId];
+    },
+    [titleStates],
+  );
 
   const setTitleGenerating = useCallback((chatId: string) => {
     setTitleStates((prev) => ({
@@ -69,7 +76,7 @@ export function ChatTitleProvider({ children }: { children: ReactNode }) {
       }
 
       // If initial title is "New Chat" or undefined, it's generating
-      const isGenerating = !initialTitle || initialTitle === "New Chat";
+      const isGenerating = isTitleGenerating(initialTitle);
 
       return {
         title: initialTitle,
@@ -117,7 +124,7 @@ export function useTitleForChat(chatId: string, initialTitle?: string) {
   }
 
   // If initial title is "New Chat" or undefined, it's generating
-  const isGenerating = !initialTitle || initialTitle === "New Chat";
+  const isGenerating = isTitleGenerating(initialTitle);
 
   return {
     title: initialTitle,
