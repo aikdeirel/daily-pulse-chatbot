@@ -9,6 +9,10 @@ import {
   useState,
 } from "react";
 
+function isTitleGenerating(initialTitle?: string): boolean {
+  return !initialTitle || initialTitle === "New Chat";
+}
+
 interface ChatTitleState {
   [chatId: string]: {
     title: string;
@@ -87,7 +91,7 @@ export function useTitleForChat(chatId: string, initialTitle?: string) {
   }
 
   // If initial title is "New Chat" or undefined, it's generating
-  const isGenerating = !initialTitle || initialTitle === "New Chat";
+  const isGenerating = isTitleGenerating(initialTitle);
 
   return {
     title: initialTitle,
