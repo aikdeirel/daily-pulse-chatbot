@@ -17,12 +17,12 @@ export async function POST(request: Request) {
   const googleService = new GoogleService(session.user.id);
 
   try {
-    // Use the smart search functionality
-    const events = await googleService.searchEventsSmart(calendarId, query);
+    // Use the list events method with query parameter for search
+    const events = await googleService.listEvents(calendarId, { q: query });
 
     return Response.json(events);
   } catch (error: unknown) {
-    console.error("Google Events Smart Search API error:", error);
+    console.error("Google Events Search API error:", error);
 
     // Handle specific error cases using the enhanced error handling
     if (error instanceof Error) {
