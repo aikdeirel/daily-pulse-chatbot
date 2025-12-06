@@ -46,6 +46,7 @@ const PurePreviewMessage = ({
   isReadonly,
   requiresScrollPadding: _requiresScrollPadding,
   threadName,
+  isTitleGenerating,
 }: {
   chatId: string;
   message: ChatMessage;
@@ -56,6 +57,7 @@ const PurePreviewMessage = ({
   isReadonly: boolean;
   requiresScrollPadding: boolean;
   threadName?: string;
+  isTitleGenerating?: boolean;
 }) => {
   const [mode, setMode] = useState<"view" | "edit">("view");
 
@@ -121,11 +123,19 @@ const PurePreviewMessage = ({
                 <BotIcon />
               </div>
             </div>
-            {threadName && (
+            {/* Show skeleton while title is generating, actual title otherwise */}
+            {isTitleGenerating ? (
+              <div className="flex items-center gap-2">
+                <div className="h-4 w-32 animate-pulse rounded-md bg-orange-500/20 dark:bg-orange-500/30" />
+                <span className="text-xs text-orange-500/60 dark:text-orange-400/60 animate-pulse">
+                  generating title...
+                </span>
+              </div>
+            ) : threadName ? (
               <span className="text-sm font-medium text-orange-600 dark:text-orange-400">
                 {threadName}
               </span>
-            )}
+            ) : null}
           </div>
           {/* Content row: full width */}
           <div
@@ -883,6 +893,9 @@ export const PreviewMessage = memo(
       return false;
     }
     if (prevProps.threadName !== nextProps.threadName) {
+      return false;
+    }
+    if (prevProps.isTitleGenerating !== nextProps.isTitleGenerating) {
       return false;
     }
 

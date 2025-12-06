@@ -24,11 +24,18 @@ import type { Attachment, ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { fetcher, fetchWithErrorHandlers, generateUUID } from "@/lib/utils";
 import { Artifact } from "./artifact";
+import { useChatTitle, useTitleForChat } from "./chat-title-context";
 import { useDataStream } from "./data-stream-provider";
 import { Messages } from "./messages";
 import { MultimodalInput } from "./multimodal-input";
 import { toast } from "./toast";
 import type { VisibilityType } from "./visibility-selector";
+
+// Type for title update data stream event
+interface TitleUpdateData {
+  id: string;
+  title: string;
+}
 
 export function Chat({
   id,
@@ -56,6 +63,11 @@ export function Chat({
 
   const { mutate } = useSWRConfig();
   const { setDataStream } = useDataStream();
+  const { setTitleGenerating, setTitle } = useChatTitle();
+
+  // Use the context-based title state for this chat
+  const { title: currentTitle, isGenerating: isTitleGenerating } =
+    useTitleForChat(id, threadName);
 
   const revalidateSidebarHistory = useCallback(() => {
     return mutate(
@@ -64,6 +76,30 @@ export function Chat({
       { revalidate: true },
     );
   }, [mutate]);
+
+  // Optimistically update the title in SWR cache for instant sidebar update
+  const updateTitleInCache = useCallback(
+    (chatId: string, newTitle: string) => {
+      mutate(
+        (key) => typeof key === "string" && key.startsWith("$inf$/api/history"),
+        (
+          data:
+            | { chats: { id: string; title: string }[]; hasMore: boolean }[]
+            | undefined,
+        ) => {
+          if (!data) return data;
+          return data.map((page) => ({
+            ...page,
+            chats: page.chats.map((chat) =>
+              chat.id === chatId ? { ...chat, title: newTitle } : chat,
+            ),
+          }));
+        },
+        { revalidate: false }, // Don't revalidate, we already have the correct data
+      );
+    },
+    [mutate],
+  );
 
   const [input, setInput] = useState<string>("");
   const [usage, setUsage] = useState<AppUsage | undefined>(initialLastContext);
@@ -136,14 +172,21 @@ export function Chat({
       const eventType = (dataPart as { type?: string }).type;
 
       if (eventType === "data-chat-created") {
+        // Mark the title as generating in the global context
+        setTitleGenerating(id);
         // Immediate refresh to show "New Chat" in sidebar
         revalidateSidebarHistory();
-        // Delayed refresh to catch the generated title (title gen takes ~2-3 sec)
-        setTimeout(revalidateSidebarHistory, 4000);
       }
 
       if (eventType === "data-chat-title-updated") {
-        revalidateSidebarHistory();
+        // Update the global title context for reactive updates
+        const titleData = (dataPart as unknown as { data: TitleUpdateData })
+          .data;
+        if (titleData?.id === id) {
+          setTitle(id, titleData.title);
+          // Optimistically update the SWR cache for instant sidebar update
+          updateTitleInCache(id, titleData.title);
+        }
       }
     },
     onFinish: () => {
@@ -229,12 +272,13 @@ export function Chat({
           chatId={id}
           isArtifactVisible={isArtifactVisible}
           isReadonly={isReadonly}
+          isTitleGenerating={isTitleGenerating}
           messages={messages}
           regenerate={regenerate}
           selectedModelId={initialChatModel}
           setMessages={setMessages}
           status={status}
-          threadName={threadName}
+          threadName={currentTitle}
           votes={votes}
         />
 
