@@ -36,9 +36,12 @@ const ChatTitleContext = createContext<ChatTitleContextType | null>(null);
 export function ChatTitleProvider({ children }: { children: ReactNode }) {
   const [titleStates, setTitleStates] = useState<ChatTitleState>({});
 
-  function getTitleState(chatId: string) {
-    return titleStates[chatId];
-  }
+  const getTitleState = useCallback(
+    (chatId: string) => {
+      return titleStates[chatId];
+    },
+    [titleStates],
+  );
 
   const setTitleGenerating = useCallback((chatId: string) => {
     setTitleStates((prev) => ({
