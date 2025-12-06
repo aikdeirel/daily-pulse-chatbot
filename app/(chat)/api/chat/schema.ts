@@ -1,5 +1,9 @@
 import { z } from "zod";
 import {
+  type GoogleToolGroupId,
+  googleToolGroupIds,
+} from "@/lib/ai/tools/google/groups";
+import {
   type SpotifyToolGroupId,
   spotifyToolGroupIds,
 } from "@/lib/ai/tools/spotify/groups";
@@ -49,6 +53,10 @@ export const postRequestBodySchema = z.object({
     .array(z.enum(spotifyToolGroupIds))
     .optional()
     .default([] as SpotifyToolGroupId[]),
+  googleToolGroups: z
+    .array(z.enum(googleToolGroupIds))
+    .optional()
+    .default([] as GoogleToolGroupId[]),
 });
 
 export type PostRequestBody = z.infer<typeof postRequestBodySchema>;

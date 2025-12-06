@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronUp, Music } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronUp, Music } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { User } from "next-auth";
@@ -30,10 +30,26 @@ export function SidebarUserNav({ user }: { user: User }) {
   const [spotifyConnected, setSpotifyConnected] = useState<boolean | null>(
     null,
   );
+  const [googleConnected, setGoogleConnected] = useState<boolean | null>(null);
 
   const isGuest = guestRegex.test(data?.user?.email ?? "");
 
+  // Add Google connection state management
   useEffect(() => {
+    async function checkGoogle() {
+      try {
+        const res = await fetch("/api/auth/google/status");
+        if (!res.ok) {
+          setGoogleConnected(false);
+          return;
+        }
+        const data = await res.json();
+        setGoogleConnected(data.connected);
+      } catch {
+        setGoogleConnected(false);
+      }
+    }
+
     // Check if user has Spotify connected
     async function checkSpotify() {
       try {
@@ -50,6 +66,7 @@ export function SidebarUserNav({ user }: { user: User }) {
     }
     if (status === "authenticated") {
       checkSpotify();
+      checkGoogle();
     }
   }, [status]);
 
@@ -133,6 +150,44 @@ export function SidebarUserNav({ user }: { user: User }) {
                     : spotifyConnected
                       ? "Disconnect Spotify"
                       : "Connect Spotify"}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onSelect={async () => {
+                    if (googleConnected) {
+                      try {
+                        const response = await fetch(
+                          "/api/auth/google/disconnect",
+                          {
+                            method: "POST",
+                          },
+                        );
+                        if (!response.ok) {
+                          throw new Error("Failed to disconnect");
+                        }
+                        setGoogleConnected(false);
+                        router.refresh();
+                        toast({
+                          type: "success",
+                          description: "Google Calendar disconnected",
+                        });
+                      } catch {
+                        toast({
+                          type: "error",
+                          description: "Failed to disconnect Google Calendar",
+                        });
+                      }
+                    } else {
+                      window.location.href = "/api/auth/google";
+                    }
+                  }}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4 text-[#4285F4]" />
+                  {googleConnected === null
+                    ? "Loading..."
+                    : googleConnected
+                      ? "Disconnect Google Calendar"
+                      : "Connect Google Calendar"}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
               </>

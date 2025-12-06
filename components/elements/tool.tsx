@@ -3,6 +3,7 @@
 import type { ToolUIPart } from "ai";
 import {
   BookOpenIcon,
+  CalendarIcon,
   CheckCircleIcon,
   ChevronDownIcon,
   CircleIcon,
@@ -85,6 +86,16 @@ const toolConfigData: Record<string, ToolConfigEntry> = {
     color: "text-orange-600 dark:text-orange-400",
     description: "Fetching web content",
   },
+  "tool-googleCalendars": {
+    label: "Google Calendar",
+    color: "text-[#4285F4] dark:text-[#4285F4]",
+    description: "Managing calendars",
+  },
+  "tool-googleEvents": {
+    label: "Google Events",
+    color: "text-[#4285F4] dark:text-[#4285F4]",
+    description: "Managing events",
+  },
 };
 
 // Get icon component based on tool type
@@ -106,6 +117,9 @@ function getToolIcon(type: string, className: string = "size-4"): ReactNode {
       return <GlobeIcon className={className} />;
     case "tool-spotify":
       return <MusicIcon className={className} />;
+    case "tool-googleCalendars":
+    case "tool-googleEvents":
+      return <CalendarIcon className={className} />;
     default:
       return <WrenchIcon className={className} />;
   }
@@ -175,6 +189,9 @@ function StatusBadge({ status }: { status: ToolUIPart["state"] }) {
     </div>
   );
 }
+
+// Export StatusBadge for testing and external use
+export { StatusBadge };
 
 export const ToolHeader = ({
   className,

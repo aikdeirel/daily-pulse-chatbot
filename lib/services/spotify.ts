@@ -1,4 +1,5 @@
 import { getOAuthConnection, saveOAuthConnection } from "@/lib/db/queries";
+import { APILogger } from "@/lib/utils/api-logger";
 
 export interface SpotifyTrack {
   id: string;
@@ -225,44 +226,123 @@ export class SpotifyService {
     options?: RequestInit,
   ): Promise<T> {
     const token = await this.getValidToken();
-    const response = await fetch(`https://api.spotify.com/v1${endpoint}`, {
-      ...options,
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-        ...options?.headers,
-      },
-    });
+    const startTime = Date.now();
 
-    if (!response.ok) {
-      const error = new Error(`Spotify API error: ${response.status}`);
-      (error as any).status = response.status;
-      throw error;
-    }
-
-    // Handle 204 No Content or empty responses
-    if (response.status === 204) {
-      return {} as T;
-    }
-
-    // Check if response has content before parsing JSON
-    const contentType = response.headers.get("content-type");
-    const contentLength = response.headers.get("content-length");
-
-    // If no content or not JSON, return empty object
-    if (contentLength === "0" || !contentType?.includes("application/json")) {
-      return {} as T;
-    }
-
-    // Try to parse JSON, return empty object if it fails
     try {
-      const text = await response.text();
-      if (!text || text.trim() === "") {
+      const response = await fetch(`https://api.spotify.com/v1${endpoint}`, {
+        ...options,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          ...options?.headers,
+        },
+      });
+
+      const durationMs = Date.now() - startTime;
+
+      if (!response.ok) {
+        const error = new Error(`Spotify API error: ${response.status}`);
+        (error as any).status = response.status;
+
+        // Log API errors
+        APILogger.logError(
+          "Spotify",
+          options?.method || "GET",
+          endpoint,
+          error,
+          options?.body,
+        );
+
+        throw error;
+      }
+
+      // Handle 204 No Content or empty responses
+      if (response.status === 204) {
+        // Log successful API requests
+        APILogger.logRequest(
+          "Spotify",
+          options?.method || "GET",
+          endpoint,
+          options?.body,
+          {},
+          response.status,
+          durationMs,
+        );
         return {} as T;
       }
-      return JSON.parse(text) as T;
-    } catch {
-      return {} as T;
+
+      // Check if response has content before parsing JSON
+      const contentType = response.headers.get("content-type");
+      const contentLength = response.headers.get("content-length");
+
+      // If no content or not JSON, return empty object
+      if (contentLength === "0" || !contentType?.includes("application/json")) {
+        // Log successful API requests
+        APILogger.logRequest(
+          "Spotify",
+          options?.method || "GET",
+          endpoint,
+          options?.body,
+          {},
+          response.status,
+          durationMs,
+        );
+        return {} as T;
+      }
+
+      // Try to parse JSON, return empty object if it fails
+      try {
+        const text = await response.text();
+        if (!text || text.trim() === "") {
+          // Log successful API requests
+          APILogger.logRequest(
+            "Spotify",
+            options?.method || "GET",
+            endpoint,
+            options?.body,
+            {},
+            response.status,
+            durationMs,
+          );
+          return {} as T;
+        }
+        const responseData = JSON.parse(text) as T;
+
+        // Log successful API requests
+        APILogger.logRequest(
+          "Spotify",
+          options?.method || "GET",
+          endpoint,
+          options?.body,
+          responseData,
+          response.status,
+          durationMs,
+        );
+
+        return responseData;
+      } catch (parseError) {
+        // Log JSON parsing errors
+        APILogger.logError(
+          "Spotify",
+          options?.method || "GET",
+          endpoint,
+          parseError,
+          options?.body,
+        );
+        return {} as T;
+      }
+    } catch (error) {
+      // Log any unexpected errors
+      if (error instanceof Error) {
+        APILogger.logError(
+          "Spotify",
+          options?.method || "GET",
+          endpoint,
+          error,
+          options?.body,
+        );
+      }
+      throw error;
     }
   }
 

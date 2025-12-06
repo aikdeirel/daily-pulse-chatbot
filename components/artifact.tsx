@@ -17,6 +17,7 @@ import { imageArtifact } from "@/artifacts/image/client";
 import { sheetArtifact } from "@/artifacts/sheet/client";
 import { textArtifact } from "@/artifacts/text/client";
 import { useArtifact } from "@/hooks/use-artifact";
+import type { GoogleToolGroupId } from "@/lib/ai/tools/google/groups";
 import type { SpotifyToolGroupId } from "@/lib/ai/tools/spotify/groups";
 import type { Document, Vote } from "@/lib/db/schema";
 import type { Attachment, ChatMessage } from "@/lib/types";
@@ -73,6 +74,8 @@ function PureArtifact({
   onWebSearchToggle,
   spotifyToolGroups,
   onSpotifyToolGroupsChange,
+  googleToolGroups,
+  onGoogleToolGroupsChange,
 }: {
   chatId: string;
   input: string;
@@ -93,6 +96,8 @@ function PureArtifact({
   onWebSearchToggle: (enabled: boolean) => void;
   spotifyToolGroups: SpotifyToolGroupId[];
   onSpotifyToolGroupsChange: (groups: SpotifyToolGroupId[]) => void;
+  googleToolGroups: GoogleToolGroupId[];
+  onGoogleToolGroupsChange: (groups: GoogleToolGroupId[]) => void;
 }) {
   const { artifact, setArtifact, metadata, setMetadata } = useArtifact();
 
@@ -358,6 +363,8 @@ function PureArtifact({
                     onWebSearchToggle={onWebSearchToggle}
                     spotifyToolGroups={spotifyToolGroups}
                     onSpotifyToolGroupsChange={onSpotifyToolGroupsChange}
+                    googleToolGroups={googleToolGroups}
+                    onGoogleToolGroupsChange={onGoogleToolGroupsChange}
                   />
                 </div>
               </div>
@@ -538,6 +545,9 @@ export const Artifact = memo(PureArtifact, (prevProps, nextProps) => {
     return false;
   }
   if (!equal(prevProps.spotifyToolGroups, nextProps.spotifyToolGroups)) {
+    return false;
+  }
+  if (!equal(prevProps.googleToolGroups, nextProps.googleToolGroups)) {
     return false;
   }
 

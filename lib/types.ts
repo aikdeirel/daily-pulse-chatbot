@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { ArtifactKind } from "@/components/artifact";
 import type { createDocument } from "./ai/tools/create-document";
 import type { getWeather } from "./ai/tools/get-weather";
+import type { googleCalendars, googleEvents } from "./ai/tools/google";
 import type { requestSuggestions } from "./ai/tools/request-suggestions";
 import type {
   spotifyAlbums,
@@ -43,6 +44,8 @@ type spotifyQueueTool = InferUITool<ReturnType<typeof spotifyQueue>>;
 type spotifyPlaylistsTool = InferUITool<ReturnType<typeof spotifyPlaylists>>;
 type spotifyTracksTool = InferUITool<ReturnType<typeof spotifyTracks>>;
 type spotifyUserTool = InferUITool<ReturnType<typeof spotifyUser>>;
+type googleCalendarsTool = InferUITool<ReturnType<typeof googleCalendars>>;
+type googleEventsTool = InferUITool<ReturnType<typeof googleEvents>>;
 
 export type ChatTools = {
   getWeather: weatherTool;
@@ -59,6 +62,8 @@ export type ChatTools = {
   spotifyPlaylists: spotifyPlaylistsTool;
   spotifyTracks: spotifyTracksTool;
   spotifyUser: spotifyUserTool;
+  googleCalendars: googleCalendarsTool;
+  googleEvents: googleEventsTool;
 };
 
 export type CustomUIDataTypes = {

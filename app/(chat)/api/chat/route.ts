@@ -25,6 +25,12 @@ import { getLanguageModel } from "@/lib/ai/providers";
 import { discoverSkills } from "@/lib/ai/skills";
 import { createDocument } from "@/lib/ai/tools/create-document";
 import { getWeather } from "@/lib/ai/tools/get-weather";
+import { googleCalendars } from "@/lib/ai/tools/google/google-calendars";
+import { googleEvents } from "@/lib/ai/tools/google/google-events";
+import {
+  type GoogleToolGroupId,
+  getGoogleToolNamesForGroups,
+} from "@/lib/ai/tools/google/groups";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
 import {
   spotifyAlbums,
@@ -121,6 +127,7 @@ export async function POST(request: Request) {
       selectedVisibilityType,
       webSearchEnabled,
       spotifyToolGroups,
+      googleToolGroups,
     }: {
       id: string;
       message: ChatMessage;
@@ -128,6 +135,7 @@ export async function POST(request: Request) {
       selectedVisibilityType: VisibilityType;
       webSearchEnabled: boolean;
       spotifyToolGroups: SpotifyToolGroupId[];
+      googleToolGroups: GoogleToolGroupId[];
     } = requestBody;
 
     const session = await auth();
@@ -260,6 +268,11 @@ export async function POST(request: Request) {
           spotifyUser: spotifyUser({ userId: session.user.id }),
         };
 
+        const googleTools = {
+          googleCalendars: googleCalendars({ userId: session.user.id }),
+          googleEvents: googleEvents({ userId: session.user.id }),
+        };
+
         const selectedSpotifyToolNames = getSpotifyToolNamesForGroups(
           spotifyToolGroups,
         ) as (keyof typeof spotifyTools)[];
@@ -272,9 +285,22 @@ export async function POST(request: Request) {
           }
         }
 
+        const selectedGoogleToolNames = getGoogleToolNamesForGroups(
+          googleToolGroups,
+        ) as (keyof typeof googleTools)[];
+
+        const selectedGoogleTools: Partial<typeof googleTools> = {};
+        for (const toolName of selectedGoogleToolNames) {
+          const tool = googleTools[toolName];
+          if (tool) {
+            (selectedGoogleTools[toolName] as any) = tool;
+          }
+        }
+
         const tools = {
           ...baseTools,
           ...selectedSpotifyTools,
+          ...selectedGoogleTools,
         };
 
         // Determine which tools to activate
@@ -306,6 +332,10 @@ export async function POST(request: Request) {
           .filter((toolName) => toolName in selectedSpotifyTools)
           .map((toolName) => toolName as ToolName);
 
+        const googleActiveTools = selectedGoogleToolNames
+          .filter((toolName) => toolName in selectedGoogleTools)
+          .map((toolName) => toolName as ToolName);
+
         if (modelsWithoutToolSupport.includes(selectedChatModel)) {
           activeTools = [];
         } else {
@@ -313,6 +343,7 @@ export async function POST(request: Request) {
             ...baseActiveTools,
             ...skillActiveTools,
             ...spotifyActiveTools,
+            ...googleActiveTools,
           ];
         }
 
@@ -322,6 +353,7 @@ export async function POST(request: Request) {
             requestHints,
             skills: availableSkills,
             spotifyGroups: spotifyToolGroups,
+            googleGroups: googleToolGroups,
           }),
           messages: convertToModelMessages(uiMessages),
           stopWhen: stepCountIs(5),

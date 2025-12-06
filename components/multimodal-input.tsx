@@ -21,6 +21,7 @@ import { useLocalStorage, useWindowSize } from "usehooks-ts";
 import { saveChatModelAsCookie } from "@/app/(chat)/actions";
 import { SelectItem } from "@/components/ui/select";
 import { chatModels } from "@/lib/ai/models";
+import type { GoogleToolGroupId } from "@/lib/ai/tools/google/groups";
 import type { SpotifyToolGroupId } from "@/lib/ai/tools/spotify/groups";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
@@ -35,6 +36,7 @@ import {
   PromptInputToolbar,
   PromptInputTools,
 } from "./elements/prompt-input";
+import { GoogleToolSelector } from "./google-tool-selector";
 import {
   ArrowUpIcon,
   ChevronDownIcon,
@@ -69,6 +71,8 @@ function PureMultimodalInput({
   onWebSearchToggle,
   spotifyToolGroups,
   onSpotifyToolGroupsChange,
+  googleToolGroups,
+  onGoogleToolGroupsChange,
 }: {
   chatId: string;
   input: string;
@@ -89,6 +93,8 @@ function PureMultimodalInput({
   onWebSearchToggle: (enabled: boolean) => void;
   spotifyToolGroups: SpotifyToolGroupId[];
   onSpotifyToolGroupsChange: (groups: SpotifyToolGroupId[]) => void;
+  googleToolGroups: GoogleToolGroupId[];
+  onGoogleToolGroupsChange: (groups: GoogleToolGroupId[]) => void;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -370,6 +376,11 @@ function PureMultimodalInput({
               onChange={onSpotifyToolGroupsChange}
               selectedGroupIds={spotifyToolGroups}
             />
+            <GoogleToolSelector
+              disabled={status !== "ready"}
+              onChange={onGoogleToolGroupsChange}
+              selectedGroupIds={googleToolGroups}
+            />
             <WebSearchToggle
               enabled={webSearchEnabled}
               onToggle={onWebSearchToggle}
@@ -421,6 +432,9 @@ export const MultimodalInput = memo(
       return false;
     }
     if (!equal(prevProps.spotifyToolGroups, nextProps.spotifyToolGroups)) {
+      return false;
+    }
+    if (!equal(prevProps.googleToolGroups, nextProps.googleToolGroups)) {
       return false;
     }
 

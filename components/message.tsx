@@ -27,6 +27,7 @@ import {
   WebSearchHeader,
   WebSearchSources,
 } from "./elements/web-search";
+import { GoogleCalendarDisplay } from "./google-calendar-display";
 import { BotIcon, UserIcon } from "./icons";
 import { MessageActions } from "./message-actions";
 import { MessageEditor } from "./message-editor";
@@ -667,6 +668,88 @@ const PurePreviewMessage = ({
                         }
                       />
                     )}
+                  </ToolContent>
+                </Tool>
+              );
+            }
+            // Google Calendar Tools (googleCalendars and googleEvents)
+            const googleCalendarToolTypes = [
+              "tool-googleCalendars",
+              "tool-googleEvents",
+            ] as const;
+
+            if (
+              googleCalendarToolTypes.includes(
+                type as (typeof googleCalendarToolTypes)[number],
+              )
+            ) {
+              // Type assertion needed because TypeScript can't narrow with includes()
+              const googleCalendarPart = part as {
+                toolCallId: string;
+                state:
+                  | "input-streaming"
+                  | "input-available"
+                  | "output-available"
+                  | "output-error";
+                input?: { action?: string };
+                output?: Record<string, unknown>;
+              };
+              const { toolCallId, state } = googleCalendarPart;
+              const action = googleCalendarPart.input?.action as
+                | string
+                | undefined;
+
+              // Determine title based on tool type and action
+              let title = "Google Calendar";
+
+              // Tool-specific titles
+              if (type === "tool-googleCalendars") {
+                title =
+                  action === "list_calendars"
+                    ? "Listing calendars"
+                    : action === "get_calendar"
+                      ? "Getting calendar details"
+                      : "Google Calendar";
+              } else if (type === "tool-googleEvents") {
+                title =
+                  action === "list_events"
+                    ? "Listing events"
+                    : action === "create_event"
+                      ? "Creating event"
+                      : action === "update_event"
+                        ? "Updating event"
+                        : action === "delete_event"
+                          ? "Deleting event"
+                          : "Google Events";
+              }
+
+              return (
+                <Tool defaultOpen={false} key={toolCallId}>
+                  <ToolHeader state={state} type={type} title={title} />
+                  <ToolContent>
+                    {state === "input-available" && (
+                      <ToolInput input={googleCalendarPart.input} />
+                    )}
+                    {state === "output-available" &&
+                      googleCalendarPart.output && (
+                        <ToolOutput
+                          errorText={
+                            googleCalendarPart.output &&
+                            "error" in googleCalendarPart.output
+                              ? String(googleCalendarPart.output.error)
+                              : undefined
+                          }
+                          output={
+                            <GoogleCalendarDisplay
+                              data={
+                                googleCalendarPart.output as Parameters<
+                                  typeof GoogleCalendarDisplay
+                                >[0]["data"]
+                              }
+                            />
+                          }
+                        />
+                      )}
                   </ToolContent>
                 </Tool>
               );

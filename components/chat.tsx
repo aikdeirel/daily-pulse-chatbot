@@ -11,6 +11,10 @@ import { useArtifactSelector } from "@/hooks/use-artifact";
 import { useAutoResume } from "@/hooks/use-auto-resume";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
 import {
+  GOOGLE_TOOL_GROUP_STORAGE_KEY,
+  type GoogleToolGroupId,
+} from "@/lib/ai/tools/google/groups";
+import {
   SPOTIFY_TOOL_GROUP_STORAGE_KEY,
   type SpotifyToolGroupId,
 } from "@/lib/ai/tools/spotify/groups";
@@ -66,9 +70,13 @@ export function Chat({
   const [spotifyToolGroups, setSpotifyToolGroups] = useLocalStorage<
     SpotifyToolGroupId[]
   >(SPOTIFY_TOOL_GROUP_STORAGE_KEY, []);
+  const [googleToolGroups, setGoogleToolGroups] = useLocalStorage<
+    GoogleToolGroupId[]
+  >(GOOGLE_TOOL_GROUP_STORAGE_KEY, []);
   const currentModelIdRef = useRef(currentModelId);
   const webSearchEnabledRef = useRef(webSearchEnabled);
   const spotifyToolGroupsRef = useRef<SpotifyToolGroupId[]>(spotifyToolGroups);
+  const googleToolGroupsRef = useRef<GoogleToolGroupId[]>(googleToolGroups);
 
   useEffect(() => {
     currentModelIdRef.current = currentModelId;
@@ -81,6 +89,10 @@ export function Chat({
   useEffect(() => {
     spotifyToolGroupsRef.current = spotifyToolGroups;
   }, [spotifyToolGroups]);
+
+  useEffect(() => {
+    googleToolGroupsRef.current = googleToolGroups;
+  }, [googleToolGroups]);
 
   const {
     messages,
@@ -107,6 +119,7 @@ export function Chat({
             selectedVisibilityType: visibilityType,
             webSearchEnabled: webSearchEnabledRef.current,
             spotifyToolGroups: spotifyToolGroupsRef.current,
+            googleToolGroups: googleToolGroupsRef.current,
             ...request.body,
           },
         };
@@ -238,6 +251,8 @@ export function Chat({
               setMessages={setMessages}
               spotifyToolGroups={spotifyToolGroups}
               onSpotifyToolGroupsChange={setSpotifyToolGroups}
+              googleToolGroups={googleToolGroups}
+              onGoogleToolGroupsChange={setGoogleToolGroups}
               status={status}
               stop={stop}
               usage={usage}
@@ -268,6 +283,8 @@ export function Chat({
         onWebSearchToggle={setWebSearchEnabled}
         spotifyToolGroups={spotifyToolGroups}
         onSpotifyToolGroupsChange={setSpotifyToolGroups}
+        googleToolGroups={googleToolGroups}
+        onGoogleToolGroupsChange={setGoogleToolGroups}
       />
     </>
   );

@@ -1,6 +1,8 @@
 import type { Geo } from "@vercel/functions";
 import type { ArtifactKind } from "@/components/artifact";
 import type { SkillSummary } from "@/lib/ai/skills";
+import type { GoogleToolGroupId } from "@/lib/ai/tools/google/groups";
+import { getGooglePromptForGroups } from "@/lib/ai/tools/google/groups";
 import type { SpotifyToolGroupId } from "@/lib/ai/tools/spotify/groups";
 import { getSpotifyPromptForGroups } from "@/lib/ai/tools/spotify/groups";
 
@@ -81,20 +83,23 @@ export const systemPrompt = ({
   requestHints,
   skills = [],
   spotifyGroups = [],
+  googleGroups = [],
 }: {
   requestHints: RequestHints;
   skills?: SkillSummary[];
   spotifyGroups?: SpotifyToolGroupId[];
+  googleGroups?: GoogleToolGroupId[];
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
   const skillsPrompt = getSkillsPrompt(skills);
   const spotifyPrompt = getSpotifyPromptForGroups(spotifyGroups);
+  const googlePrompt = getGooglePromptForGroups(googleGroups);
 
   // Keep it minimal - modern LLMs understand tools from their descriptions alone.
   // We rely on the intelligence of the model rather than over-engineering prompts.
   return `${regularPrompt}
 
-${requestPrompt}${skillsPrompt}${spotifyPrompt}`;
+${requestPrompt}${skillsPrompt}${googlePrompt}${spotifyPrompt}`;
 };
 
 export const codePrompt = `
