@@ -59,7 +59,7 @@ export const WebSearchHeader = ({
   return (
     <CollapsibleTrigger
       className={cn(
-        "group flex w-full min-w-0 items-center gap-3 p-4 transition-colors hover:bg-muted/50",
+        "group flex w-full min-w-0 items-center gap-3 p-2 transition-colors hover:bg-muted/50",
         className,
       )}
     >

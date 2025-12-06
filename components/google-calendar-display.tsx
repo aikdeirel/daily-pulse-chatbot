@@ -162,7 +162,7 @@ export function GoogleCalendarDisplay({
   }
 
   // Calendar list display
-  if (data.action === "list_calendars" && data.calendars) {
+  if (data.action === "list_calendars" && Array.isArray(data.calendars)) {
     return (
       <div className="rounded-xl bg-zinc-100 p-4 dark:bg-zinc-800">
         <p className="mb-3 font-medium">Your Google Calendars</p>
