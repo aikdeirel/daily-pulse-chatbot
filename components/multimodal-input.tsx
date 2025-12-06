@@ -504,7 +504,7 @@ function PureModelSelectorCompact({
     >
       <Trigger asChild>
         <Button
-          className="h-8 min-w-0 max-w-full flex-1 overflow-hidden px-2 text-left sm:max-w-[230px]"
+          className="h-8 min-w-0 flex-1 overflow-hidden px-2 text-left max-w-[160px] sm:max-w-[230px]"
           variant="ghost"
         >
           <CpuIcon size={16} />
