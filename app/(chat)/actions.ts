@@ -28,6 +28,11 @@ export async function generateTitleFromUserMessage({
     prompt: getTextFromMessage(message),
   });
 
+  // Enforce 80 character limit with guardrails
+  if (title.length > 80) {
+    return `${title.substring(0, 77)}...`;
+  }
+
   return title;
 }
 
