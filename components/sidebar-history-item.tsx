@@ -49,12 +49,13 @@ const PureChatItem = ({
     useTitleForChat(chat.id, chat.title);
 
   return (
-    <SidebarMenuItem>
+    <SidebarMenuItem data-testid="sidebar-history-item">
       <SidebarMenuButton asChild isActive={isActive}>
         <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
           {isTitleGenerating ? (
             <motion.div
               className="flex items-center gap-2 w-full"
+              data-testid="sidebar-history-item-generating"
               initial={{ opacity: 0.5 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
@@ -65,7 +66,9 @@ const PureChatItem = ({
               </span>
             </motion.div>
           ) : (
-            <span>{displayTitle || chat.title}</span>
+            <span data-testid="sidebar-history-item-title">
+              {displayTitle || chat.title}
+            </span>
           )}
         </Link>
       </SidebarMenuButton>

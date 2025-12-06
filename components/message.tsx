@@ -125,7 +125,10 @@ const PurePreviewMessage = ({
             </div>
             {/* Show skeleton while title is generating, actual title otherwise */}
             {isTitleGenerating ? (
-              <div className="flex items-center gap-2">
+              <div
+                className="flex items-center gap-2"
+                data-testid="message-title-generating"
+              >
                 <div
                   className="h-4 w-32 animate-pulse rounded-md bg-orange-500/20 dark:bg-orange-500/30"
                   aria-hidden="true"
@@ -133,9 +136,7 @@ const PurePreviewMessage = ({
                 <span
                   className="text-xs text-orange-500/60 dark:text-orange-400/60 animate-pulse"
                   aria-hidden="true"
-                >
-                  generating title...
-                </span>
+                ></span>
                 <output aria-live="polite" className="sr-only">
                   Generating chat title
                 </output>

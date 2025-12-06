@@ -14,6 +14,9 @@ test.describe("Chat activity", () => {
     await chatPage.isGenerationComplete();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
+    if (!assistantMessage) {
+      throw new Error("Assistant message not found");
+    }
     expect(assistantMessage.content).toContain("It's just green duh!");
   });
 
@@ -22,6 +25,9 @@ test.describe("Chat activity", () => {
     await chatPage.isGenerationComplete();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
+    if (!assistantMessage) {
+      throw new Error("Assistant message not found");
+    }
     expect(assistantMessage.content).toContain("It's just green duh!");
     await chatPage.hasChatIdInUrl();
   });
@@ -31,6 +37,9 @@ test.describe("Chat activity", () => {
     await chatPage.isGenerationComplete();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
+    if (!assistantMessage) {
+      throw new Error("Assistant message not found");
+    }
     expect(assistantMessage.content).toContain(
       "With Next.js, you can ship fast!",
     );
@@ -63,6 +72,9 @@ test.describe("Chat activity", () => {
     await chatPage.isGenerationComplete();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
+    if (!assistantMessage) {
+      throw new Error("Assistant message not found");
+    }
     expect(assistantMessage.content).toContain("It's just green duh!");
 
     const userMessage = await chatPage.getRecentUserMessage();
@@ -71,6 +83,9 @@ test.describe("Chat activity", () => {
     await chatPage.isGenerationComplete();
 
     const updatedAssistantMessage = await chatPage.getRecentAssistantMessage();
+    if (!updatedAssistantMessage) {
+      throw new Error("Assistant message not found");
+    }
     expect(updatedAssistantMessage.content).toContain("It's just blue duh!");
   });
 
@@ -95,6 +110,9 @@ test.describe("Chat activity", () => {
     await chatPage.isGenerationComplete();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
+    if (!assistantMessage) {
+      throw new Error("Assistant message not found");
+    }
     expect(assistantMessage.content).toBe("This painting is by Monet!");
   });
 
@@ -103,6 +121,9 @@ test.describe("Chat activity", () => {
     await chatPage.isGenerationComplete();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
+    if (!assistantMessage) {
+      throw new Error("Assistant message not found");
+    }
 
     expect(assistantMessage.content).toBe(
       "The current temperature in San Francisco is 17°C.",
@@ -114,6 +135,9 @@ test.describe("Chat activity", () => {
     await chatPage.isGenerationComplete();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
+    if (!assistantMessage) {
+      throw new Error("Assistant message not found");
+    }
     await assistantMessage.upvote();
     await chatPage.isVoteComplete();
   });
@@ -123,6 +147,9 @@ test.describe("Chat activity", () => {
     await chatPage.isGenerationComplete();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
+    if (!assistantMessage) {
+      throw new Error("Assistant message not found");
+    }
     await assistantMessage.downvote();
     await chatPage.isVoteComplete();
   });
@@ -132,6 +159,9 @@ test.describe("Chat activity", () => {
     await chatPage.isGenerationComplete();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
+    if (!assistantMessage) {
+      throw new Error("Assistant message not found");
+    }
     await assistantMessage.upvote();
     await chatPage.isVoteComplete();
 
@@ -148,6 +178,9 @@ test.describe("Chat activity", () => {
     expect(userMessage.content).toBe("Why is the sky blue?");
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
+    if (!assistantMessage) {
+      throw new Error("Assistant message not found");
+    }
     expect(assistantMessage.content).toContain("It's just blue duh!");
   });
 
@@ -168,5 +201,29 @@ test.describe("Chat activity", () => {
     await chatPage.scrollToBottomButton.click();
     await chatPage.waitForScrollToBottom();
     await expect(chatPage.scrollToBottomButton).not.toBeVisible();
+  });
+
+  test("shows title generation loading state when sending first message", async () => {
+    // Send the first message to create the chat and trigger title generation
+    await chatPage.sendUserMessage("Why is grass green?");
+
+    // Check that title is generating in the message header
+    expect(await chatPage.isTitleGeneratingInMessage()).toBe(true);
+
+    // Open sidebar and check title is generating there
+    await chatPage.openSideBar();
+    expect(await chatPage.isTitleGeneratingInSidebar()).toBe(true);
+
+    // Wait for generation to complete
+    await chatPage.isGenerationComplete();
+
+    // After generation, title should no longer be generating
+    expect(await chatPage.isTitleGeneratingInMessage()).toBe(false);
+
+    // Sidebar should also show the generated title
+    expect(await chatPage.isTitleGeneratingInSidebar()).toBe(false);
+    const sidebarTitle = await chatPage.getSidebarChatTitle();
+    expect(sidebarTitle).not.toBeNull();
+    expect(sidebarTitle?.length).toBeGreaterThan(0);
   });
 });
