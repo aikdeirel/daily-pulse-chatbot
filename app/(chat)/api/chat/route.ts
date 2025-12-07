@@ -49,6 +49,10 @@ import {
 import { updateDocument } from "@/lib/ai/tools/update-document";
 import { getSkillResource, useSkill } from "@/lib/ai/tools/use-skill";
 import { webFetch } from "@/lib/ai/tools/web-fetch";
+import {
+  type AttachmentPart,
+  processAttachmentsForLLM,
+} from "@/lib/attachments";
 import { isProductionEnvironment } from "@/lib/constants";
 import {
   createStreamId,
@@ -179,7 +183,30 @@ export async function POST(request: Request) {
       // New chat - no need to fetch messages, it's empty
     }
 
-    const uiMessages = [...convertToUIMessages(messagesFromDb), message];
+    // Process attachments in the message before sending to LLM, preserving order
+    // This converts text files to text content and handles document types
+    const processedParts = await Promise.all(
+      message.parts.map(async (part) => {
+        if (part.type === "file" && "url" in part && "mediaType" in part) {
+          const processed = await processAttachmentsForLLM([
+            part as AttachmentPart,
+          ]);
+          return processed[0];
+        }
+        return part;
+      }),
+    );
+
+    // Create a new message with processed parts
+    const processedMessage = {
+      ...message,
+      parts: processedParts,
+    };
+
+    const uiMessages = [
+      ...convertToUIMessages(messagesFromDb),
+      processedMessage,
+    ];
 
     const { longitude, latitude, city, country } = geolocation(request);
 

@@ -23,6 +23,7 @@ import { SelectItem } from "@/components/ui/select";
 import { chatModels } from "@/lib/ai/models";
 import type { GoogleToolGroupId } from "@/lib/ai/tools/google/groups";
 import type { SpotifyToolGroupId } from "@/lib/ai/tools/spotify/groups";
+import { FILE_INPUT_ACCEPT } from "@/lib/file-types";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { cn } from "@/lib/utils";
@@ -301,7 +302,7 @@ function PureMultimodalInput({
         ref={fileInputRef}
         tabIndex={-1}
         type="file"
-        accept="image/jpeg,image/png,application/pdf"
+        accept={FILE_INPUT_ACCEPT}
       />
 
       <PromptInput

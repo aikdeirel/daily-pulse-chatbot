@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { getFileTypeLabel } from "@/lib/file-types";
 import type { Attachment } from "@/lib/types";
 import { Loader } from "./elements/loader";
 import { CrossSmallIcon } from "./icons";
@@ -28,13 +29,9 @@ export const PreviewAttachment = ({
           src={url}
           width={64}
         />
-      ) : contentType === "application/pdf" ? (
-        <div className="flex size-full items-center justify-center text-muted-foreground text-xs">
-          PDF
-        </div>
       ) : (
         <div className="flex size-full items-center justify-center text-muted-foreground text-xs">
-          File
+          {getFileTypeLabel(contentType)}
         </div>
       )}
 
