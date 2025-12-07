@@ -52,6 +52,48 @@ export interface GoogleCalendar {
   accessRole?: string;
 }
 
+export interface GmailMessage {
+  id: string;
+  threadId: string;
+  labelIds?: string[];
+  snippet?: string;
+  historyId?: string;
+  internalDate?: string;
+  payload?: {
+    partId?: string;
+    mimeType?: string;
+    filename?: string;
+    headers?: {
+      name: string;
+      value: string;
+    }[];
+    body?: {
+      attachmentId?: string;
+      size?: number;
+      data?: string;
+    };
+    parts?: any[];
+  };
+  sizeEstimate?: number;
+  raw?: string;
+}
+
+export interface GmailLabel {
+  id: string;
+  name: string;
+  messageListVisibility?: string;
+  labelListVisibility?: string;
+  type?: string;
+  messagesTotal?: number;
+  messagesUnread?: number;
+  threadsTotal?: number;
+  threadsUnread?: number;
+  color?: {
+    textColor?: string;
+    backgroundColor?: string;
+  };
+}
+
 export class GoogleService {
   constructor(private userId: string) {}
 
@@ -115,8 +157,18 @@ export class GoogleService {
     return tokens.access_token;
   }
 
-  // Base API request method
+  // Base API request method for Calendar API (kept for backward compatibility)
   private async request<T>(
+    method: string,
+    endpoint: string,
+    data?: any,
+  ): Promise<T> {
+    return this.apiRequest<T>("calendar/v3", method, endpoint, data);
+  }
+
+  // Generic API request method for any Google API
+  private async apiRequest<T>(
+    apiPath: string,
     method: string,
     endpoint: string,
     data?: any,
@@ -126,7 +178,7 @@ export class GoogleService {
 
     try {
       const response = await fetch(
-        `https://www.googleapis.com/calendar/v3${endpoint}`,
+        `https://www.googleapis.com/${apiPath}${endpoint}`,
         {
           method,
           headers: {
@@ -719,5 +771,225 @@ export class GoogleService {
       }
       throw error;
     }
+  }
+
+  // ========================================
+  // Gmail Methods
+  // ========================================
+
+  /**
+   * List Gmail messages with optional filtering
+   * @param params Search and filter parameters
+   * @returns Promise with list of messages
+   */
+  async listGmailMessages(params: {
+    q?: string; // Query for searching messages
+    maxResults?: number;
+    pageToken?: string;
+    labelIds?: string[]; // Filter by labels (e.g., ['INBOX', 'UNREAD'])
+    includeSpamTrash?: boolean;
+  } = {}) {
+    const query = new URLSearchParams();
+    if (params.q) query.append("q", params.q);
+    if (params.maxResults)
+      query.append("maxResults", params.maxResults.toString());
+    if (params.pageToken) query.append("pageToken", params.pageToken);
+    if (params.labelIds && params.labelIds.length > 0) {
+      for (const labelId of params.labelIds) {
+        query.append("labelIds", labelId);
+      }
+    }
+    if (params.includeSpamTrash !== undefined)
+      query.append("includeSpamTrash", params.includeSpamTrash.toString());
+
+    return this.apiRequest<any>(
+      "gmail/v1",
+      "GET",
+      `/users/me/messages?${query.toString()}`,
+    );
+  }
+
+  /**
+   * Get a specific Gmail message
+   * @param messageId Message ID
+   * @param format Format of the message (full, metadata, minimal, raw)
+   * @returns Promise with message details
+   */
+  async getGmailMessage(
+    messageId: string,
+    format: "full" | "metadata" | "minimal" | "raw" = "full",
+  ) {
+    const query = new URLSearchParams();
+    query.append("format", format);
+
+    return this.apiRequest<GmailMessage>(
+      "gmail/v1",
+      "GET",
+      `/users/me/messages/${messageId}?${query.toString()}`,
+    );
+  }
+
+  /**
+   * Modify Gmail message labels (mark as read/unread, add/remove labels)
+   * @param messageId Message ID
+   * @param addLabelIds Labels to add
+   * @param removeLabelIds Labels to remove
+   * @returns Promise with modified message
+   */
+  async modifyGmailMessage(
+    messageId: string,
+    addLabelIds?: string[],
+    removeLabelIds?: string[],
+  ) {
+    const body: any = {};
+    if (addLabelIds && addLabelIds.length > 0) {
+      body.addLabelIds = addLabelIds;
+    }
+    if (removeLabelIds && removeLabelIds.length > 0) {
+      body.removeLabelIds = removeLabelIds;
+    }
+
+    return this.apiRequest<GmailMessage>(
+      "gmail/v1",
+      "POST",
+      `/users/me/messages/${messageId}/modify`,
+      body,
+    );
+  }
+
+  /**
+   * Trash a Gmail message
+   * @param messageId Message ID
+   * @returns Promise with trashed message
+   */
+  async trashGmailMessage(messageId: string) {
+    return this.apiRequest<GmailMessage>(
+      "gmail/v1",
+      "POST",
+      `/users/me/messages/${messageId}/trash`,
+    );
+  }
+
+  /**
+   * Untrash a Gmail message
+   * @param messageId Message ID
+   * @returns Promise with untrashed message
+   */
+  async untrashGmailMessage(messageId: string) {
+    return this.apiRequest<GmailMessage>(
+      "gmail/v1",
+      "POST",
+      `/users/me/messages/${messageId}/untrash`,
+    );
+  }
+
+  /**
+   * List all Gmail labels
+   * @returns Promise with list of labels
+   */
+  async listGmailLabels() {
+    return this.apiRequest<any>("gmail/v1", "GET", "/users/me/labels");
+  }
+
+  /**
+   * Get a specific Gmail label
+   * @param labelId Label ID
+   * @returns Promise with label details
+   */
+  async getGmailLabel(labelId: string) {
+    return this.apiRequest<GmailLabel>(
+      "gmail/v1",
+      "GET",
+      `/users/me/labels/${labelId}`,
+    );
+  }
+
+  /**
+   * Create a new Gmail label
+   * @param labelData Label data
+   * @returns Promise with created label
+   */
+  async createGmailLabel(labelData: {
+    name: string;
+    messageListVisibility?: "show" | "hide";
+    labelListVisibility?: "labelShow" | "labelHide";
+    color?: {
+      textColor?: string;
+      backgroundColor?: string;
+    };
+  }) {
+    return this.apiRequest<GmailLabel>(
+      "gmail/v1",
+      "POST",
+      "/users/me/labels",
+      labelData,
+    );
+  }
+
+  /**
+   * Update a Gmail label
+   * @param labelId Label ID
+   * @param labelData Label data to update
+   * @returns Promise with updated label
+   */
+  async updateGmailLabel(
+    labelId: string,
+    labelData: {
+      name?: string;
+      messageListVisibility?: "show" | "hide";
+      labelListVisibility?: "labelShow" | "labelHide";
+      color?: {
+        textColor?: string;
+        backgroundColor?: string;
+      };
+    },
+  ) {
+    return this.apiRequest<GmailLabel>(
+      "gmail/v1",
+      "PUT",
+      `/users/me/labels/${labelId}`,
+      labelData,
+    );
+  }
+
+  /**
+   * Delete a Gmail label
+   * @param labelId Label ID
+   * @returns Promise
+   */
+  async deleteGmailLabel(labelId: string) {
+    return this.apiRequest<void>(
+      "gmail/v1",
+      "DELETE",
+      `/users/me/labels/${labelId}`,
+    );
+  }
+
+  /**
+   * Batch modify Gmail messages
+   * @param messageIds Array of message IDs
+   * @param addLabelIds Labels to add
+   * @param removeLabelIds Labels to remove
+   * @returns Promise
+   */
+  async batchModifyGmailMessages(
+    messageIds: string[],
+    addLabelIds?: string[],
+    removeLabelIds?: string[],
+  ) {
+    const body: any = { ids: messageIds };
+    if (addLabelIds && addLabelIds.length > 0) {
+      body.addLabelIds = addLabelIds;
+    }
+    if (removeLabelIds && removeLabelIds.length > 0) {
+      body.removeLabelIds = removeLabelIds;
+    }
+
+    return this.apiRequest<void>(
+      "gmail/v1",
+      "POST",
+      "/users/me/messages/batchModify",
+      body,
+    );
   }
 }

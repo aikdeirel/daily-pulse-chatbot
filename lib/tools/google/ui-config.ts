@@ -14,6 +14,8 @@
 export const GOOGLE_TOOL_TYPES = [
   "tool-googleCalendars",
   "tool-googleEvents",
+  "tool-gmailMessages",
+  "tool-gmailLabels",
 ] as const;
 
 export type GoogleToolType = (typeof GOOGLE_TOOL_TYPES)[number];
@@ -78,6 +80,86 @@ export const googleToolUIConfig: Record<GoogleToolType, GoogleToolUIConfig> = {
         description: "Updating event details",
       },
       delete_event: { title: "Deleting event", description: "Removing event" },
+    },
+  },
+  "tool-gmailMessages": {
+    label: "Gmail",
+    color: GOOGLE_COLOR,
+    defaultTitle: "Gmail",
+    defaultDescription: "Managing messages",
+    actions: {
+      list_messages: {
+        title: "Listing messages",
+        description: "Fetching email messages",
+      },
+      get_message: {
+        title: "Getting message",
+        description: "Fetching message details",
+      },
+      search_messages: {
+        title: "Searching messages",
+        description: "Searching emails",
+      },
+      mark_read: {
+        title: "Marking as read",
+        description: "Marking message as read",
+      },
+      mark_unread: {
+        title: "Marking as unread",
+        description: "Marking message as unread",
+      },
+      trash_message: {
+        title: "Moving to trash",
+        description: "Trashing message",
+      },
+      untrash_message: {
+        title: "Restoring message",
+        description: "Untrashing message",
+      },
+    },
+  },
+  "tool-gmailLabels": {
+    label: "Gmail Labels",
+    color: GOOGLE_COLOR,
+    defaultTitle: "Gmail Labels",
+    defaultDescription: "Managing labels",
+    actions: {
+      list_labels: {
+        title: "Listing labels",
+        description: "Fetching email labels",
+      },
+      get_label: {
+        title: "Getting label",
+        description: "Fetching label details",
+      },
+      create_label: {
+        title: "Creating label",
+        description: "Creating new label",
+      },
+      update_label: {
+        title: "Updating label",
+        description: "Updating label details",
+      },
+      delete_label: {
+        title: "Deleting label",
+        description: "Removing label",
+      },
+      add_label_to_message: {
+        title: "Adding label",
+        description: "Adding label to message",
+      },
+      remove_label_from_message: {
+        title: "Removing label",
+        description: "Removing label from message",
+      },
+      batch_add_labels: {
+        title: "Adding labels",
+        description: "Adding labels to messages",
+      },
+      batch_remove_labels: {
+        title: "Removing labels",
+        description: "Removing labels from messages",
+      },
     },
   },
 };

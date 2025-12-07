@@ -25,8 +25,12 @@ import { getLanguageModel } from "@/lib/ai/providers";
 import { discoverSkills } from "@/lib/ai/skills";
 import { createDocument } from "@/lib/ai/tools/create-document";
 import { getWeather } from "@/lib/ai/tools/get-weather";
-import { googleCalendars } from "@/lib/ai/tools/google/google-calendars";
-import { googleEvents } from "@/lib/ai/tools/google/google-events";
+import {
+  gmailLabels,
+  gmailMessages,
+  googleCalendars,
+  googleEvents,
+} from "@/lib/ai/tools/google";
 import {
   type GoogleToolGroupId,
   getGoogleToolNamesForGroups,
@@ -293,6 +297,8 @@ export async function POST(request: Request) {
         const googleTools = {
           googleCalendars: googleCalendars({ userId: session.user.id }),
           googleEvents: googleEvents({ userId: session.user.id }),
+          gmailMessages: gmailMessages({ userId: session.user.id }),
+          gmailLabels: gmailLabels({ userId: session.user.id }),
         };
 
         const selectedSpotifyToolNames = getSpotifyToolNamesForGroups(
