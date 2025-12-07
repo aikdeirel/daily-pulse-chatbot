@@ -19,6 +19,7 @@ export const gmailMessages = ({ userId }: GmailMessagesToolProps) =>
 Important Notes:
 - Use Gmail query syntax for search in the 'q' parameter (from:, to:, subject:, has:attachment, is:unread, is:starred, after:, before:, newer_than:, older_than:)
 - Examples: "from:user@example.com", "subject:meeting", "is:unread after:2024/01/01", "has:attachment newer_than:1d"
+- Date format for after:/before: is YYYY/MM/DD (different from RFC3339 used in Calendar API)
 - Common label IDs: INBOX, UNREAD, STARRED, IMPORTANT, SENT, DRAFT, SPAM, TRASH
 - Requires Google OAuth connection with Gmail permissions.`,
     inputSchema: z.object({

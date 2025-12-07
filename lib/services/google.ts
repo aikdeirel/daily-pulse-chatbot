@@ -157,7 +157,7 @@ export class GoogleService {
     return tokens.access_token;
   }
 
-  // Base API request method for Calendar API (kept for backward compatibility)
+  // Base API request method for Calendar API (uses calendar/v3 API path)
   private async request<T>(
     method: string,
     endpoint: string,

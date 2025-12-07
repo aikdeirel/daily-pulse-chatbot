@@ -112,7 +112,11 @@ Important Notes:
                 message: "Label name is required for create_label",
               };
             }
-            const labelData: any = { name };
+            const labelData: {
+              name: string;
+              messageListVisibility?: "show" | "hide";
+              labelListVisibility?: "labelShow" | "labelHide";
+            } = { name };
             if (messageListVisibility) {
               labelData.messageListVisibility = messageListVisibility;
             }
@@ -137,7 +141,11 @@ Important Notes:
                   "At least one field (name, messageListVisibility, or labelListVisibility) is required for update_label",
               };
             }
-            const labelData: any = {};
+            const labelData: {
+              name?: string;
+              messageListVisibility?: "show" | "hide";
+              labelListVisibility?: "labelShow" | "labelHide";
+            } = {};
             if (name) labelData.name = name;
             if (messageListVisibility) {
               labelData.messageListVisibility = messageListVisibility;
