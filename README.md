@@ -70,6 +70,7 @@ Create and edit interactive content directly in chat:
    - `POSTGRES_URL` – PostgreSQL connection string
    - `REDIS_URL` – Redis connection string
    - `OPENROUTER_API_KEY` – OpenRouter API key for LLM access ([get yours here](https://openrouter.ai/keys))
+   - `BLOB_READ_WRITE_TOKEN` – Vercel Blob storage token ([setup guide](docs/BLOB_STORAGE_SETUP.md))
    
    Optional (for Spotify features):
    - `SPOTIFY_CLIENT_ID`

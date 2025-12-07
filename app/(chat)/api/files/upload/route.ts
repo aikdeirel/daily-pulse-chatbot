@@ -62,8 +62,23 @@ export async function POST(request: Request) {
     const fileBuffer = await file.arrayBuffer();
 
     try {
+      // Check if Vercel Blob token is configured
+      if (!process.env.BLOB_READ_WRITE_TOKEN) {
+        console.error(
+          "Vercel Blob token not configured. Please set BLOB_READ_WRITE_TOKEN environment variable.",
+        );
+        return NextResponse.json(
+          {
+            error:
+              "Vercel Blob storage not configured. Please set up BLOB_READ_WRITE_TOKEN environment variable. See https://vercel.com/docs/vercel-blob for setup instructions.",
+          },
+          { status: 500 },
+        );
+      }
+
       const data = await put(`${filename}`, fileBuffer, {
         access: "public",
+        token: process.env.BLOB_READ_WRITE_TOKEN,
       });
 
       return NextResponse.json(data);
@@ -74,6 +89,20 @@ export async function POST(request: Request) {
         fileSize: file.size,
         error: error instanceof Error ? error.message : String(error),
       });
+
+      // Provide more specific error message for token issues
+      if (error instanceof Error && error.message.includes("No token found")) {
+        return NextResponse.json(
+          {
+            error:
+              "Vercel Blob token not found. Please configure BLOB_READ_WRITE_TOKEN environment variable.",
+            setupInstructions:
+              "Visit https://vercel.com/docs/vercel-blob to create a Blob token",
+          },
+          { status: 500 },
+        );
+      }
+
       return NextResponse.json({ error: "Upload failed" }, { status: 500 });
     }
   } catch (error) {
