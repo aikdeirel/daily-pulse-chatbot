@@ -17,8 +17,6 @@ Use `spotifyUser` tool:
 - `get_top_tracks` (timeRange: `short_term`) → recent favorites
 - `get_top_artists` (timeRange: `medium_term`) → overall taste
 
-**If Spotify not connected** (error: `"not_connected"`): Tell user to connect Spotify from the sidebar menu, then skip to Step 4 with generic recommendations.
-
 ### Step 2: Find New Releases
 
 Use `spotifyArtists` tool on top 2-3 artists:
@@ -79,3 +77,10 @@ Recommendations:
 ```
 
 **Keep it short:** Readable in under 30 seconds.
+
+## Error handling
+
+If you are trying to use a spotify tool and it fails, guide the user to check their settings:
+- Tell user to check if Spotify is connected. The user can connect it from the sidebar menu
+- Tell user to check if spotify tools for discovery and research are enabled. The user can enable them in the chat input options
+- Tell the user to try again after they have done the above
