@@ -7,6 +7,7 @@ import {
   type SpotifyToolGroupId,
   spotifyToolGroupIds,
 } from "@/lib/ai/tools/spotify/groups";
+import { ALLOWED_FILE_TYPES_ARRAY } from "@/lib/file-types";
 
 const textPartSchema = z.object({
   type: z.enum(["text"]),
@@ -15,7 +16,7 @@ const textPartSchema = z.object({
 
 const filePartSchema = z.object({
   type: z.enum(["file"]),
-  mediaType: z.enum(["image/jpeg", "image/png"]),
+  mediaType: z.enum(ALLOWED_FILE_TYPES_ARRAY as [string, ...string[]]),
   name: z.string().min(1).max(100),
   url: z.string().url(),
 });

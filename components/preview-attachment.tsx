@@ -32,6 +32,14 @@ export const PreviewAttachment = ({
         <div className="flex size-full items-center justify-center text-muted-foreground text-xs">
           PDF
         </div>
+      ) : contentType === "text/plain" ? (
+        <div className="flex size-full items-center justify-center text-muted-foreground text-xs">
+          TXT
+        </div>
+      ) : contentType === "text/markdown" ? (
+        <div className="flex size-full items-center justify-center text-muted-foreground text-xs">
+          MD
+        </div>
       ) : (
         <div className="flex size-full items-center justify-center text-muted-foreground text-xs">
           File

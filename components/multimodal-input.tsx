@@ -301,7 +301,7 @@ function PureMultimodalInput({
         ref={fileInputRef}
         tabIndex={-1}
         type="file"
-        accept="image/jpeg,image/png,application/pdf"
+        accept="image/jpeg,image/png,application/pdf,text/plain,text/markdown,.md,.txt"
       />
 
       <PromptInput
