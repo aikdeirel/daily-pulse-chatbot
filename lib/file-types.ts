@@ -23,6 +23,7 @@ export const ALLOWED_FILE_TYPES_ARRAY: AllowedFileType[] =
  */
 export const FILE_INPUT_ACCEPT = [
   ...ALLOWED_FILE_TYPES_ARRAY,
+  ".pdf", // PDF extension
   ".md", // Markdown extension
   ".txt", // Text extension
 ].join(",");
@@ -36,7 +37,10 @@ export const MAX_FILE_SIZE = 5 * 1024 * 1024;
  * Check if a file type is an image
  */
 export function isImageType(type: string): boolean {
-  return type.startsWith("image/");
+  return (
+    type === ALLOWED_FILE_TYPES.IMAGE_JPEG ||
+    type === ALLOWED_FILE_TYPES.IMAGE_PNG
+  );
 }
 
 /**

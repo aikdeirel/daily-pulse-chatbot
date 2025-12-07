@@ -183,23 +183,24 @@ export async function POST(request: Request) {
       // New chat - no need to fetch messages, it's empty
     }
 
-    // Process attachments in the message before sending to LLM
+    // Process attachments in the message before sending to LLM, preserving order
     // This converts text files to text content and handles document types
-    const attachmentParts = message.parts.filter(
-      (part): part is AttachmentPart =>
-        part.type === "file" && "url" in part && "mediaType" in part,
+    const processedParts = await Promise.all(
+      message.parts.map(async (part) => {
+        if (part.type === "file" && "url" in part && "mediaType" in part) {
+          const processed = await processAttachmentsForLLM([
+            part as AttachmentPart,
+          ]);
+          return processed[0];
+        }
+        return part;
+      }),
     );
-    const nonAttachmentParts = message.parts.filter(
-      (part) => part.type !== "file",
-    );
-
-    const processedAttachmentParts =
-      await processAttachmentsForLLM(attachmentParts);
 
     // Create a new message with processed parts
     const processedMessage = {
       ...message,
-      parts: [...processedAttachmentParts, ...nonAttachmentParts],
+      parts: processedParts,
     };
 
     const uiMessages = [

@@ -3,7 +3,7 @@
  * Handles conversion of different file types for LLM consumption
  */
 
-import { ALLOWED_FILE_TYPES, isDocumentType, isImageType } from "./file-types";
+import { ALLOWED_FILE_TYPES, isImageType } from "./file-types";
 
 export interface AttachmentPart {
   type: "file";
@@ -18,6 +18,19 @@ export interface TextPart {
 }
 
 /**
+ * Validate that a URL is from a trusted Vercel Blob storage domain
+ * Prevents SSRF attacks by ensuring we only fetch from expected sources
+ */
+function isVercelBlobUrl(url: string): boolean {
+  try {
+    const parsedUrl = new URL(url);
+    return parsedUrl.hostname.endsWith(".public.blob.vercel-storage.com");
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Process attachments before sending to LLM
  * - Images are sent as-is with their URLs
  * - Text files are fetched and converted to text parts
@@ -26,51 +39,58 @@ export interface TextPart {
 export async function processAttachmentsForLLM(
   attachmentParts: AttachmentPart[],
 ): Promise<Array<AttachmentPart | TextPart>> {
-  const processedParts: Array<AttachmentPart | TextPart> = [];
+  // Process all attachments in parallel for better performance
+  const processedParts = await Promise.all(
+    attachmentParts.map(async (attachment) => {
+      const { mediaType, url, name } = attachment;
 
-  for (const attachment of attachmentParts) {
-    const { mediaType, url, name } = attachment;
-
-    // Images: pass through as-is for vision models
-    if (isImageType(mediaType)) {
-      processedParts.push(attachment);
-      continue;
-    }
-
-    // Text files: fetch content and convert to text
-    if (
-      mediaType === ALLOWED_FILE_TYPES.TEXT_PLAIN ||
-      mediaType === ALLOWED_FILE_TYPES.TEXT_MARKDOWN
-    ) {
-      try {
-        const response = await fetch(url);
-        if (response.ok) {
-          const content = await response.text();
-          processedParts.push({
-            type: "text",
-            text: `[Content of ${name}]:\n\n${content}`,
-          });
-          continue;
-        }
-      } catch (error) {
-        console.error(`Failed to fetch text file ${name}:`, error);
-        // Fall back to sending as attachment
+      // Images: pass through as-is for vision models
+      if (isImageType(mediaType)) {
+        return attachment;
       }
-    }
 
-    // PDFs and other documents: include as attachment
-    // Note: Model support for PDFs varies. Some models may not support them.
-    if (isDocumentType(mediaType)) {
-      processedParts.push({
-        ...attachment,
-        // Keep as file attachment - the AI SDK will handle it appropriately
-      });
-      continue;
-    }
+      // Text files: fetch content and convert to text
+      if (
+        mediaType === ALLOWED_FILE_TYPES.TEXT_PLAIN ||
+        mediaType === ALLOWED_FILE_TYPES.TEXT_MARKDOWN
+      ) {
+        // Validate URL to prevent SSRF
+        if (!isVercelBlobUrl(url)) {
+          console.error(`Untrusted URL detected for ${name}: ${url}`);
+          return attachment; // Fall back to sending as attachment
+        }
 
-    // Default: pass through as-is
-    processedParts.push(attachment);
-  }
+        try {
+          const response = await fetch(url);
+          if (response.ok) {
+            const content = await response.text();
+            return {
+              type: "text" as const,
+              text: `[Content of ${name}]:\n\n${content}`,
+            };
+          }
+          // Non-ok response, fall back to attachment
+          console.error(
+            `Failed to fetch text file ${name}: response not ok (${response.status})`,
+          );
+          return attachment;
+        } catch (error) {
+          console.error(`Failed to fetch text file ${name}:`, error);
+          // Fall back to sending as attachment
+          return attachment;
+        }
+      }
+
+      // PDFs: include as attachment
+      // Note: Model support for PDFs varies. Some models may not support them.
+      if (mediaType === ALLOWED_FILE_TYPES.APPLICATION_PDF) {
+        return attachment;
+      }
+
+      // Default: pass through as-is
+      return attachment;
+    }),
+  );
 
   return processedParts;
 }
