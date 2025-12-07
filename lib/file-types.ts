@@ -19,10 +19,13 @@ export const ALLOWED_FILE_TYPES_ARRAY: AllowedFileType[] =
 
 /**
  * Accept attribute value for file input element
- * Includes all allowed file types and common markdown extensions
+ * Generated from ALLOWED_FILE_TYPES with common file extensions
  */
-export const FILE_INPUT_ACCEPT =
-  "image/jpeg,image/png,application/pdf,text/plain,text/markdown,.md,.txt";
+export const FILE_INPUT_ACCEPT = [
+  ...ALLOWED_FILE_TYPES_ARRAY,
+  ".md", // Markdown extension
+  ".txt", // Text extension
+].join(",");
 
 /**
  * Maximum file size in bytes (5MB)

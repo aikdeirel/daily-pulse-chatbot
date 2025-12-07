@@ -3,7 +3,7 @@
  * Handles conversion of different file types for LLM consumption
  */
 
-import { isDocumentType, isImageType } from "./file-types";
+import { ALLOWED_FILE_TYPES, isDocumentType, isImageType } from "./file-types";
 
 export interface AttachmentPart {
   type: "file";
@@ -38,7 +38,10 @@ export async function processAttachmentsForLLM(
     }
 
     // Text files: fetch content and convert to text
-    if (mediaType === "text/plain" || mediaType === "text/markdown") {
+    if (
+      mediaType === ALLOWED_FILE_TYPES.TEXT_PLAIN ||
+      mediaType === ALLOWED_FILE_TYPES.TEXT_MARKDOWN
+    ) {
       try {
         const response = await fetch(url);
         if (response.ok) {
@@ -83,7 +86,7 @@ export function hasUnsupportedAttachments(attachmentParts: AttachmentPart[]): {
 
   for (const attachment of attachmentParts) {
     // PDFs may not be supported by all models
-    if (attachment.mediaType === "application/pdf") {
+    if (attachment.mediaType === ALLOWED_FILE_TYPES.APPLICATION_PDF) {
       unsupportedTypes.push("PDF");
     }
   }
