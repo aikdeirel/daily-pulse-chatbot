@@ -63,7 +63,9 @@ Important Notes:
       name: z
         .string()
         .optional()
-        .describe("Label name (required for create_label, update_label)"),
+        .describe(
+          "Label name (required for create_label, optional for update_label)",
+        ),
       messageListVisibility: z
         .enum(["show", "hide"])
         .optional()
@@ -122,13 +124,21 @@ Important Notes:
           }
 
           case "update_label": {
-            if (!labelId || !name) {
+            if (!labelId) {
               return {
-                error: "missing_params",
-                message: "Label ID and name are required for update_label",
+                error: "missing_label_id",
+                message: "Label ID is required for update_label",
               };
             }
-            const labelData: any = { name };
+            if (!name && !messageListVisibility && !labelListVisibility) {
+              return {
+                error: "missing_update_data",
+                message:
+                  "At least one field (name, messageListVisibility, or labelListVisibility) is required for update_label",
+              };
+            }
+            const labelData: any = {};
+            if (name) labelData.name = name;
             if (messageListVisibility) {
               labelData.messageListVisibility = messageListVisibility;
             }

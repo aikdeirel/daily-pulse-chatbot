@@ -9,23 +9,22 @@ type GmailMessagesToolProps = {
 export const gmailMessages = ({ userId }: GmailMessagesToolProps) =>
   tool({
     description: `Manage Gmail messages. Actions:
-- "list_messages": List messages with optional search query and filters (supports q for search, labelIds for filtering, maxResults)
+- "list_messages": List/search messages with optional query and filters (supports q for Gmail query syntax search, labelIds for filtering, maxResults)
 - "get_message": Get specific message details (requires messageId, optional format: full/metadata/minimal/raw)
-- "search_messages": Search messages using Gmail query syntax (requires query string, examples: "from:user@example.com", "subject:meeting", "is:unread", "after:2024/01/01")
 - "mark_read": Mark message as read (requires messageId)
 - "mark_unread": Mark message as unread (requires messageId)
 - "trash_message": Move message to trash (requires messageId)
 - "untrash_message": Restore message from trash (requires messageId)
 
 Important Notes:
-- Use Gmail query syntax for search (from:, to:, subject:, has:attachment, is:unread, is:starred, after:, before:, newer_than:, older_than:)
+- Use Gmail query syntax for search in the 'q' parameter (from:, to:, subject:, has:attachment, is:unread, is:starred, after:, before:, newer_than:, older_than:)
+- Examples: "from:user@example.com", "subject:meeting", "is:unread after:2024/01/01", "has:attachment newer_than:1d"
 - Common label IDs: INBOX, UNREAD, STARRED, IMPORTANT, SENT, DRAFT, SPAM, TRASH
 - Requires Google OAuth connection with Gmail permissions.`,
     inputSchema: z.object({
       action: z.enum([
         "list_messages",
         "get_message",
-        "search_messages",
         "mark_read",
         "mark_unread",
         "trash_message",
@@ -41,7 +40,7 @@ Important Notes:
         .string()
         .optional()
         .describe(
-          "Search query using Gmail syntax (required for search_messages, optional for list_messages)",
+          "Search query using Gmail syntax for list_messages (e.g., 'from:user@example.com', 'is:unread after:2024/01/01')",
         ),
       labelIds: z
         .array(z.string())
@@ -93,20 +92,6 @@ Important Notes:
               format || "full",
             );
             return { action: "get_message", message };
-          }
-
-          case "search_messages": {
-            if (!query) {
-              return {
-                error: "missing_query",
-                message: "Search query is required for search_messages",
-              };
-            }
-            const messages = await googleService.listGmailMessages({
-              q: query,
-              maxResults: maxResults || 20,
-            });
-            return { action: "search_messages", messages, query };
           }
 
           case "mark_read": {

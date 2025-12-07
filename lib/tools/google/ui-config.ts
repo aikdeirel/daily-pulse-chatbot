@@ -96,10 +96,6 @@ export const googleToolUIConfig: Record<GoogleToolType, GoogleToolUIConfig> = {
         title: "Getting message",
         description: "Fetching message details",
       },
-      search_messages: {
-        title: "Searching messages",
-        description: "Searching emails",
-      },
       mark_read: {
         title: "Marking as read",
         description: "Marking message as read",
