@@ -133,21 +133,101 @@ Note: All playback control actions (except get_current_playback and get_devices)
 
           case "play": {
             const result = await service.play(uri, deviceId);
+            if (result.success) {
+              // Get the currently playing track to include in the response
+              const currentPlayback = await service.getCurrentlyPlaying();
+              if (currentPlayback.track) {
+                return {
+                  action: "play",
+                  success: true,
+                  track: {
+                    name: currentPlayback.track.name,
+                    artist: currentPlayback.track.artists
+                      .map((a) => a.name)
+                      .join(", "),
+                    album: currentPlayback.track.album.name,
+                    albumArt: currentPlayback.track.album.images[0]?.url,
+                    uri: currentPlayback.track.uri,
+                    durationMs: currentPlayback.track.durationMs,
+                  },
+                };
+              }
+            }
             return { action: "play", ...result };
           }
 
           case "pause": {
             const result = await service.pause();
+            if (result.success) {
+              // Get the currently playing track to include in the response
+              const currentPlayback = await service.getCurrentlyPlaying();
+              if (currentPlayback.track) {
+                return {
+                  action: "pause",
+                  success: true,
+                  track: {
+                    name: currentPlayback.track.name,
+                    artist: currentPlayback.track.artists
+                      .map((a) => a.name)
+                      .join(", "),
+                    album: currentPlayback.track.album.name,
+                    albumArt: currentPlayback.track.album.images[0]?.url,
+                    uri: currentPlayback.track.uri,
+                    durationMs: currentPlayback.track.durationMs,
+                  },
+                };
+              }
+            }
             return { action: "pause", ...result };
           }
 
           case "skip_to_next": {
             const result = await service.next();
+            if (result.success) {
+              // Get the currently playing track to include in the response
+              const currentPlayback = await service.getCurrentlyPlaying();
+              if (currentPlayback.track) {
+                return {
+                  action: "skip_to_next",
+                  success: true,
+                  track: {
+                    name: currentPlayback.track.name,
+                    artist: currentPlayback.track.artists
+                      .map((a) => a.name)
+                      .join(", "),
+                    album: currentPlayback.track.album.name,
+                    albumArt: currentPlayback.track.album.images[0]?.url,
+                    uri: currentPlayback.track.uri,
+                    durationMs: currentPlayback.track.durationMs,
+                  },
+                };
+              }
+            }
             return { action: "skip_to_next", ...result };
           }
 
           case "skip_to_previous": {
             const result = await service.previous();
+            if (result.success) {
+              // Get the currently playing track to include in the response
+              const currentPlayback = await service.getCurrentlyPlaying();
+              if (currentPlayback.track) {
+                return {
+                  action: "skip_to_previous",
+                  success: true,
+                  track: {
+                    name: currentPlayback.track.name,
+                    artist: currentPlayback.track.artists
+                      .map((a) => a.name)
+                      .join(", "),
+                    album: currentPlayback.track.album.name,
+                    albumArt: currentPlayback.track.album.images[0]?.url,
+                    uri: currentPlayback.track.uri,
+                    durationMs: currentPlayback.track.durationMs,
+                  },
+                };
+              }
+            }
             return { action: "skip_to_previous", ...result };
           }
 

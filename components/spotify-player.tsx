@@ -10,6 +10,13 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 
+// Helper function to format duration in MM:SS format
+const formatDuration = (ms: number): string => {
+  const minutes = Math.floor(ms / 60000);
+  const seconds = ((ms % 60000) / 1000).toFixed(0);
+  return `${minutes}:${seconds.padStart(2, "0")}`;
+};
+
 interface SpotifyTrack {
   name: string;
   artist: string;
@@ -152,6 +159,9 @@ export function SpotifyPlayer({ data }: { data: SpotifyToolOutput }) {
             </p>
             <p className="truncate text-sm text-white/70">
               {data.track.artist}
+              {data.progressMs && data.track?.durationMs
+                ? ` (${formatDuration(data.progressMs)}/${formatDuration(data.track.durationMs)})`
+                : ""}
             </p>
             <p className="truncate text-xs text-white/50">{data.track.album}</p>
           </div>
@@ -222,7 +232,7 @@ export function SpotifyPlayer({ data }: { data: SpotifyToolOutput }) {
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{track.name}</p>
                 <p className="truncate text-xs text-muted-foreground">
-                  {track.artist}
+                  {track.artist} • {formatDuration(track.durationMs || 0)}
                 </p>
               </div>
             </div>
@@ -419,7 +429,7 @@ export function SpotifyPlayer({ data }: { data: SpotifyToolOutput }) {
         <div>
           <p className="font-medium text-[#1DB954]">
             Added {data.tracksAdded} track{data.tracksAdded !== 1 ? "s" : ""} to
-            playlist
+            playlist{data.playlist?.name ? ` "${data.playlist.name}"` : ""}
           </p>
           <p className="text-sm text-muted-foreground">{data.message}</p>
         </div>
@@ -429,11 +439,16 @@ export function SpotifyPlayer({ data }: { data: SpotifyToolOutput }) {
 
   // Success states (play, pause, next, previous)
   if (data.success) {
+    // Add device context when available
+    const deviceInfo = data.device ? ` on ${data.device.name}` : "";
+    // Add album context when available
+    const albumInfo = data.track?.album ? ` from ${data.track.album}` : "";
+
     const actionMessages: Record<string, string> = {
-      play: "▶️ Playing",
-      pause: "⏸️ Paused",
-      next: "⏭️ Skipped to next track",
-      previous: "⏮️ Went to previous track",
+      play: `Playing ${data.track?.artist} - ${data.track?.name || "song"}${albumInfo}${deviceInfo}`,
+      pause: `Paused ${data.track?.artist} - ${data.track?.name || "song"}${deviceInfo}`,
+      skip_to_next: `Skipped to next song ${data.track?.artist} - ${data.track?.name || "song"}${albumInfo}${deviceInfo}`,
+      skip_to_previous: `Went to previous song ${data.track?.artist} - ${data.track?.name || "song"}${albumInfo}${deviceInfo}`,
     };
     return (
       <div className="flex items-center gap-2 rounded-lg bg-[#1DB954]/10 px-3 py-2 text-[#1DB954]">
