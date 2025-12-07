@@ -11,7 +11,6 @@ import {
   FileTextIcon,
   GlobeIcon,
   LightbulbIcon,
-  MusicIcon,
   PencilIcon,
   SparklesIcon,
   WrenchIcon,
@@ -19,12 +18,25 @@ import {
   ZapIcon,
 } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
+import { SpotifyIcon } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  getBasicToolBaseConfig,
+  isBasicTool,
+} from "@/lib/tools/basic/ui-config";
+import {
+  getGoogleToolBaseConfig,
+  isGoogleTool,
+} from "@/lib/tools/google/ui-config";
+import {
+  getSpotifyToolBaseConfig,
+  isSpotifyTool,
+} from "@/lib/tools/spotify/ui-config";
 import { cn } from "@/lib/utils";
 import { CodeBlock } from "./code-block";
 
@@ -49,54 +61,45 @@ export type ToolHeaderProps = {
 };
 
 // Tool configuration - using functions to create icons at render time
+// Non-Google/Spotify/Basic tools have their config defined here
+// Google tools use the centralized config from lib/tools/google/ui-config.ts
+// Spotify tools use the centralized config from lib/tools/spotify/ui-config.ts
+// Basic tools use the centralized config from lib/tools/basic/ui-config.ts
 type ToolConfigEntry = { label: string; color: string; description: string };
-const toolConfigData: Record<string, ToolConfigEntry> = {
-  "tool-getWeather": {
-    label: "Weather",
-    color: "text-amber-600 dark:text-amber-400",
-    description: "Fetching weather data",
-  },
-  "tool-createDocument": {
-    label: "Create Document",
-    color: "text-emerald-600 dark:text-emerald-400",
-    description: "Creating a new document",
-  },
-  "tool-updateDocument": {
-    label: "Update Document",
-    color: "text-orange-600 dark:text-orange-400",
-    description: "Updating document content",
-  },
-  "tool-requestSuggestions": {
-    label: "Suggestions",
-    color: "text-amber-600 dark:text-amber-400",
-    description: "Generating suggestions",
-  },
-  "tool-useSkill": {
-    label: "Loading Skill",
-    color: "text-orange-600 dark:text-orange-400",
-    description: "Activating specialized skill",
-  },
-  "tool-getSkillResource": {
-    label: "Skill Resource",
-    color: "text-amber-600 dark:text-amber-400",
-    description: "Loading skill resource",
-  },
-  "tool-webFetch": {
-    label: "Web Fetch",
-    color: "text-orange-600 dark:text-orange-400",
-    description: "Fetching web content",
-  },
-  "tool-googleCalendars": {
-    label: "Google Calendar",
-    color: "text-[#4285F4] dark:text-[#4285F4]",
-    description: "Managing calendars",
-  },
-  "tool-googleEvents": {
-    label: "Google Events",
-    color: "text-[#4285F4] dark:text-[#4285F4]",
-    description: "Managing events",
-  },
-};
+const baseToolConfigData: Record<string, ToolConfigEntry> = {};
+
+/**
+ * Get tool configuration by type.
+ * For Google tools, uses the centralized config from lib/tools/google/ui-config.ts
+ * For Spotify tools, uses the centralized config from lib/tools/spotify/ui-config.ts
+ * For Basic tools, uses the centralized config from lib/tools/basic/ui-config.ts
+ * For other tools, uses the local baseToolConfigData
+ */
+function getToolConfig(type: string): ToolConfigEntry {
+  // Check if it's a Google tool and use centralized config
+  if (isGoogleTool(type)) {
+    return getGoogleToolBaseConfig(type);
+  }
+
+  // Check if it's a Basic tool and use centralized config
+  if (isBasicTool(type)) {
+    return getBasicToolBaseConfig(type);
+  }
+
+  // Check if it's a Spotify tool and use centralized config
+  if (isSpotifyTool(type)) {
+    return getSpotifyToolBaseConfig(type);
+  }
+
+  // Use local config for non-Google/Spotify/Basic tools
+  return (
+    baseToolConfigData[type] || {
+      label: type.replace("tool-", ""),
+      color: "text-muted-foreground",
+      description: "Processing",
+    }
+  );
+}
 
 // Get icon component based on tool type
 function getToolIcon(type: string, className: string = "size-4"): ReactNode {
@@ -115,8 +118,15 @@ function getToolIcon(type: string, className: string = "size-4"): ReactNode {
       return <BookOpenIcon className={className} />;
     case "tool-webFetch":
       return <GlobeIcon className={className} />;
-    case "tool-spotify":
-      return <MusicIcon className={className} />;
+    case "tool-spotifyAlbums":
+    case "tool-spotifyArtists":
+    case "tool-spotifyPlayback":
+    case "tool-spotifyQueue":
+    case "tool-spotifyPlaylists":
+    case "tool-spotifySearch":
+    case "tool-spotifyTracks":
+    case "tool-spotifyUser":
+      return <SpotifyIcon />;
     case "tool-googleCalendars":
     case "tool-googleEvents":
       return <CalendarIcon className={className} />;
@@ -200,11 +210,7 @@ export const ToolHeader = ({
   title,
   description,
 }: ToolHeaderProps) => {
-  const config = toolConfigData[type] || {
-    label: type.replace("tool-", ""),
-    color: "text-muted-foreground",
-    description: "Processing",
-  };
+  const config = getToolConfig(type);
 
   return (
     <CollapsibleTrigger
@@ -326,12 +332,6 @@ export const SkillOutput = ({
   instructions: string;
 }) => (
   <div className="space-y-4 p-5 max-w-full overflow-hidden">
-    <div className="flex items-center gap-2">
-      <div className="size-2 rounded-full bg-orange-500" />
-      <h4 className="font-medium text-muted-foreground text-sm uppercase tracking-wider">
-        Skill Loaded
-      </h4>
-    </div>
     <div className="rounded-xl bg-gradient-to-br from-orange-500/10 to-amber-500/10 p-5 ring-1 ring-orange-500/25 max-w-full overflow-hidden">
       <div className="flex flex-wrap items-center gap-2 mb-3">
         <SparklesIcon className="size-5 shrink-0 text-orange-500" />
@@ -340,8 +340,8 @@ export const SkillOutput = ({
           {skillId}
         </Badge>
       </div>
-      <p className="text-muted-foreground text-sm line-clamp-2 break-words">
-        {instructions.substring(0, 150)}...
+      <p className="text-muted-foreground text-sm line-clamp-5 break-words">
+        {instructions.substring(0, 500)}
       </p>
     </div>
   </div>

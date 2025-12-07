@@ -38,6 +38,7 @@ import {
   spotifyPlayback,
   spotifyPlaylists,
   spotifyQueue,
+  spotifySearch,
   spotifyTracks,
   spotifyUser,
 } from "@/lib/ai/tools/spotify";
@@ -257,6 +258,7 @@ export async function POST(request: Request) {
           spotifyPlayback: spotifyPlayback({ userId: session.user.id }),
           spotifyQueue: spotifyQueue({ userId: session.user.id }),
           spotifyPlaylists: spotifyPlaylists({ userId: session.user.id }),
+          spotifySearch: spotifySearch({ userId: session.user.id }),
           spotifyTracks: spotifyTracks({ userId: session.user.id }),
           spotifyUser: spotifyUser({ userId: session.user.id }),
         };

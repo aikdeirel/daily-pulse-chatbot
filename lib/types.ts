@@ -11,6 +11,7 @@ import type {
   spotifyPlayback,
   spotifyPlaylists,
   spotifyQueue,
+  spotifySearch,
   spotifyTracks,
   spotifyUser,
 } from "./ai/tools/spotify";
@@ -37,6 +38,7 @@ type requestSuggestionsTool = InferUITool<
 type useSkillTool = InferUITool<ReturnType<typeof useSkill>>;
 type getSkillResourceTool = InferUITool<ReturnType<typeof getSkillResource>>;
 type webFetchTool = InferUITool<typeof webFetch>;
+type spotifySearchTool = InferUITool<ReturnType<typeof spotifySearch>>;
 type spotifyAlbumsTool = InferUITool<ReturnType<typeof spotifyAlbums>>;
 type spotifyArtistsTool = InferUITool<ReturnType<typeof spotifyArtists>>;
 type spotifyPlaybackTool = InferUITool<ReturnType<typeof spotifyPlayback>>;
@@ -55,6 +57,7 @@ export type ChatTools = {
   useSkill: useSkillTool;
   getSkillResource: getSkillResourceTool;
   webFetch: webFetchTool;
+  spotifySearch: spotifySearchTool;
   spotifyAlbums: spotifyAlbumsTool;
   spotifyArtists: spotifyArtistsTool;
   spotifyPlayback: spotifyPlaybackTool;

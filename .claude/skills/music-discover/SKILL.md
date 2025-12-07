@@ -17,14 +17,19 @@ Use `spotifyUser` tool:
 - `get_top_tracks` (timeRange: `short_term`) → recent favorites
 - `get_top_artists` (timeRange: `medium_term`) → overall taste
 
-**If Spotify not connected** (error: `"not_connected"`): Tell user to connect Spotify from the sidebar menu, then skip to Step 3 with generic recommendations.
+**If Spotify not connected** (error: `"not_connected"`): Tell user to connect Spotify from the sidebar menu, then skip to Step 4 with generic recommendations.
 
 ### Step 2: Find New Releases
 
 Use `spotifyArtists` tool on top 2-3 artists:
 - `get_artist_albums` (includeGroups: `["album", "single"]`, limit: 5) → recent releases from favorite artists
 
-### Step 3: Search for News
+### Step 3: Enhance with Search
+
+Use `spotifySearch` tool for specific queries:
+- `search` (query: "[users mood, genre or interests]", types: `["track", "artist"]`) → find music matching specific moods or genres
+
+### Step 4: Search for News
 
 **If web search is available:** Search for recent news about the user's top artists:
 
@@ -40,17 +45,18 @@ Skip the news section if no relevant news found.
 1. Tell the user: "Web search is not enabled. Enable it in settings for current music news."
 2. Continue without news section.
 
-### Step 4: Generate Recommendations
+### Step 5: Generate Recommendations
 
 Provide 3-5 recommendations based on:
 
 1. **New releases** from favorite artists (from Step 2)
 2. **Deep cuts** from known artists (lesser-known albums)
 3. **Genre exploration** based on top artists' genres
+4. **Search results** using `spotifySearch` tool for specific queries or mood-based searches
 
 Tailor to context if specified (e.g., "long train ride" → longer, atmospheric albums).
 
-### Step 5: Offer Actions (Optional)
+### Step 6: Offer Actions (Optional)
 
 After showing recommendations, ask if user wants to:
 - **Play now** or **add to queue** → use `spotifyPlayback` (play) or `spotifyQueue` (add_to_queue)

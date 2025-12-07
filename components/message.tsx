@@ -5,6 +5,15 @@ import type { AnchorHTMLAttributes } from "react";
 import { memo, useMemo, useState } from "react";
 import { useThinkingPhrase } from "@/hooks/use-thinking-phrase";
 import type { Vote } from "@/lib/db/schema";
+import { getBasicToolDisplay, isBasicTool } from "@/lib/tools/basic/ui-config";
+import {
+  getGoogleToolDisplay,
+  isGoogleTool,
+} from "@/lib/tools/google/ui-config";
+import {
+  getSpotifyToolDisplay,
+  isSpotifyTool,
+} from "@/lib/tools/spotify/ui-config";
 import type { ChatMessage } from "@/lib/types";
 import { cn, sanitizeText } from "@/lib/utils";
 import { useDataStream } from "./data-stream-provider";
@@ -228,270 +237,54 @@ const PurePreviewMessage = ({
                 }
               }
 
-              // Tool components for assistant messages
-              if (type === "tool-getWeather") {
-                const { toolCallId, state } = part;
+              // Google Tools
+              if (isGoogleTool(type)) {
+                const googlePart = part as {
+                  toolCallId: string;
+                  state:
+                    | "input-streaming"
+                    | "input-available"
+                    | "output-available"
+                    | "output-error";
+                  input?: { action?: string };
+                  output?: Record<string, unknown>;
+                };
+                const { toolCallId, state } = googlePart;
+                const action = googlePart.input?.action as string | undefined;
 
-                return (
-                  <Tool defaultOpen={false} key={toolCallId}>
-                    <ToolHeader state={state} type="tool-getWeather" />
-                    <ToolContent>
-                      {state === "input-available" && (
-                        <ToolInput input={part.input} />
-                      )}
-                      {state === "output-available" && (
-                        <ToolOutput
-                          errorText={undefined}
-                          output={<Weather weatherAtLocation={part.output} />}
-                        />
-                      )}
-                    </ToolContent>
-                  </Tool>
+                // Get title and description from centralized config
+                const { title, description } = getGoogleToolDisplay(
+                  type,
+                  action,
                 );
-              }
-
-              if (type === "tool-createDocument") {
-                const { toolCallId } = part;
-
-                if (part.output && "error" in part.output) {
-                  return (
-                    <div
-                      className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-500 dark:bg-red-950/50"
-                      key={toolCallId}
-                    >
-                      Error creating document: {String(part.output.error)}
-                    </div>
-                  );
-                }
-
-                return (
-                  <DocumentPreview
-                    isReadonly={isReadonly}
-                    key={toolCallId}
-                    result={part.output}
-                  />
-                );
-              }
-
-              if (type === "tool-updateDocument") {
-                const { toolCallId } = part;
-
-                if (part.output && "error" in part.output) {
-                  return (
-                    <div
-                      className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-500 dark:bg-red-950/50"
-                      key={toolCallId}
-                    >
-                      Error updating document: {String(part.output.error)}
-                    </div>
-                  );
-                }
-
-                return (
-                  <div className="relative" key={toolCallId}>
-                    <DocumentPreview
-                      args={{ ...part.output, isUpdate: true }}
-                      isReadonly={isReadonly}
-                      result={part.output}
-                    />
-                  </div>
-                );
-              }
-
-              if (type === "tool-requestSuggestions") {
-                const { toolCallId, state } = part;
-
-                return (
-                  <Tool defaultOpen={false} key={toolCallId}>
-                    <ToolHeader state={state} type="tool-requestSuggestions" />
-                    <ToolContent>
-                      {state === "input-available" && (
-                        <ToolInput input={part.input} />
-                      )}
-                      {state === "output-available" && (
-                        <ToolOutput
-                          errorText={undefined}
-                          output={
-                            "error" in part.output ? (
-                              <div className="rounded border p-2 text-red-500">
-                                Error: {String(part.output.error)}
-                              </div>
-                            ) : (
-                              <DocumentToolResult
-                                isReadonly={isReadonly}
-                                result={part.output}
-                                type="request-suggestions"
-                              />
-                            )
-                          }
-                        />
-                      )}
-                    </ToolContent>
-                  </Tool>
-                );
-              }
-
-              // Web Fetch Tool
-              if (type === "tool-webFetch") {
-                const { toolCallId, state } = part;
-                const url = part.input?.url as string | undefined;
-
-                // Extract domain from URL for display
-                let domain = "URL";
-                if (url) {
-                  try {
-                    domain = new URL(url).hostname;
-                  } catch {
-                    domain = url.substring(0, 30);
-                  }
-                }
 
                 return (
                   <Tool defaultOpen={false} key={toolCallId}>
                     <ToolHeader
                       state={state}
-                      type="tool-webFetch"
-                      title={`Fetching: ${domain}`}
-                      description={url || "Loading web content"}
+                      type={type}
+                      title={title}
+                      description={description}
                     />
                     <ToolContent>
-                      {(state === "input-available" ||
-                        state === "input-streaming") && (
-                        <ToolInput input={part.input} />
+                      {state === "input-available" && (
+                        <ToolInput input={googlePart.input} />
                       )}
-                      {state === "output-available" && (
+                      {state === "output-available" && googlePart.output && (
                         <ToolOutput
                           errorText={
-                            part.output && "error" in part.output
-                              ? String(part.output.error)
-                              : part.output && part.output.success === false
-                                ? String(part.output.error || "Request failed")
-                                : undefined
-                          }
-                          output={
-                            part.output?.success ? (
-                              <div className="p-3 max-w-full overflow-hidden">
-                                <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
-                                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-emerald-600 dark:text-emerald-400 shrink-0">
-                                    ✓ Success
-                                  </span>
-                                  <span className="truncate min-w-0">
-                                    {part.output.url}
-                                  </span>
-                                </div>
-                                <pre className="max-h-48 max-w-full overflow-auto rounded bg-muted/50 p-2 text-xs whitespace-pre-wrap break-words">
-                                  {typeof part.output.data === "object"
-                                    ? JSON.stringify(
-                                        part.output.data,
-                                        null,
-                                        2,
-                                      ).substring(0, 1000)
-                                    : String(part.output.data).substring(
-                                        0,
-                                        1000,
-                                      )}
-                                  {(typeof part.output.data === "object"
-                                    ? JSON.stringify(part.output.data).length >
-                                      1000
-                                    : String(part.output.data).length > 1000) &&
-                                    "\n..."}
-                                </pre>
-                              </div>
-                            ) : null
-                          }
-                        />
-                      )}
-                    </ToolContent>
-                  </Tool>
-                );
-              }
-
-              // Skill Tools - useSkill
-              if (type === "tool-useSkill") {
-                const { toolCallId, state } = part;
-                const skillId = part.input?.skillId as string | undefined;
-
-                return (
-                  <Tool defaultOpen={false} key={toolCallId}>
-                    <ToolHeader
-                      state={state}
-                      type="tool-useSkill"
-                      title={skillId ? `Loading: ${skillId}` : "Loading Skill"}
-                      description="Activating specialized skill instructions"
-                    />
-                    <ToolContent>
-                      {state === "input-available" && (
-                        <ToolInput input={part.input} />
-                      )}
-                      {state === "output-available" &&
-                        (part.output && "error" in part.output ? (
-                          <ToolOutput
-                            errorText={String(part.output.error)}
-                            output={null}
-                          />
-                        ) : part.output && "instructions" in part.output ? (
-                          <SkillOutput
-                            skillId={part.output.skillId as string}
-                            skillName={part.output.name as string}
-                            instructions={part.output.instructions as string}
-                          />
-                        ) : (
-                          <ToolOutput
-                            errorText={undefined}
-                            output={
-                              <pre className="p-3 text-xs max-w-full overflow-auto whitespace-pre-wrap break-words">
-                                {JSON.stringify(part.output, null, 2)}
-                              </pre>
-                            }
-                          />
-                        ))}
-                    </ToolContent>
-                  </Tool>
-                );
-              }
-
-              // Skill Tools - getSkillResource
-              if (type === "tool-getSkillResource") {
-                const { toolCallId, state } = part;
-                const resourcePath = part.input?.resourcePath as
-                  | string
-                  | undefined;
-
-                return (
-                  <Tool defaultOpen={false} key={toolCallId}>
-                    <ToolHeader
-                      state={state}
-                      type="tool-getSkillResource"
-                      title={
-                        resourcePath
-                          ? `Resource: ${resourcePath}`
-                          : "Skill Resource"
-                      }
-                      description="Loading additional skill documentation"
-                    />
-                    <ToolContent>
-                      {state === "input-available" && (
-                        <ToolInput input={part.input} />
-                      )}
-                      {state === "output-available" && (
-                        <ToolOutput
-                          errorText={
-                            part.output && "error" in part.output
-                              ? String(part.output.error)
+                            googlePart.output && "error" in googlePart.output
+                              ? String(googlePart.output.error)
                               : undefined
                           }
                           output={
-                            part.output && "content" in part.output ? (
-                              <pre className="max-h-48 max-w-full overflow-auto p-3 text-xs whitespace-pre-wrap break-words">
-                                {(part.output.content as string).substring(
-                                  0,
-                                  500,
-                                )}
-                                {(part.output.content as string).length > 500
-                                  ? "..."
-                                  : ""}
-                              </pre>
-                            ) : null
+                            <GoogleCalendarDisplay
+                              data={
+                                googlePart.output as Parameters<
+                                  typeof GoogleCalendarDisplay
+                                >[0]["data"]
+                              }
+                            />
                           }
                         />
                       )}
@@ -500,23 +293,197 @@ const PurePreviewMessage = ({
                 );
               }
 
-              // Spotify Tools (all 7 domain-specific tools)
-              const spotifyToolTypes = [
-                "tool-spotifyAlbums",
-                "tool-spotifyArtists",
-                "tool-spotifyPlayback",
-                "tool-spotifyQueue",
-                "tool-spotifyPlaylists",
-                "tool-spotifyTracks",
-                "tool-spotifyUser",
-              ] as const;
+              // Basic Tools (uses centralized config from lib/tools/basic/ui-config.ts)
+              if (isBasicTool(type)) {
+                const basicPart = part as {
+                  toolCallId: string;
+                  state:
+                    | "input-streaming"
+                    | "input-available"
+                    | "output-available"
+                    | "output-error";
+                  input?: { action?: string };
+                  output?: Record<string, unknown>;
+                };
+                const { toolCallId, state } = basicPart;
+                const action = basicPart.input?.action as string | undefined;
 
-              if (
-                spotifyToolTypes.includes(
-                  type as (typeof spotifyToolTypes)[number],
-                )
-              ) {
-                // Type assertion needed because TypeScript can't narrow with includes()
+                // Special handling for createDocument and updateDocument - they don't use Tool wrapper
+                if (type === "tool-createDocument") {
+                  if (basicPart.output && "error" in basicPart.output) {
+                    return (
+                      <div
+                        className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-500 dark:bg-red-950/50"
+                        key={toolCallId}
+                      >
+                        Error creating document:{" "}
+                        {String(basicPart.output.error)}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <DocumentPreview
+                      isReadonly={isReadonly}
+                      key={toolCallId}
+                      result={basicPart.output}
+                    />
+                  );
+                }
+
+                if (type === "tool-updateDocument") {
+                  if (basicPart.output && "error" in basicPart.output) {
+                    return (
+                      <div
+                        className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-500 dark:bg-red-950/50"
+                        key={toolCallId}
+                      >
+                        Error updating document:{" "}
+                        {String(basicPart.output.error)}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="relative" key={toolCallId}>
+                      <DocumentPreview
+                        args={{ ...basicPart.output, isUpdate: true }}
+                        isReadonly={isReadonly}
+                        result={basicPart.output}
+                      />
+                    </div>
+                  );
+                }
+
+                // Get title and description from centralized config
+                const { title, description } = getBasicToolDisplay(
+                  type,
+                  action,
+                );
+
+                return (
+                  <Tool defaultOpen={false} key={toolCallId}>
+                    <ToolHeader
+                      state={state}
+                      type={type}
+                      title={title}
+                      description={description}
+                    />
+                    <ToolContent>
+                      {state === "input-available" && (
+                        <ToolInput input={basicPart.input} />
+                      )}
+                      {state === "output-available" && (
+                        <ToolOutput
+                          errorText={
+                            basicPart.output && "error" in basicPart.output
+                              ? String(basicPart.output.error)
+                              : type === "tool-webFetch" &&
+                                  basicPart.output &&
+                                  basicPart.output.success === false
+                                ? String(
+                                    basicPart.output.error || "Request failed",
+                                  )
+                                : undefined
+                          }
+                          output={(() => {
+                            switch (type) {
+                              case "tool-getWeather":
+                                return (
+                                  <Weather
+                                    weatherAtLocation={basicPart.output as any}
+                                  />
+                                );
+                              case "tool-requestSuggestions":
+                                return basicPart.output &&
+                                  "error" in basicPart.output ? (
+                                  <div className="rounded border p-2 text-red-500">
+                                    Error: {String(basicPart.output.error)}
+                                  </div>
+                                ) : (
+                                  <DocumentToolResult
+                                    isReadonly={isReadonly}
+                                    result={basicPart.output as any}
+                                    type="request-suggestions"
+                                  />
+                                );
+                              case "tool-webFetch":
+                                return basicPart.output?.success ? (
+                                  <div className="p-3 max-w-full overflow-hidden">
+                                    <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
+                                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-emerald-600 dark:text-emerald-400 shrink-0">
+                                        ✓ Success
+                                      </span>
+                                      <span className="truncate min-w-0">
+                                        {String(basicPart.output.url)}
+                                      </span>
+                                    </div>
+                                    <pre className="max-h-48 max-w-full overflow-auto rounded bg-muted/50 p-2 text-xs whitespace-pre-wrap break-words">
+                                      {typeof basicPart.output.data === "object"
+                                        ? JSON.stringify(
+                                            basicPart.output.data,
+                                            null,
+                                            2,
+                                          ).substring(0, 1000)
+                                        : String(
+                                            basicPart.output.data,
+                                          ).substring(0, 1000)}
+                                      {(typeof basicPart.output.data ===
+                                      "object"
+                                        ? JSON.stringify(basicPart.output.data)
+                                            .length > 1000
+                                        : String(basicPart.output.data).length >
+                                          1000) && "\n..."}
+                                    </pre>
+                                  </div>
+                                ) : null;
+                              case "tool-useSkill":
+                                return basicPart.output &&
+                                  "error" in
+                                    basicPart.output ? null : basicPart.output &&
+                                  "instructions" in basicPart.output ? (
+                                  <SkillOutput
+                                    skillId={basicPart.output.skillId as string}
+                                    skillName={basicPart.output.name as string}
+                                    instructions={
+                                      basicPart.output.instructions as string
+                                    }
+                                  />
+                                ) : (
+                                  <pre className="p-3 text-xs max-w-full overflow-auto whitespace-pre-wrap break-words">
+                                    {JSON.stringify(basicPart.output, null, 2)}
+                                  </pre>
+                                );
+                              case "tool-getSkillResource":
+                                return (
+                                  <pre className="max-h-48 max-w-full overflow-auto p-3 text-xs whitespace-pre-wrap break-words">
+                                    {(
+                                      basicPart.output?.content as string
+                                    ).substring(0, 500)}
+                                    {(basicPart.output?.content as string)
+                                      .length > 500
+                                      ? "..."
+                                      : ""}
+                                  </pre>
+                                );
+                              default:
+                                return (
+                                  <pre className="p-3 text-xs max-w-full overflow-auto whitespace-pre-wrap break-words">
+                                    {JSON.stringify(basicPart.output, null, 2)}
+                                  </pre>
+                                );
+                            }
+                          })()}
+                        />
+                      )}
+                    </ToolContent>
+                  </Tool>
+                );
+              }
+
+              // Spotify Tools (uses centralized config from lib/tools/spotify/ui-config.ts)
+              if (isSpotifyTool(type)) {
+                // Type assertion needed because TypeScript can't narrow with type guard in JSX context
                 const spotifyPart = part as {
                   toolCallId: string;
                   state:
@@ -530,126 +497,20 @@ const PurePreviewMessage = ({
                 const { toolCallId, state } = spotifyPart;
                 const action = spotifyPart.input?.action as string | undefined;
 
-                // Determine title based on tool type and action
-                let title = "Spotify";
-
-                // Tool-specific titles
-                if (type === "tool-spotifyAlbums") {
-                  title =
-                    action === "get_album"
-                      ? "Album Details"
-                      : action === "get_multiple_albums"
-                        ? "Albums"
-                        : action === "get_album_tracks"
-                          ? "Album Tracks"
-                          : action === "check_saved_albums"
-                            ? "Checking Saved Albums"
-                            : "Albums";
-                } else if (type === "tool-spotifyArtists") {
-                  title =
-                    action === "get_artist"
-                      ? "Artist Details"
-                      : action === "get_multiple_artists"
-                        ? "Artists"
-                        : action === "get_artist_albums"
-                          ? "Artist Albums"
-                          : action === "get_artist_top_tracks"
-                            ? "Artist Top Tracks"
-                            : "Artists";
-                } else if (type === "tool-spotifyPlayback") {
-                  title =
-                    action === "get_current_playback"
-                      ? "Now Playing"
-                      : action === "get_devices"
-                        ? "Devices"
-                        : action === "play"
-                          ? "Playing"
-                          : action === "pause"
-                            ? "Pausing"
-                            : action === "skip_to_next"
-                              ? "Next Track"
-                              : action === "skip_to_previous"
-                                ? "Previous Track"
-                                : action === "seek"
-                                  ? "Seeking"
-                                  : action === "set_volume"
-                                    ? "Volume"
-                                    : action === "set_repeat_mode"
-                                      ? "Repeat Mode"
-                                      : action === "toggle_shuffle"
-                                        ? "Shuffle"
-                                        : action === "transfer_playback"
-                                          ? "Transfer Playback"
-                                          : "Playback";
-                } else if (type === "tool-spotifyQueue") {
-                  title =
-                    action === "get_queue"
-                      ? "Queue"
-                      : action === "add_to_queue"
-                        ? "Adding to Queue"
-                        : "Queue";
-                } else if (type === "tool-spotifyPlaylists") {
-                  title =
-                    action === "get_my_playlists"
-                      ? "Playlists"
-                      : action === "get_playlist"
-                        ? "Playlist Details"
-                        : action === "get_playlist_tracks"
-                          ? "Playlist Tracks"
-                          : action === "create_playlist"
-                            ? "Creating Playlist"
-                            : action === "change_details"
-                              ? "Updating Playlist"
-                              : action === "add_tracks"
-                                ? "Adding to Playlist"
-                                : action === "remove_tracks"
-                                  ? "Removing from Playlist"
-                                  : action === "reorder_tracks"
-                                    ? "Reordering Playlist"
-                                    : "Playlists";
-                } else if (type === "tool-spotifyTracks") {
-                  title =
-                    action === "get_track"
-                      ? "Track Details"
-                      : action === "get_multiple_tracks"
-                        ? "Tracks"
-                        : action === "get_saved_tracks"
-                          ? "Saved Tracks"
-                          : action === "save_tracks"
-                            ? "Saving Tracks"
-                            : action === "remove_saved_tracks"
-                              ? "Removing Tracks"
-                              : action === "check_saved_tracks"
-                                ? "Checking Saved Tracks"
-                                : "Tracks";
-                } else if (type === "tool-spotifyUser") {
-                  title =
-                    action === "get_profile"
-                      ? "Profile"
-                      : action === "get_top_tracks"
-                        ? "Top Tracks"
-                        : action === "get_top_artists"
-                          ? "Top Artists"
-                          : action === "get_followed_artists"
-                            ? "Followed Artists"
-                            : action === "follow_artists"
-                              ? "Following Artists"
-                              : action === "follow_users"
-                                ? "Following Users"
-                                : action === "unfollow_artists"
-                                  ? "Unfollowing Artists"
-                                  : action === "unfollow_users"
-                                    ? "Unfollowing Users"
-                                    : action === "check_following_artists"
-                                      ? "Checking Following"
-                                      : action === "check_following_users"
-                                        ? "Checking Following"
-                                        : "User";
-                }
+                // Get title and description from centralized config
+                const { title, description } = getSpotifyToolDisplay(
+                  type,
+                  action,
+                );
 
                 return (
                   <Tool defaultOpen={false} key={toolCallId}>
-                    <ToolHeader state={state} type={type} title={title} />
+                    <ToolHeader
+                      state={state}
+                      type={type}
+                      title={title}
+                      description={description}
+                    />
                     <ToolContent>
                       {state === "input-available" && (
                         <ToolInput input={spotifyPart.input} />
@@ -668,88 +529,6 @@ const PurePreviewMessage = ({
                           }
                         />
                       )}
-                    </ToolContent>
-                  </Tool>
-                );
-              }
-              // Google Calendar Tools (googleCalendars and googleEvents)
-              const googleCalendarToolTypes = [
-                "tool-googleCalendars",
-                "tool-googleEvents",
-              ] as const;
-
-              if (
-                googleCalendarToolTypes.includes(
-                  type as (typeof googleCalendarToolTypes)[number],
-                )
-              ) {
-                // Type assertion needed because TypeScript can't narrow with includes()
-                const googleCalendarPart = part as {
-                  toolCallId: string;
-                  state:
-                    | "input-streaming"
-                    | "input-available"
-                    | "output-available"
-                    | "output-error";
-                  input?: { action?: string };
-                  output?: Record<string, unknown>;
-                };
-                const { toolCallId, state } = googleCalendarPart;
-                const action = googleCalendarPart.input?.action as
-                  | string
-                  | undefined;
-
-                // Determine title based on tool type and action
-                let title = "Google Calendar";
-
-                // Tool-specific titles
-                if (type === "tool-googleCalendars") {
-                  title =
-                    action === "list_calendars"
-                      ? "Listing calendars"
-                      : action === "get_calendar"
-                        ? "Getting calendar details"
-                        : "Google Calendar";
-                } else if (type === "tool-googleEvents") {
-                  title =
-                    action === "list_events"
-                      ? "Listing events"
-                      : action === "create_event"
-                        ? "Creating event"
-                        : action === "update_event"
-                          ? "Updating event"
-                          : action === "delete_event"
-                            ? "Deleting event"
-                            : "Google Events";
-                }
-
-                return (
-                  <Tool defaultOpen={false} key={toolCallId}>
-                    <ToolHeader state={state} type={type} title={title} />
-                    <ToolContent>
-                      {state === "input-available" && (
-                        <ToolInput input={googleCalendarPart.input} />
-                      )}
-                      {state === "output-available" &&
-                        googleCalendarPart.output && (
-                          <ToolOutput
-                            errorText={
-                              googleCalendarPart.output &&
-                              "error" in googleCalendarPart.output
-                                ? String(googleCalendarPart.output.error)
-                                : undefined
-                            }
-                            output={
-                              <GoogleCalendarDisplay
-                                data={
-                                  googleCalendarPart.output as Parameters<
-                                    typeof GoogleCalendarDisplay
-                                  >[0]["data"]
-                                }
-                              />
-                            }
-                          />
-                        )}
                     </ToolContent>
                   </Tool>
                 );

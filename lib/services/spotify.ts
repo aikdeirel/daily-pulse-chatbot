@@ -395,11 +395,12 @@ export class SpotifyService {
   async search(
     query: string,
     types: ("track" | "artist" | "album")[] = ["track"],
+    limit: number = 10,
   ) {
     const params = new URLSearchParams({
       q: query,
       type: types.join(","),
-      limit: "10",
+      limit: limit.toString(),
     });
     return this.apiCall<any>(`/search?${params}`);
   }

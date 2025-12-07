@@ -12,6 +12,7 @@ export type SpotifyToolName =
   | "spotifyPlayback"
   | "spotifyPlaylists"
   | "spotifyQueue"
+  | "spotifySearch"
   | "spotifyTracks"
   | "spotifyUser";
 
@@ -32,7 +33,13 @@ export const spotifyToolGroups: SpotifyToolGroup[] = [
     description: "Search artists, albums, tracks, and user stats for context.",
     prompt:
       "Use when the user asks to research artists, albums, tracks, or their Spotify stats.",
-    tools: ["spotifyArtists", "spotifyAlbums", "spotifyTracks", "spotifyUser"],
+    tools: [
+      "spotifyArtists",
+      "spotifyAlbums",
+      "spotifyTracks",
+      "spotifySearch",
+      "spotifyUser",
+    ],
   },
   {
     id: "playback",
