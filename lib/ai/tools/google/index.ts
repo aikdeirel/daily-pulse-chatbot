@@ -1,6 +1,8 @@
-// Google Calendar Tools Index
-// Exports all Google Calendar-related AI tools for use in the chat route
+// Google Tools Index
+// Exports all Google-related AI tools for use in the chat route
 
+export { gmailLabels } from "./gmail-labels";
+export { gmailMessages } from "./gmail-messages";
 export { googleCalendars } from "./google-calendars";
 export { googleEvents } from "./google-events";
 

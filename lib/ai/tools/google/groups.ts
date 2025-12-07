@@ -1,8 +1,15 @@
-export const googleToolGroupIds = ["calendar_management"] as const;
+export const googleToolGroupIds = [
+  "calendar_management",
+  "gmail_management",
+] as const;
 
 export type GoogleToolGroupId = (typeof googleToolGroupIds)[number];
 
-export type GoogleToolName = "googleCalendars" | "googleEvents";
+export type GoogleToolName =
+  | "googleCalendars"
+  | "googleEvents"
+  | "gmailMessages"
+  | "gmailLabels";
 
 export type GoogleToolGroup = {
   id: GoogleToolGroupId;
@@ -23,6 +30,15 @@ export const googleToolGroups: GoogleToolGroup[] = [
     prompt:
       "Use when the user needs to work with calendars and events (list, get details, manage, create, search, update, delete). For date filtering always supply timeMin/timeMax (RFC3339); only use the q parameter for free-text searches over summary/description/location/attendees.",
     tools: ["googleCalendars", "googleEvents"],
+  },
+  {
+    id: "gmail_management",
+    label: "Gmail",
+    description:
+      "Read, search, and organize Gmail messages. Manage labels and email status (read/unread, archive, trash).",
+    prompt:
+      "Use when the user needs to work with emails (read, search, mark as read/unread, organize with labels, trash/archive). Use Gmail query syntax for searches (from:, to:, subject:, is:unread, has:attachment, after:, before:).",
+    tools: ["gmailMessages", "gmailLabels"],
   },
 ];
 
