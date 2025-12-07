@@ -843,6 +843,15 @@ export class GoogleService {
     addLabelIds?: string[],
     removeLabelIds?: string[],
   ) {
+    if (
+      (!addLabelIds || addLabelIds.length === 0) &&
+      (!removeLabelIds || removeLabelIds.length === 0)
+    ) {
+      throw new Error(
+        "At least one label operation (add or remove) is required",
+      );
+    }
+
     const body: any = {};
     if (addLabelIds && addLabelIds.length > 0) {
       body.addLabelIds = addLabelIds;
@@ -948,7 +957,7 @@ export class GoogleService {
   ) {
     return this.apiRequest<GmailLabel>(
       "gmail/v1",
-      "PUT",
+      "PATCH",
       `/users/me/labels/${labelId}`,
       labelData,
     );
@@ -979,6 +988,20 @@ export class GoogleService {
     addLabelIds?: string[],
     removeLabelIds?: string[],
   ) {
+    if (!messageIds || messageIds.length === 0) {
+      throw new Error(
+        "At least one message ID is required for batch operation",
+      );
+    }
+    if (
+      (!addLabelIds || addLabelIds.length === 0) &&
+      (!removeLabelIds || removeLabelIds.length === 0)
+    ) {
+      throw new Error(
+        "At least one label operation (add or remove) is required",
+      );
+    }
+
     const body: any = { ids: messageIds };
     if (addLabelIds && addLabelIds.length > 0) {
       body.addLabelIds = addLabelIds;

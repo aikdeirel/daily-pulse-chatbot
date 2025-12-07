@@ -12,7 +12,7 @@ export const gmailLabels = ({ userId }: GmailLabelsToolProps) =>
 - "list_labels": List all available labels
 - "get_label": Get specific label details (requires labelId)
 - "create_label": Create a new label (requires name)
-- "update_label": Update label properties (requires labelId, name)
+- "update_label": Update label properties (requires labelId, at least one of: name, messageListVisibility, labelListVisibility)
 - "delete_label": Delete a label (requires labelId)
 - "add_label_to_message": Add label(s) to message (requires messageId, labelIds)
 - "remove_label_from_message": Remove label(s) from message (requires messageId, labelIds)
