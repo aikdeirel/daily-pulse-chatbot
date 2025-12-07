@@ -19,14 +19,12 @@ export const ALLOWED_FILE_TYPES_ARRAY: AllowedFileType[] =
 
 /**
  * Accept attribute value for file input element
- * Generated from ALLOWED_FILE_TYPES with common file extensions
+ * Uses wildcard to allow all files on mobile devices while validation happens server-side
+ * Mobile browsers (especially Android Chrome) restrict file picker options when specific
+ * MIME types are listed, showing only "Camera" and "Photos" when image types are present.
+ * Using a wildcard ensures users can select any file type, with validation enforced by the API.
  */
-export const FILE_INPUT_ACCEPT = [
-  ...ALLOWED_FILE_TYPES_ARRAY,
-  ".pdf", // PDF extension
-  ".md", // Markdown extension
-  ".txt", // Text extension
-].join(",");
+export const FILE_INPUT_ACCEPT = "*/*";
 
 /**
  * Maximum file size in bytes (5MB)

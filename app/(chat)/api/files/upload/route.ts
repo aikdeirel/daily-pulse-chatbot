@@ -47,6 +47,13 @@ export async function POST(request: Request) {
         .map((error) => error.message)
         .join(", ");
 
+      console.error("File validation failed:", {
+        fileName: (formData.get("file") as File)?.name,
+        fileType: file.type,
+        fileSize: file.size,
+        errors: validatedFile.error.issues,
+      });
+
       return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
 
@@ -60,10 +67,19 @@ export async function POST(request: Request) {
       });
 
       return NextResponse.json(data);
-    } catch (_error) {
+    } catch (error) {
+      console.error("Blob storage upload failed:", {
+        fileName: filename,
+        fileType: file.type,
+        fileSize: file.size,
+        error: error instanceof Error ? error.message : String(error),
+      });
       return NextResponse.json({ error: "Upload failed" }, { status: 500 });
     }
-  } catch (_error) {
+  } catch (error) {
+    console.error("File upload request processing failed:", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return NextResponse.json(
       { error: "Failed to process request" },
       { status: 500 },
