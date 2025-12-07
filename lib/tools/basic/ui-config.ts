@@ -23,6 +23,7 @@ type BasicToolUIConfig = {
   color: string;
   defaultDescription: string;
   icon: string;
+  defaultOpen?: boolean;
   actions: Record<string, ActionConfig>;
 };
 
@@ -32,6 +33,7 @@ export const basicToolUIConfig: Record<BasicToolType, BasicToolUIConfig> = {
     color: "text-amber-600 dark:text-amber-400",
     defaultDescription: "Fetching weather data",
     icon: "CloudIcon",
+    defaultOpen: true,
     actions: {},
   },
   "tool-createDocument": {
@@ -187,4 +189,15 @@ export function getBasicToolBaseConfig(toolType: string): {
     description: config.defaultDescription,
     icon: config.icon,
   };
+}
+
+/**
+ * Get the defaultOpen value for a basic tool
+ *
+ * @param toolType - The tool type
+ * @returns The defaultOpen value (defaults to false if not specified)
+ */
+export function getBasicToolDefaultOpen(toolType: string): boolean {
+  const config = basicToolUIConfig[toolType as BasicToolType];
+  return config?.defaultOpen ?? false;
 }

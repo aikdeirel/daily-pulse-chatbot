@@ -5,7 +5,11 @@ import type { AnchorHTMLAttributes } from "react";
 import { memo, useMemo, useState } from "react";
 import { useThinkingPhrase } from "@/hooks/use-thinking-phrase";
 import type { Vote } from "@/lib/db/schema";
-import { getBasicToolDisplay, isBasicTool } from "@/lib/tools/basic/ui-config";
+import {
+  getBasicToolDefaultOpen,
+  getBasicToolDisplay,
+  isBasicTool,
+} from "@/lib/tools/basic/ui-config";
 import {
   getGoogleToolDisplay,
   isGoogleTool,
@@ -355,14 +359,15 @@ const PurePreviewMessage = ({
                   );
                 }
 
-                // Get title and description from centralized config
+                // Get title, description and defaultOpen from centralized config
                 const { title, description } = getBasicToolDisplay(
                   type,
                   action,
                 );
+                const defaultOpen = getBasicToolDefaultOpen(type);
 
                 return (
-                  <Tool defaultOpen={false} key={toolCallId}>
+                  <Tool defaultOpen={defaultOpen} key={toolCallId}>
                     <ToolHeader
                       state={state}
                       type={type}
