@@ -62,8 +62,6 @@ After showing recommendations, ask if user wants to:
 - **Play now** or **add to queue** → use `spotifyPlayback` (play) or `spotifyQueue` (add_to_queue)
 - **Create a "Discoveries" playlist** → use `spotifyPlaylists` (create_playlist + add_tracks)
 
-Requires Premium for playback. Playlist creation works for all users.
-
 ## Output Format
 
 ```
