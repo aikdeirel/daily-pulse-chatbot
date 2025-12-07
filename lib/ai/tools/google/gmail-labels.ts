@@ -125,8 +125,7 @@ Important Notes:
             if (!labelId || !name) {
               return {
                 error: "missing_params",
-                message:
-                  "Label ID and name are required for update_label",
+                message: "Label ID and name are required for update_label",
               };
             }
             const labelData: any = { name };

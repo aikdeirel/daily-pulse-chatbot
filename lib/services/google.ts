@@ -782,13 +782,15 @@ export class GoogleService {
    * @param params Search and filter parameters
    * @returns Promise with list of messages
    */
-  async listGmailMessages(params: {
-    q?: string; // Query for searching messages
-    maxResults?: number;
-    pageToken?: string;
-    labelIds?: string[]; // Filter by labels (e.g., ['INBOX', 'UNREAD'])
-    includeSpamTrash?: boolean;
-  } = {}) {
+  async listGmailMessages(
+    params: {
+      q?: string; // Query for searching messages
+      maxResults?: number;
+      pageToken?: string;
+      labelIds?: string[]; // Filter by labels (e.g., ['INBOX', 'UNREAD'])
+      includeSpamTrash?: boolean;
+    } = {},
+  ) {
     const query = new URLSearchParams();
     if (params.q) query.append("q", params.q);
     if (params.maxResults)
