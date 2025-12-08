@@ -1,6 +1,7 @@
 export const googleToolGroupIds = [
   "calendar_management",
   "gmail_management",
+  "tasks_management",
 ] as const;
 
 export type GoogleToolGroupId = (typeof googleToolGroupIds)[number];
@@ -9,7 +10,9 @@ export type GoogleToolName =
   | "googleCalendars"
   | "googleEvents"
   | "gmailMessages"
-  | "gmailLabels";
+  | "gmailLabels"
+  | "googleTaskLists"
+  | "googleTasks";
 
 export type GoogleToolGroup = {
   id: GoogleToolGroupId;
@@ -39,6 +42,15 @@ export const googleToolGroups: GoogleToolGroup[] = [
     prompt:
       "Use when the user needs to work with emails (read, search, mark as read/unread, organize with labels, trash/archive). Use Gmail query syntax for searches (from:, to:, subject:, is:unread, has:attachment, after:, before:).",
     tools: ["gmailMessages", "gmailLabels"],
+  },
+  {
+    id: "tasks_management",
+    label: "Google Tasks",
+    description:
+      "Manage task lists and tasks. Create, read, update, delete tasks and task lists. Organize tasks with due dates and subtasks.",
+    prompt:
+      "Use when the user needs to manage tasks and to-do lists (create, list, update, complete, delete tasks; manage task lists; set due dates; create subtasks). Use RFC3339 format for dates. Tasks can have status 'needsAction' or 'completed'.",
+    tools: ["googleTaskLists", "googleTasks"],
   },
 ];
 

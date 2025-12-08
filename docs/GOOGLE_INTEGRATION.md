@@ -1,8 +1,8 @@
-# Google Calendar Integration Documentation
+# Google Integration Documentation
 
-> **Status:** ✅ Fully Implemented | Last Updated: 2025-12-06
+> **Status:** ✅ Fully Implemented | Last Updated: 2025-12-08
 
-This document describes the Google Calendar integration for AI agents, providing guidance on available tools, actions, and common usage patterns.
+This document describes the Google Calendar and Google Tasks integration for AI agents, providing guidance on available tools, actions, and common usage patterns.
 
 ---
 
@@ -10,16 +10,19 @@ This document describes the Google Calendar integration for AI agents, providing
 
 ### Tool Group Selector
 
-The chat UI now exposes a "Google Calendar" button next to the web search toggle. When clicked, users can enable either of two tool groups (persisted per browser, defaulting to disabled):
+The chat UI now exposes a "Google" button next to the web search toggle. When clicked, users can enable any of three tool groups (persisted per browser, defaulting to disabled):
 
-1. **Calendar Management** – `googleCalendars`
-2. **Event Management** – `googleEvents`
+1. **Calendar Management** – `googleCalendars`, `googleEvents`
+2. **Gmail** – `gmailMessages`, `gmailLabels`
+3. **Google Tasks** – `googleTaskLists`, `googleTasks`
 
 Only the enabled groups are injected into the system prompt and made available as tools, keeping context compact.
 
 ### Available Tools & Actions
 
-The Google Calendar integration is split into 2 specialized tools:
+The Google integration includes multiple specialized tools:
+
+## Calendar Tools
 
 #### googleCalendars
 | Action | Description | Required Params | Notes |
@@ -69,6 +72,51 @@ The Google Calendar integration is split into 2 specialized tools:
 }
 ```
 
+## Tasks Tools
+
+#### googleTaskLists
+| Action | Description | Required Params | Notes |
+|--------|-------------|-----------------|-------|
+| `list_tasklists` | List all task lists | None | Returns all accessible task lists |
+| `get_tasklist` | Get task list details | `tasklistId` | Retrieve specific task list info |
+| `create_tasklist` | Create new task list | `title` | Create new task list |
+| `update_tasklist` | Update task list | `tasklistId`, `title` | Modify task list details |
+| `delete_tasklist` | Delete task list | `tasklistId` | Remove task list |
+
+**Optional params:** None
+
+#### googleTasks
+| Action | Description | Required Params | Notes |
+|--------|-------------|-----------------|-------|
+| `list_tasks` | List tasks in task list | `tasklistId` | Returns tasks with optional filters |
+| `get_task` | Get task details | `tasklistId`, `taskId` | Retrieve specific task info |
+| `create_task` | Create new task | `tasklistId`, `title` | Create task with optional due date, notes, parent |
+| `update_task` | Update existing task | `tasklistId`, `taskId` | Modify task details |
+| `delete_task` | Delete a task | `tasklistId`, `taskId` | Remove task |
+| `move_task` | Move task position | `tasklistId`, `taskId` | Reorder task within list |
+| `clear_completed` | Clear completed tasks | `tasklistId` | Remove all completed tasks |
+
+**Optional params for list_tasks:** `showCompleted`, `maxResults`, `dueMin`, `dueMax`
+
+**Optional params for create_task/update_task:** `notes`, `due`, `status`, `parent` (for subtasks)
+
+**Task Data Structure:**
+```typescript
+{
+  title: string;                // Task title (required)
+  notes?: string;               // Task notes/description
+  due?: string;                 // Due date in RFC3339 format
+  status?: "needsAction" | "completed";  // Task status
+  parent?: string;              // Parent task ID (for creating subtasks)
+  position?: string;            // Position in task list
+  links?: [{
+    type: string;               // Link type
+    description?: string;       // Link description
+    link: string;               // URL
+  }];
+}
+```
+
 ---
 
 ## Common User Requests & Tool Usage
@@ -103,6 +151,30 @@ User: "What's happening this weekend?"
 
 User: "Show me Christmas events this year"
 → googleEvents: action: "search_events", timeMin: [RFC3339 thisYearDec20], timeMax: [RFC3339 thisYearDec31]
+
+User: "List my task lists"
+→ googleTaskLists: action: "list_tasklists"
+
+User: "Show my tasks"
+→ googleTasks: action: "list_tasks", tasklistId: "@default"
+
+User: "Add a task to buy groceries"
+→ googleTasks: action: "create_task", tasklistId: "@default", title: "Buy groceries"
+
+User: "Create a task with due date tomorrow"
+→ googleTasks: action: "create_task", tasklistId: "@default", title: "Task title", due: [RFC3339 tomorrow]
+
+User: "Mark task as completed"
+→ googleTasks: action: "update_task", tasklistId: "@default", taskId: "xxx", status: "completed"
+
+User: "Show completed tasks"
+→ googleTasks: action: "list_tasks", tasklistId: "@default", showCompleted: true
+
+User: "Create a subtask"
+→ googleTasks: action: "create_task", tasklistId: "@default", title: "Subtask", parent: "parent_task_id"
+
+User: "Delete completed tasks"
+→ googleTasks: action: "clear_completed", tasklistId: "@default"
 ```
 
 ---
@@ -204,6 +276,10 @@ lib/
 │       ├── index.ts               # Exports all Google tools
 │       ├── google-calendars.ts    # Calendar operations (2 actions)
 │       ├── google-events.ts       # Event operations (6 actions)
+│       ├── gmail-messages.ts      # Gmail message operations
+│       ├── gmail-labels.ts        # Gmail label operations
+│       ├── google-tasklists.ts    # Task list operations (5 actions)
+│       ├── google-tasks.ts        # Task operations (7 actions)
 │       └── groups.ts              # Tool group definitions
 └── db/
     ├── schema.ts                  # oauthConnection table
@@ -227,25 +303,39 @@ app/api/google/
 │   └── route.ts                   # GET - list calendars
 │       [calendarId]/
 │       └── route.ts               # GET - calendar details
-└── events/
-    └── route.ts                   # GET/POST - list/create events
-        [calendarId]/
-        └── [eventId]/
-            └── route.ts           # GET/PUT/DELETE - event operations
+├── events/
+│   └── route.ts                   # GET/POST - list/create events
+│       [calendarId]/
+│       └── [eventId]/
+│           └── route.ts           # GET/PUT/DELETE - event operations
+├── tasklists/
+│   └── route.ts                   # GET/POST - list/create task lists
+│       [tasklistId]/
+│       └── route.ts               # GET/PATCH/DELETE - task list operations
+└── tasks/
+    └── route.ts                   # GET/POST - list/create tasks
+        [tasklistId]/
+        └── [taskId]/
+            └── route.ts           # GET/PATCH/DELETE - task operations
 ```
 
 ---
 
 ## OAuth Scopes
 
-The integration requests these 2 Google Calendar API scopes:
+The integration requests these Google API scopes:
 
 | Scope | Purpose |
 |-------|---------|
 | `https://www.googleapis.com/auth/calendar` | Full calendar access (read/write all calendars) |
 | `https://www.googleapis.com/auth/calendar.events` | Event management (create, read, update, delete events) |
+| `https://www.googleapis.com/auth/gmail.readonly` | Read Gmail messages and labels |
+| `https://www.googleapis.com/auth/gmail.modify` | Modify Gmail messages (labels, trash, etc.) |
+| `https://www.googleapis.com/auth/gmail.labels` | Manage Gmail labels |
+| `https://www.googleapis.com/auth/tasks` | Full access to Google Tasks (read/write) |
+| `https://www.googleapis.com/auth/tasks.readonly` | Read-only access to Google Tasks |
 
-**Note:** These scopes provide full calendar access. Google Calendar API does not have read-only scopes for general calendar access.
+**Note:** Both tasks scopes are requested to support future read-only features.
 
 ---
 
@@ -411,6 +501,52 @@ Google Calendar API v3 doesn't support true batch operations. Multiple operation
    → Creates recurring event (10 occurrences)
 ```
 
+### Managing Task Lists and Tasks
+
+```
+1. List all task lists:
+   googleTaskLists: action: "list_tasklists"
+   → Returns array of task lists with IDs
+
+2. Create a new task list:
+   googleTaskLists: action: "create_tasklist",
+                    title: "Project Tasks"
+   → Returns created task list with ID
+
+3. List tasks from a task list:
+   googleTasks: action: "list_tasks",
+                tasklistId: "tasklist_id",
+                showCompleted: false
+   → Returns pending tasks
+
+4. Create a task with due date:
+   googleTasks: action: "create_task",
+                tasklistId: "tasklist_id",
+                title: "Complete project proposal",
+                notes: "Include budget and timeline",
+                due: "2025-12-15T23:59:59Z"
+   → Returns created task with ID
+
+5. Create a subtask:
+   googleTasks: action: "create_task",
+                tasklistId: "tasklist_id",
+                title: "Research competitors",
+                parent: "parent_task_id"
+   → Returns created subtask
+
+6. Complete a task:
+   googleTasks: action: "update_task",
+                tasklistId: "tasklist_id",
+                taskId: "task_id",
+                status: "completed"
+   → Marks task as completed
+
+7. Clear all completed tasks:
+   googleTasks: action: "clear_completed",
+                tasklistId: "tasklist_id"
+   → Removes all completed tasks from list
+```
+
 ---
 
 ## Integration Status
@@ -419,6 +555,12 @@ Google Calendar API v3 doesn't support true batch operations. Multiple operation
 
 - Full calendar CRUD operations
 - Event management (create, read, update, delete)
+- Gmail message and label management
+- **Google Tasks integration (NEW)**
+  - Task list management (create, read, update, delete)
+  - Task operations (create, read, update, delete, move, complete)
+  - Subtask support
+  - Due date management
 - OAuth 2.0 authentication with token refresh
 - Tool group selector UI
 - Error handling and validation
@@ -426,17 +568,21 @@ Google Calendar API v3 doesn't support true batch operations. Multiple operation
 - Chat system integration
 - Status indicator (placeholder for future enhancement)
 
-### 🎯 Key Differences from Spotify Integration
+### 🎯 Key Features of Google Tasks Integration
 
-1. **No Premium Requirements**: All features available to all users
-2. **Simpler Tool Structure**: 2 tools vs Spotify's 7 tools
-3. **CRUD Focus**: Emphasis on data management vs playback control
-4. **Calendar-Specific**: Specialized for calendar/event management
+1. **Comprehensive Task Management**: Full CRUD operations for tasks and task lists
+2. **Subtask Support**: Create hierarchical task structures with parent-child relationships
+3. **Due Date Management**: Set and update task due dates in RFC3339 format
+4. **Status Tracking**: Mark tasks as "needsAction" or "completed"
+5. **Bulk Operations**: Clear all completed tasks at once
+6. **Position Management**: Move tasks within lists to reorder them
+7. **Consistent Design**: Follows same patterns as Calendar and Gmail integrations
 
 ---
 
 ## Best Practices for AI Agents
 
+### Calendar Best Practices
 1. **Always specify calendar ID**: Use "primary" when in doubt
 2. **Include time zones**: Specify timeZone in all timed events
 3. **Validate event data**: Check summary, start, and end before creating
@@ -446,6 +592,16 @@ Google Calendar API v3 doesn't support true batch operations. Multiple operation
 7. **Use recurring events**: Utilize RRULE for repeating events
 8. **Check calendar access**: Verify user has access before operations
 9. **Format dates properly**: Use RFC3339 timestamps (ISO 8601)
+
+### Tasks Best Practices
+1. **Use default task list**: Reference "@default" for the user's primary task list when unsure
+2. **Format due dates properly**: Use RFC3339 timestamps for due dates
+3. **Provide descriptive titles**: Task titles should be clear and actionable
+4. **Add notes for context**: Include additional details in the notes field
+5. **Leverage subtasks**: Break down complex tasks into subtasks using parent parameter
+6. **Manage completed tasks**: Regularly clear completed tasks to keep lists clean
+7. **Set realistic due dates**: Include due dates for time-sensitive tasks
+8. **Use status updates**: Mark tasks as completed when done (status: "completed")
 
 ---
 
@@ -500,6 +656,6 @@ curl -X POST http://localhost:3000/api/google/events?calendarId=primary \
 
 ---
 
-**Documentation Version:** 1.1.0
-**Last Updated:** 2025-12-06
-**Status:** Production Ready ✅ (Clarified q parameter usage and search functionality)
+**Documentation Version:** 2.0.0
+**Last Updated:** 2025-12-08
+**Status:** Production Ready ✅ (Added Google Tasks integration with full task and task list management)

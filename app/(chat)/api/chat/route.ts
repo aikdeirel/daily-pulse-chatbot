@@ -30,6 +30,8 @@ import {
   gmailMessages,
   googleCalendars,
   googleEvents,
+  googleTaskLists,
+  googleTasks,
 } from "@/lib/ai/tools/google";
 import {
   type GoogleToolGroupId,
@@ -299,6 +301,8 @@ export async function POST(request: Request) {
           googleEvents: googleEvents({ userId: session.user.id }),
           gmailMessages: gmailMessages({ userId: session.user.id }),
           gmailLabels: gmailLabels({ userId: session.user.id }),
+          googleTaskLists: googleTaskLists({ userId: session.user.id }),
+          googleTasks: googleTasks({ userId: session.user.id }),
         };
 
         const selectedSpotifyToolNames = getSpotifyToolNamesForGroups(
