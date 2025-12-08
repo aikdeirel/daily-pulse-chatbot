@@ -94,6 +94,33 @@ export interface GmailLabel {
   };
 }
 
+export interface GoogleTaskList {
+  id: string;
+  title: string;
+  updated?: string;
+  selfLink?: string;
+}
+
+export interface GoogleTask {
+  id: string;
+  title: string;
+  updated?: string;
+  selfLink?: string;
+  parent?: string;
+  position?: string;
+  notes?: string;
+  status?: "needsAction" | "completed";
+  due?: string;
+  completed?: string;
+  deleted?: boolean;
+  hidden?: boolean;
+  links?: {
+    type: string;
+    description?: string;
+    link: string;
+  }[];
+}
+
 export class GoogleService {
   constructor(private userId: string) {}
 
@@ -1015,6 +1042,258 @@ export class GoogleService {
       "POST",
       "/users/me/messages/batchModify",
       body,
+    );
+  }
+
+  // ========================================
+  // Google Tasks Methods
+  // ========================================
+
+  /**
+   * List all task lists
+   * @param params Pagination parameters
+   * @returns Promise with list of task lists
+   */
+  async listTaskLists(
+    params: { maxResults?: number; pageToken?: string } = {},
+  ) {
+    const query = new URLSearchParams();
+    if (params.maxResults)
+      query.append("maxResults", params.maxResults.toString());
+    if (params.pageToken) query.append("pageToken", params.pageToken);
+
+    return this.apiRequest<any>(
+      "tasks/v1",
+      "GET",
+      `/users/@me/lists?${query.toString()}`,
+    );
+  }
+
+  /**
+   * Get a specific task list
+   * @param tasklistId Task list ID
+   * @returns Promise with task list details
+   */
+  async getTaskList(tasklistId: string) {
+    return this.apiRequest<GoogleTaskList>(
+      "tasks/v1",
+      "GET",
+      `/users/@me/lists/${tasklistId}`,
+    );
+  }
+
+  /**
+   * Create a new task list
+   * @param tasklistData Task list data
+   * @returns Promise with created task list
+   */
+  async createTaskList(tasklistData: { title: string }) {
+    if (!tasklistData.title) {
+      throw new Error("Task list title is required");
+    }
+
+    return this.apiRequest<GoogleTaskList>(
+      "tasks/v1",
+      "POST",
+      "/users/@me/lists",
+      tasklistData,
+    );
+  }
+
+  /**
+   * Update a task list
+   * @param tasklistId Task list ID
+   * @param tasklistData Task list data to update
+   * @returns Promise with updated task list
+   */
+  async updateTaskList(tasklistId: string, tasklistData: { title: string }) {
+    if (!tasklistData.title) {
+      throw new Error("Task list title is required");
+    }
+
+    return this.apiRequest<GoogleTaskList>(
+      "tasks/v1",
+      "PATCH",
+      `/users/@me/lists/${tasklistId}`,
+      tasklistData,
+    );
+  }
+
+  /**
+   * Delete a task list
+   * @param tasklistId Task list ID
+   * @returns Promise
+   */
+  async deleteTaskList(tasklistId: string) {
+    return this.apiRequest<void>(
+      "tasks/v1",
+      "DELETE",
+      `/users/@me/lists/${tasklistId}`,
+    );
+  }
+
+  /**
+   * List tasks in a task list
+   * @param tasklistId Task list ID
+   * @param params Query parameters
+   * @returns Promise with list of tasks
+   */
+  async listTasks(
+    tasklistId: string,
+    params: {
+      completedMax?: string;
+      completedMin?: string;
+      dueMax?: string;
+      dueMin?: string;
+      maxResults?: number;
+      pageToken?: string;
+      showCompleted?: boolean;
+      showDeleted?: boolean;
+      showHidden?: boolean;
+      updatedMin?: string;
+    } = {},
+  ) {
+    const query = new URLSearchParams();
+    if (params.completedMax) query.append("completedMax", params.completedMax);
+    if (params.completedMin) query.append("completedMin", params.completedMin);
+    if (params.dueMax) query.append("dueMax", params.dueMax);
+    if (params.dueMin) query.append("dueMin", params.dueMin);
+    if (params.maxResults)
+      query.append("maxResults", params.maxResults.toString());
+    if (params.pageToken) query.append("pageToken", params.pageToken);
+    if (params.showCompleted !== undefined)
+      query.append("showCompleted", params.showCompleted.toString());
+    if (params.showDeleted !== undefined)
+      query.append("showDeleted", params.showDeleted.toString());
+    if (params.showHidden !== undefined)
+      query.append("showHidden", params.showHidden.toString());
+    if (params.updatedMin) query.append("updatedMin", params.updatedMin);
+
+    return this.apiRequest<any>(
+      "tasks/v1",
+      "GET",
+      `/lists/${tasklistId}/tasks?${query.toString()}`,
+    );
+  }
+
+  /**
+   * Get a specific task
+   * @param tasklistId Task list ID
+   * @param taskId Task ID
+   * @returns Promise with task details
+   */
+  async getTask(tasklistId: string, taskId: string) {
+    return this.apiRequest<GoogleTask>(
+      "tasks/v1",
+      "GET",
+      `/lists/${tasklistId}/tasks/${taskId}`,
+    );
+  }
+
+  /**
+   * Create a new task
+   * @param tasklistId Task list ID
+   * @param taskData Task data
+   * @returns Promise with created task
+   */
+  async createTask(
+    tasklistId: string,
+    taskData: {
+      title: string;
+      notes?: string;
+      due?: string;
+      parent?: string;
+    },
+  ) {
+    if (!taskData.title) {
+      throw new Error("Task title is required");
+    }
+
+    const query = new URLSearchParams();
+    if (taskData.parent) {
+      query.append("parent", taskData.parent);
+    }
+
+    const endpoint = `/lists/${tasklistId}/tasks${query.toString() ? `?${query.toString()}` : ""}`;
+
+    return this.apiRequest<GoogleTask>("tasks/v1", "POST", endpoint, taskData);
+  }
+
+  /**
+   * Update a task
+   * @param tasklistId Task list ID
+   * @param taskId Task ID
+   * @param taskData Task data to update
+   * @returns Promise with updated task
+   */
+  async updateTask(
+    tasklistId: string,
+    taskId: string,
+    taskData: {
+      title?: string;
+      notes?: string;
+      due?: string;
+      status?: "needsAction" | "completed";
+    },
+  ) {
+    return this.apiRequest<GoogleTask>(
+      "tasks/v1",
+      "PATCH",
+      `/lists/${tasklistId}/tasks/${taskId}`,
+      taskData,
+    );
+  }
+
+  /**
+   * Delete a task
+   * @param tasklistId Task list ID
+   * @param taskId Task ID
+   * @returns Promise
+   */
+  async deleteTask(tasklistId: string, taskId: string) {
+    return this.apiRequest<void>(
+      "tasks/v1",
+      "DELETE",
+      `/lists/${tasklistId}/tasks/${taskId}`,
+    );
+  }
+
+  /**
+   * Move a task to a different position
+   * @param tasklistId Task list ID
+   * @param taskId Task ID
+   * @param params Position parameters
+   * @returns Promise with moved task
+   */
+  async moveTask(
+    tasklistId: string,
+    taskId: string,
+    params: {
+      parent?: string;
+      previous?: string;
+    } = {},
+  ) {
+    const query = new URLSearchParams();
+    if (params.parent) query.append("parent", params.parent);
+    if (params.previous) query.append("previous", params.previous);
+
+    return this.apiRequest<GoogleTask>(
+      "tasks/v1",
+      "POST",
+      `/lists/${tasklistId}/tasks/${taskId}/move?${query.toString()}`,
+    );
+  }
+
+  /**
+   * Clear all completed tasks from a task list
+   * @param tasklistId Task list ID
+   * @returns Promise
+   */
+  async clearCompletedTasks(tasklistId: string) {
+    return this.apiRequest<void>(
+      "tasks/v1",
+      "POST",
+      `/lists/${tasklistId}/clear`,
     );
   }
 }

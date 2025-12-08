@@ -16,6 +16,8 @@ export const GOOGLE_TOOL_TYPES = [
   "tool-googleEvents",
   "tool-gmailMessages",
   "tool-gmailLabels",
+  "tool-googleTaskLists",
+  "tool-googleTasks",
 ] as const;
 
 export type GoogleToolType = (typeof GOOGLE_TOOL_TYPES)[number];
@@ -155,6 +157,70 @@ export const googleToolUIConfig: Record<GoogleToolType, GoogleToolUIConfig> = {
       batch_remove_labels: {
         title: "Removing labels",
         description: "Removing labels from messages",
+      },
+    },
+  },
+  "tool-googleTaskLists": {
+    label: "Google Tasks",
+    color: GOOGLE_COLOR,
+    defaultTitle: "Google Tasks",
+    defaultDescription: "Managing task lists",
+    actions: {
+      list_tasklists: {
+        title: "Listing task lists",
+        description: "Fetching task lists",
+      },
+      get_tasklist: {
+        title: "Getting task list",
+        description: "Fetching task list details",
+      },
+      create_tasklist: {
+        title: "Creating task list",
+        description: "Creating new task list",
+      },
+      update_tasklist: {
+        title: "Updating task list",
+        description: "Updating task list details",
+      },
+      delete_tasklist: {
+        title: "Deleting task list",
+        description: "Removing task list",
+      },
+    },
+  },
+  "tool-googleTasks": {
+    label: "Google Tasks",
+    color: GOOGLE_COLOR,
+    defaultTitle: "Google Tasks",
+    defaultDescription: "Managing tasks",
+    actions: {
+      list_tasks: {
+        title: "Listing tasks",
+        description: "Fetching tasks",
+      },
+      get_task: {
+        title: "Getting task",
+        description: "Fetching task details",
+      },
+      create_task: {
+        title: "Creating task",
+        description: "Creating new task",
+      },
+      update_task: {
+        title: "Updating task",
+        description: "Updating task details",
+      },
+      delete_task: {
+        title: "Deleting task",
+        description: "Removing task",
+      },
+      move_task: {
+        title: "Moving task",
+        description: "Reordering task",
+      },
+      clear_completed: {
+        title: "Clearing completed tasks",
+        description: "Removing completed tasks",
       },
     },
   },
