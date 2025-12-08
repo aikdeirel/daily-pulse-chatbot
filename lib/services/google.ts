@@ -1223,14 +1223,17 @@ export class GoogleService {
       throw new Error("Task title is required");
     }
 
+    // Extract parent from taskData as it's a query parameter, not body parameter
+    const { parent, ...bodyData } = taskData;
+
     const query = new URLSearchParams();
-    if (taskData.parent) {
-      query.append("parent", taskData.parent);
+    if (parent) {
+      query.append("parent", parent);
     }
 
     const endpoint = `/lists/${tasklistId}/tasks${query.toString() ? `?${query.toString()}` : ""}`;
 
-    return this.apiRequest<GoogleTask>("tasks/v1", "POST", endpoint, taskData);
+    return this.apiRequest<GoogleTask>("tasks/v1", "POST", endpoint, bodyData);
   }
 
   /**
