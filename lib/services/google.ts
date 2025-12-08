@@ -121,6 +121,20 @@ export interface GoogleTask {
   }[];
 }
 
+export interface GoogleTaskListsResponse {
+  kind: string;
+  etag?: string;
+  nextPageToken?: string;
+  items?: GoogleTaskList[];
+}
+
+export interface GoogleTasksResponse {
+  kind: string;
+  etag?: string;
+  nextPageToken?: string;
+  items?: GoogleTask[];
+}
+
 export class GoogleService {
   constructor(private userId: string) {}
 
@@ -1056,13 +1070,13 @@ export class GoogleService {
    */
   async listTaskLists(
     params: { maxResults?: number; pageToken?: string } = {},
-  ) {
+  ): Promise<GoogleTaskListsResponse> {
     const query = new URLSearchParams();
     if (params.maxResults)
       query.append("maxResults", params.maxResults.toString());
     if (params.pageToken) query.append("pageToken", params.pageToken);
 
-    return this.apiRequest<any>(
+    return this.apiRequest<GoogleTaskListsResponse>(
       "tasks/v1",
       "GET",
       `/users/@me/lists?${query.toString()}`,
@@ -1169,7 +1183,7 @@ export class GoogleService {
       query.append("showHidden", params.showHidden.toString());
     if (params.updatedMin) query.append("updatedMin", params.updatedMin);
 
-    return this.apiRequest<any>(
+    return this.apiRequest<GoogleTasksResponse>(
       "tasks/v1",
       "GET",
       `/lists/${tasklistId}/tasks?${query.toString()}`,

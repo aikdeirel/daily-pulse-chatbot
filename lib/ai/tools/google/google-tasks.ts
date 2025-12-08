@@ -132,7 +132,12 @@ Important Notes:
                 message: "Task list ID and title are required for create_task",
               };
             }
-            const taskData: any = { title };
+            const taskData: {
+              title: string;
+              notes?: string;
+              due?: string;
+              parent?: string;
+            } = { title };
             if (notes) taskData.notes = notes;
             if (due) taskData.due = due;
             if (parent) taskData.parent = parent;
@@ -149,7 +154,12 @@ Important Notes:
                   "Task list ID and task ID are required for update_task",
               };
             }
-            const taskData: any = {};
+            const taskData: {
+              title?: string;
+              notes?: string;
+              due?: string;
+              status?: "needsAction" | "completed";
+            } = {};
             if (title) taskData.title = title;
             if (notes !== undefined) taskData.notes = notes;
             if (due !== undefined) taskData.due = due;
