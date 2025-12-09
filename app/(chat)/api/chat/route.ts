@@ -70,6 +70,7 @@ import {
   saveMessages,
   updateChatLastContextById,
   updateChatTitleById,
+  updateMessageById,
 } from "@/lib/db/queries";
 import type { DBMessage } from "@/lib/db/schema";
 import { ChatSDKError } from "@/lib/errors";
@@ -244,6 +245,76 @@ export async function POST(request: Request) {
 
     let finalMergedUsage: AppUsage | undefined;
 
+    // Track streaming content for progressive database saves
+    // These variables need to be outside the execute function
+    // so they can be accessed by the generateId function
+    const assistantMessageId = generateUUID();
+    let firstAssistantMessageGenerated = false;
+    let currentTextContent = "";
+    let currentReasoningContent = "";
+    let lastSaveTime = Date.now();
+    let messageSaved = false;
+    const SAVE_INTERVAL_MS = 3000; // Save every 3 seconds during streaming
+
+    // Function to save/update the assistant message
+    const saveAssistantMessage = async (force = false) => {
+      const now = Date.now();
+      if (!force && now - lastSaveTime < SAVE_INTERVAL_MS) {
+        return;
+      }
+
+      // Build parts array from accumulated content
+      const parts: any[] = [];
+      if (currentTextContent) {
+        parts.push({ type: "text", text: currentTextContent });
+      }
+      if (currentReasoningContent) {
+        parts.push({
+          type: "reasoning",
+          reasoning: currentReasoningContent,
+        });
+      }
+
+      if (parts.length === 0) {
+        return; // Nothing to save yet
+      }
+
+      try {
+        if (!messageSaved) {
+          // First time - create the message
+          await saveMessages({
+            messages: [
+              {
+                id: assistantMessageId,
+                chatId: id,
+                role: "assistant",
+                parts,
+                attachments: [],
+                createdAt: new Date(),
+              },
+            ],
+          });
+          messageSaved = true;
+        } else {
+          // Update existing message
+          await updateMessageById({
+            id: assistantMessageId,
+            parts,
+          });
+        }
+        lastSaveTime = now;
+      } catch (err) {
+        console.warn("Failed to save/update assistant message:", err);
+      }
+    };
+
+    // Use after() to ensure final save happens even on timeout
+    after(async () => {
+      if (currentTextContent || currentReasoningContent) {
+        await saveAssistantMessage(true);
+      }
+    });
+
     const stream = createUIMessageStream({
       execute: async ({ writer: dataStream }) => {
         let titleGenerationPromise: Promise<void> | undefined;
@@ -396,7 +467,19 @@ export async function POST(request: Request) {
             isEnabled: isProductionEnvironment,
             functionId: "stream-text",
           },
+          onChunk: async ({ chunk }) => {
+            // Accumulate content and periodically save
+            if (chunk.type === "text-delta") {
+              currentTextContent += chunk.delta;
+              await saveAssistantMessage();
+            } else if (chunk.type === "reasoning-delta") {
+              currentReasoningContent += chunk.delta;
+              await saveAssistantMessage();
+            }
+          },
           onFinish: async ({ usage, response }) => {
+            // Final save to ensure all content is persisted
+            await saveAssistantMessage(true);
             // Debug: log sources from OpenRouter
             if (response?.messages) {
               for (const msg of response.messages) {
@@ -461,18 +544,34 @@ export async function POST(request: Request) {
 
         if (titleGenerationPromise) await titleGenerationPromise;
       },
-      generateId: generateUUID,
+      generateId: () => {
+        // Use our pre-generated ID for the first assistant message only
+        // Other messages (tool calls, etc.) get new IDs
+        if (!firstAssistantMessageGenerated) {
+          firstAssistantMessageGenerated = true;
+          return assistantMessageId;
+        }
+        return generateUUID();
+      },
       onFinish: async ({ messages }) => {
-        await saveMessages({
-          messages: messages.map((currentMessage) => ({
-            id: currentMessage.id,
-            role: currentMessage.role,
-            parts: currentMessage.parts,
-            createdAt: new Date(),
-            attachments: [],
-            chatId: id,
-          })),
-        });
+        // Filter out the assistant message we're already saving progressively
+        // and only save other messages (like tool results, etc.)
+        const messagesToSave = messages.filter(
+          (msg) => !(msg.role === "assistant" && msg.id === assistantMessageId),
+        );
+
+        if (messagesToSave.length > 0) {
+          await saveMessages({
+            messages: messagesToSave.map((currentMessage) => ({
+              id: currentMessage.id,
+              role: currentMessage.role,
+              parts: currentMessage.parts,
+              createdAt: new Date(),
+              attachments: [],
+              chatId: id,
+            })),
+          });
+        }
 
         if (finalMergedUsage) {
           try {
