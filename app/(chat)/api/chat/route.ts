@@ -264,7 +264,7 @@ export async function POST(request: Request) {
       }
 
       // Build parts array from accumulated content
-      const parts: any[] = [];
+      const parts: DBMessage["parts"] = [];
       if (currentTextContent) {
         parts.push({ type: "text", text: currentTextContent });
       }
@@ -304,7 +304,10 @@ export async function POST(request: Request) {
         }
         lastSaveTime = now;
       } catch (err) {
-        console.warn("Failed to save/update assistant message:", err);
+        console.warn(
+          `Failed to ${messageSaved ? "update" : "create"} assistant message ${assistantMessageId}:`,
+          err,
+        );
       }
     };
 
@@ -471,10 +474,18 @@ export async function POST(request: Request) {
             // Accumulate content and periodically save
             if (chunk.type === "text-delta") {
               currentTextContent += chunk.delta;
-              await saveAssistantMessage();
+              // Only call save if enough time has passed since last save
+              const now = Date.now();
+              if (now - lastSaveTime >= SAVE_INTERVAL_MS) {
+                await saveAssistantMessage();
+              }
             } else if (chunk.type === "reasoning-delta") {
               currentReasoningContent += chunk.delta;
-              await saveAssistantMessage();
+              // Only call save if enough time has passed since last save
+              const now = Date.now();
+              if (now - lastSaveTime >= SAVE_INTERVAL_MS) {
+                await saveAssistantMessage();
+              }
             }
           },
           onFinish: async ({ usage, response }) => {
