@@ -473,14 +473,14 @@ export async function POST(request: Request) {
           onChunk: async ({ chunk }) => {
             // Accumulate content and periodically save
             if (chunk.type === "text-delta") {
-              currentTextContent += chunk.delta;
+              currentTextContent += chunk.text;
               // Only call save if enough time has passed since last save
               const now = Date.now();
               if (now - lastSaveTime >= SAVE_INTERVAL_MS) {
                 await saveAssistantMessage();
               }
             } else if (chunk.type === "reasoning-delta") {
-              currentReasoningContent += chunk.delta;
+              currentReasoningContent += chunk.text;
               // Only call save if enough time has passed since last save
               const now = Date.now();
               if (now - lastSaveTime >= SAVE_INTERVAL_MS) {
