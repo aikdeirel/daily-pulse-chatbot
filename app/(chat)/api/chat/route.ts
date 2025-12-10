@@ -264,7 +264,7 @@ export async function POST(request: Request) {
       }
 
       // Build parts array from accumulated content
-      const parts: DBMessage["parts"] = [];
+      const parts: any[] = [];
       if (currentTextContent) {
         parts.push({ type: "text", text: currentTextContent });
       }
