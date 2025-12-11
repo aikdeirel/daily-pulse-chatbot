@@ -6,6 +6,7 @@ import {
   smoothStream,
   stepCountIs,
   streamText,
+  type UIMessagePart,
 } from "ai";
 import { unstable_cache as cache } from "next/cache";
 import { after } from "next/server";
@@ -74,7 +75,7 @@ import {
 } from "@/lib/db/queries";
 import type { DBMessage } from "@/lib/db/schema";
 import { ChatSDKError } from "@/lib/errors";
-import type { ChatMessage } from "@/lib/types";
+import type { ChatMessage, ChatTools, CustomUIDataTypes } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { convertToUIMessages, generateUUID } from "@/lib/utils";
 import { generateTitleFromUserMessage } from "../../actions";
@@ -246,14 +247,17 @@ export async function POST(request: Request) {
     let finalMergedUsage: AppUsage | undefined;
 
     // Track streaming content for progressive database saves
-    // These variables need to be outside the execute function
-    // so they can be accessed by the generateId function
+    // Variables outside execute function are needed for:
+    // - assistantMessageId, firstAssistantMessageGenerated: accessed by generateId function
+    // - currentTextContent, currentReasoningContent, lastSaveTime, messageSaved, finalSaveCompleted:
+    //   accessed by saveAssistantMessage (called from onChunk, onFinish, and after() hook)
     const assistantMessageId = generateUUID();
     let firstAssistantMessageGenerated = false;
     let currentTextContent = "";
     let currentReasoningContent = "";
     let lastSaveTime = Date.now();
     let messageSaved = false;
+    let finalSaveCompleted = false; // Prevents duplicate saves from onFinish and after()
     const SAVE_INTERVAL_MS = 3000; // Save every 3 seconds during streaming
 
     // Function to save/update the assistant message
@@ -263,8 +267,8 @@ export async function POST(request: Request) {
         return;
       }
 
-      // Build parts array from accumulated content
-      const parts: any[] = [];
+      // Build parts array from accumulated content with proper typing
+      const parts: UIMessagePart<CustomUIDataTypes, ChatTools>[] = [];
       if (currentTextContent) {
         parts.push({ type: "text", text: currentTextContent });
       }
@@ -313,7 +317,10 @@ export async function POST(request: Request) {
 
     // Use after() to ensure final save happens even on timeout
     after(async () => {
-      if (currentTextContent || currentReasoningContent) {
+      if (
+        !finalSaveCompleted &&
+        (currentTextContent || currentReasoningContent)
+      ) {
         await saveAssistantMessage(true);
       }
     });
@@ -474,23 +481,20 @@ export async function POST(request: Request) {
             // Accumulate content and periodically save
             if (chunk.type === "text-delta") {
               currentTextContent += chunk.text;
-              // Only call save if enough time has passed since last save
-              const now = Date.now();
-              if (now - lastSaveTime >= SAVE_INTERVAL_MS) {
-                await saveAssistantMessage();
-              }
             } else if (chunk.type === "reasoning-delta") {
               currentReasoningContent += chunk.text;
-              // Only call save if enough time has passed since last save
-              const now = Date.now();
-              if (now - lastSaveTime >= SAVE_INTERVAL_MS) {
-                await saveAssistantMessage();
-              }
+            }
+
+            // Only call save if enough time has passed since last save
+            const now = Date.now();
+            if (now - lastSaveTime >= SAVE_INTERVAL_MS) {
+              await saveAssistantMessage();
             }
           },
           onFinish: async ({ usage, response }) => {
             // Final save to ensure all content is persisted
             await saveAssistantMessage(true);
+            finalSaveCompleted = true; // Prevent duplicate save in after() hook
             // Debug: log sources from OpenRouter
             if (response?.messages) {
               for (const msg of response.messages) {

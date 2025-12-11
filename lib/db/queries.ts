@@ -260,7 +260,7 @@ export async function updateMessageById({
   parts,
 }: {
   id: string;
-  parts: any;
+  parts: unknown;
 }) {
   try {
     return await db.update(message).set({ parts }).where(eq(message.id, id));
