@@ -24,6 +24,12 @@
 - **Smart Recommendations** – Personalized suggestions based on your taste
 - [📖 Full Spotify Documentation](docs/SPOTIFY_INTEGRATION.md)
 
+### 📅 Google Integration
+- **Calendar Management** – View, create, update, and delete events
+- **Gmail** – Read and manage messages and labels
+- **Google Tasks** – Manage task lists, tasks, and subtasks
+- [📖 Full Google Documentation](docs/GOOGLE_INTEGRATION.md)
+
 ### 📝 Artifacts
 Create and edit interactive content directly in chat:
 - **Text Documents** – Rich markdown editing with live preview
@@ -76,6 +82,11 @@ Create and edit interactive content directly in chat:
    - `SPOTIFY_CLIENT_ID`
    - `SPOTIFY_CLIENT_SECRET`
    - `SPOTIFY_REDIRECT_URI`
+   
+   Optional (for Google features):
+   - `GOOGLE_CLIENT_ID`
+   - `GOOGLE_CLIENT_SECRET`
+   - `GOOGLE_REDIRECT_URI`
 
 3. **Set up the database**
    ```bash
@@ -153,7 +164,8 @@ pnpm db:studio    # Open Drizzle Studio
 For non-Vercel deployments:
 - Set `OPENROUTER_API_KEY` for LLM access ([get yours here](https://openrouter.ai/keys))
 - Configure your own PostgreSQL and Redis instances
-- Update `SPOTIFY_REDIRECT_URI` to your production domain
+- Update `SPOTIFY_REDIRECT_URI` to your production domain (if using Spotify)
+- Update `GOOGLE_REDIRECT_URI` to your production domain (if using Google)
 
 ---
 
