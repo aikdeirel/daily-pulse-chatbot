@@ -67,12 +67,14 @@ Important Notes:
       showCompleted: z
         .boolean()
         .optional()
-        .describe("Include completed tasks in list (default: true)"),
+        .describe(
+          "Include completed tasks in list. Google API default is true if not specified. Set to false to exclude completed tasks.",
+        ),
       showHidden: z
         .boolean()
         .optional()
         .describe(
-          "Include hidden tasks in list. Set to true with showCompleted=true to see all completed tasks including hidden ones (default: false)",
+          "Include hidden tasks in list. Set to true with showCompleted to see all completed tasks including hidden ones. Default is false - hidden tasks are filtered out.",
         ),
       maxResults: z
         .number()
