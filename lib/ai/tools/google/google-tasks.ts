@@ -9,7 +9,7 @@ type GoogleTasksToolProps = {
 export const googleTasks = ({ userId }: GoogleTasksToolProps) =>
   tool({
     description: `Manage Google Tasks. Actions:
-- "list_tasks": List tasks in a task list (requires tasklistId; optional: showCompleted, maxResults, dueMin, dueMax)
+- "list_tasks": List tasks in a task list (requires tasklistId; optional: showCompleted, showHidden, maxResults, dueMin, dueMax)
 - "get_task": Get task details (requires tasklistId, taskId)
 - "create_task": Create task (requires tasklistId, title; optional: notes, due, parent for subtasks)
 - "update_task": Update task (requires tasklistId, taskId; optional: title, notes, due, status)
@@ -21,6 +21,8 @@ Important Notes:
 - Use RFC3339 format for dates (e.g., "2024-12-31T23:59:59Z")
 - Status can be "needsAction" or "completed"
 - For subtasks, provide parent task ID when creating
+- To see completed tasks including hidden ones, set BOTH showCompleted=true AND showHidden=true
+- When showCompleted=true but showHidden is not set, hidden tasks are automatically filtered out
 - Requires Google OAuth connection`,
     inputSchema: z.object({
       action: z.enum([
@@ -65,7 +67,13 @@ Important Notes:
       showCompleted: z
         .boolean()
         .optional()
-        .describe("Include completed tasks in list"),
+        .describe("Include completed tasks in list (default: true)"),
+      showHidden: z
+        .boolean()
+        .optional()
+        .describe(
+          "Include hidden tasks in list. Set to true with showCompleted=true to see all completed tasks including hidden ones (default: false)",
+        ),
       maxResults: z
         .number()
         .optional()
@@ -90,6 +98,7 @@ Important Notes:
       parent,
       previous,
       showCompleted,
+      showHidden,
       maxResults,
       dueMin,
       dueMax,
@@ -107,6 +116,7 @@ Important Notes:
             }
             const tasks = await googleService.listTasks(tasklistId, {
               showCompleted,
+              showHidden,
               maxResults,
               dueMin,
               dueMax,
