@@ -96,7 +96,9 @@ The Google integration includes multiple specialized tools:
 | `move_task` | Move task position | `tasklistId`, `taskId` | Reorder task within list |
 | `clear_completed` | Clear completed tasks | `tasklistId` | Remove all completed tasks |
 
-**Optional params for list_tasks:** `showCompleted`, `maxResults`, `dueMin`, `dueMax`
+**Optional params for list_tasks:** `showCompleted`, `showHidden`, `maxResults`, `dueMin`, `dueMax`
+
+**Important:** To see completed tasks including hidden ones, you must set **BOTH** `showCompleted=true` **AND** `showHidden=true`. When `showCompleted=true` but `showHidden` is not explicitly set to `true`, hidden tasks are automatically filtered out to maintain consistent behavior.
 
 **Optional params for create_task/update_task:** `notes`, `due`, `status`, `parent` (for subtasks)
 
@@ -169,6 +171,9 @@ User: "Mark task as completed"
 
 User: "Show completed tasks"
 → googleTasks: action: "list_tasks", tasklistId: "@default", showCompleted: true
+
+User: "Show all completed tasks including hidden ones"
+→ googleTasks: action: "list_tasks", tasklistId: "@default", showCompleted: true, showHidden: true
 
 User: "Create a subtask"
 → googleTasks: action: "create_task", tasklistId: "@default", title: "Subtask", parent: "parent_task_id"
@@ -602,6 +607,11 @@ Google Calendar API v3 doesn't support true batch operations. Multiple operation
 6. **Manage completed tasks**: Regularly clear completed tasks to keep lists clean
 7. **Set realistic due dates**: Include due dates for time-sensitive tasks
 8. **Use status updates**: Mark tasks as completed when done (status: "completed")
+9. **Understand showCompleted/showHidden interaction**: 
+   - `showCompleted=false`: Returns only active tasks (excludes all completed tasks)
+   - `showCompleted=true` (without showHidden): Returns completed tasks that are NOT hidden
+   - `showCompleted=true` AND `showHidden=true`: Returns ALL completed tasks including hidden ones
+   - Hidden tasks are automatically filtered unless explicitly requested with `showHidden=true`
 
 ---
 

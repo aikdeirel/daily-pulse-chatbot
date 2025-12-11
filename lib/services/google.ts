@@ -1151,6 +1151,11 @@ export class GoogleService {
    * @param tasklistId Task list ID
    * @param params Query parameters
    * @returns Promise with list of tasks
+   *
+   * Note: According to Google Tasks API documentation, to see completed tasks
+   * in the Web UI/App, BOTH showCompleted=true AND showHidden=true must be set.
+   * When showCompleted=true but showHidden is not explicitly set to true,
+   * hidden tasks are filtered out client-side to maintain consistent behavior.
    */
   async listTasks(
     tasklistId: string,
@@ -1183,11 +1188,19 @@ export class GoogleService {
       query.append("showHidden", params.showHidden.toString());
     if (params.updatedMin) query.append("updatedMin", params.updatedMin);
 
-    return this.apiRequest<GoogleTasksResponse>(
+    const response = await this.apiRequest<GoogleTasksResponse>(
       "tasks/v1",
       "GET",
       `/lists/${tasklistId}/tasks?${query.toString()}`,
     );
+
+    // Filter out hidden tasks client-side when showHidden is not explicitly true
+    // This ensures consistent behavior: hidden tasks are only shown when explicitly requested
+    if (params.showHidden !== true && response.items) {
+      response.items = response.items.filter((task) => !task.hidden);
+    }
+
+    return response;
   }
 
   /**

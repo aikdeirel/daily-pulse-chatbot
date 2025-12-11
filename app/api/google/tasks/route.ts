@@ -18,8 +18,10 @@ export async function GET(request: Request) {
 
   try {
     const showCompleted = searchParams.get("showCompleted");
+    const showHidden = searchParams.get("showHidden");
     const tasks = await googleService.listTasks(tasklistId, {
       showCompleted: showCompleted ? showCompleted === "true" : undefined,
+      showHidden: showHidden ? showHidden === "true" : undefined,
       maxResults: searchParams.get("maxResults")
         ? Number(searchParams.get("maxResults"))
         : undefined,
