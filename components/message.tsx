@@ -334,7 +334,9 @@ const PurePreviewMessage = ({
                         id={basicPart.output.id as string}
                         title={basicPart.output.title as string}
                         kind={basicPart.output.kind as any}
-                        createdAt={new Date()}
+                        createdAt={
+                          new Date(message.metadata?.createdAt ?? Date.now())
+                        }
                         isReadonly={isReadonly}
                         action="created"
                         key={toolCallId}
@@ -371,7 +373,9 @@ const PurePreviewMessage = ({
                         id={basicPart.output.id as string}
                         title={basicPart.output.title as string}
                         kind={basicPart.output.kind as any}
-                        createdAt={new Date()}
+                        createdAt={
+                          new Date(message.metadata?.createdAt ?? Date.now())
+                        }
                         isReadonly={isReadonly}
                         action="updated"
                         key={toolCallId}
