@@ -143,9 +143,14 @@ export function ArtifactCard({
   const handleCopyLink = (e: React.MouseEvent) => {
     e.stopPropagation();
     const url = `${window.location.origin}${window.location.pathname}#artifact-${id}`;
-    navigator.clipboard.writeText(url).then(() => {
-      toast.success("Link copied to clipboard");
-    });
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        toast.success("Link copied to clipboard");
+      })
+      .catch(() => {
+        toast.error("Failed to copy link to clipboard");
+      });
   };
 
   return (
@@ -208,7 +213,6 @@ export function ArtifactCard({
           <button
             className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
             onClick={handleCopyLink}
-            title="Copy link"
             type="button"
             aria-label="Copy link to artifact"
           >
