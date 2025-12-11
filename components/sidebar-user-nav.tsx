@@ -186,8 +186,8 @@ export function SidebarUserNav({ user }: { user: User }) {
                   {googleConnected === null
                     ? "Loading..."
                     : googleConnected
-                      ? "Disconnect Google Calendar"
-                      : "Connect Google Calendar"}
+                      ? "Disconnect Google"
+                      : "Connect Google"}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
               </>
