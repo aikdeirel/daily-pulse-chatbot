@@ -196,7 +196,8 @@ export const googleToolUIConfig: Record<GoogleToolType, GoogleToolUIConfig> = {
     actions: {
       list_tasks: {
         title: "Listing tasks",
-        description: "Fetching tasks",
+        description:
+          "Fetching tasks (hidden tasks excluded unless showHidden=true)",
       },
       get_task: {
         title: "Getting task",
