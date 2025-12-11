@@ -255,6 +255,23 @@ export async function saveMessages({ messages }: { messages: DBMessage[] }) {
   }
 }
 
+export async function updateMessageById({
+  id,
+  parts,
+}: {
+  id: string;
+  parts: unknown;
+}) {
+  try {
+    return await db.update(message).set({ parts }).where(eq(message.id, id));
+  } catch (_error) {
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to update message by id",
+    );
+  }
+}
+
 export async function getMessagesByChatId({ id }: { id: string }) {
   try {
     return await db
