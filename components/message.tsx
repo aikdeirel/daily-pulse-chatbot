@@ -23,6 +23,7 @@ import { cn, sanitizeText } from "@/lib/utils";
 import { useDataStream } from "./data-stream-provider";
 import { DocumentToolResult } from "./document";
 import { DocumentPreview } from "./document-preview";
+import { ArtifactCard } from "./elements/artifact-card";
 import { MessageContent } from "./elements/message";
 import { Response } from "./elements/response";
 import {
@@ -312,7 +313,7 @@ const PurePreviewMessage = ({
                 const { toolCallId, state } = basicPart;
                 const action = basicPart.input?.action as string | undefined;
 
-                // Special handling for createDocument and updateDocument - they don't use Tool wrapper
+                // Special handling for createDocument and updateDocument
                 if (type === "tool-createDocument") {
                   if (basicPart.output && "error" in basicPart.output) {
                     return (
@@ -323,6 +324,21 @@ const PurePreviewMessage = ({
                         Error creating document:{" "}
                         {String(basicPart.output.error)}
                       </div>
+                    );
+                  }
+
+                  // Show ArtifactCard when completed, DocumentPreview during streaming
+                  if (state === "output-available" && basicPart.output) {
+                    return (
+                      <ArtifactCard
+                        id={basicPart.output.id as string}
+                        title={basicPart.output.title as string}
+                        kind={basicPart.output.kind as any}
+                        createdAt={new Date()}
+                        isReadonly={isReadonly}
+                        action="created"
+                        key={toolCallId}
+                      />
                     );
                   }
 
@@ -345,6 +361,21 @@ const PurePreviewMessage = ({
                         Error updating document:{" "}
                         {String(basicPart.output.error)}
                       </div>
+                    );
+                  }
+
+                  // Show ArtifactCard when completed, DocumentPreview during streaming
+                  if (state === "output-available" && basicPart.output) {
+                    return (
+                      <ArtifactCard
+                        id={basicPart.output.id as string}
+                        title={basicPart.output.title as string}
+                        kind={basicPart.output.kind as any}
+                        createdAt={new Date()}
+                        isReadonly={isReadonly}
+                        action="updated"
+                        key={toolCallId}
+                      />
                     );
                   }
 
