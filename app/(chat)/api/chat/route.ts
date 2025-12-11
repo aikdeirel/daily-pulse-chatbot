@@ -275,7 +275,7 @@ export async function POST(request: Request) {
       if (currentReasoningContent) {
         parts.push({
           type: "reasoning",
-          reasoning: currentReasoningContent,
+          text: currentReasoningContent,
         });
       }
 
