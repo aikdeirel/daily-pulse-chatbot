@@ -71,6 +71,7 @@ import {
   saveMessages,
   updateChatLastContextById,
   updateChatTitleById,
+  updateChatUpdatedAtById,
   updateMessageById,
 } from "@/lib/db/queries";
 import type { DBMessage } from "@/lib/db/schema";
@@ -238,6 +239,9 @@ export async function POST(request: Request) {
       ],
     });
 
+    // Update the chat's updatedAt timestamp
+    await updateChatUpdatedAtById({ chatId: id });
+
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
@@ -298,9 +302,14 @@ export async function POST(request: Request) {
               },
             ],
           });
+          // Update the chat's updatedAt timestamp
+          await updateChatUpdatedAtById({ chatId: id });
           messageSaved = true;
         } else {
           // Update existing message
+          // Note: We don't update the chat's updatedAt here because this is just
+          // a progressive update during streaming. The chat timestamp was already
+          // updated when the message was first created.
           await updateMessageById({
             id: assistantMessageId,
             parts,
@@ -586,6 +595,8 @@ export async function POST(request: Request) {
               chatId: id,
             })),
           });
+          // Update the chat's updatedAt timestamp
+          await updateChatUpdatedAtById({ chatId: id });
         }
 
         if (finalMergedUsage) {
