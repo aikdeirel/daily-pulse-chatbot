@@ -327,6 +327,18 @@ const PurePreviewMessage = ({
                     );
                   }
 
+                  // Debug logging (remove after fixing)
+                  if (typeof window !== "undefined") {
+                    console.log("[ArtifactCard Debug] createDocument", {
+                      hasOutput: !!basicPart.output,
+                      hasId: basicPart.output && "id" in basicPart.output,
+                      hasTitle: basicPart.output && "title" in basicPart.output,
+                      hasKind: basicPart.output && "kind" in basicPart.output,
+                      output: basicPart.output,
+                      state: state,
+                    });
+                  }
+
                   // Always show ArtifactCard when we have output with id/title/kind
                   // This ensures persistence after page reload
                   if (
