@@ -307,6 +307,9 @@ export async function POST(request: Request) {
           messageSaved = true;
         } else {
           // Update existing message
+          // Note: We don't update the chat's updatedAt here because this is just
+          // a progressive update during streaming. The chat timestamp was already
+          // updated when the message was first created.
           await updateMessageById({
             id: assistantMessageId,
             parts,
