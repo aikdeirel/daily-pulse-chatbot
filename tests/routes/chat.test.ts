@@ -204,6 +204,58 @@ test.describe
       expect(code).toEqual("bad_request:api");
     });
 
+    test("Ada cannot update title of chat that does not exist", async ({
+      adaContext,
+    }) => {
+      const nonExistentChatId = generateUUID();
+
+      const updateResponse = await adaContext.request.patch(
+        `/api/chat?id=${nonExistentChatId}`,
+        {
+          data: {
+            title: "New Title",
+          },
+        },
+      );
+      expect(updateResponse.status()).toBe(400);
+
+      const { code, message } = await updateResponse.json();
+      expect(code).toEqual("bad_request:api");
+      expect(message).toContain("Chat not found");
+    });
+
+    test("Title trimming works correctly", async ({ adaContext }) => {
+      const chatId = generateUUID();
+
+      // Create a chat first
+      const createResponse = await adaContext.request.post("/api/chat", {
+        data: {
+          id: chatId,
+          message: TEST_PROMPTS.SKY.MESSAGE,
+          selectedChatModel: "chat-model",
+          selectedVisibilityType: "private",
+        },
+      });
+      expect(createResponse.status()).toBe(200);
+
+      // Update with title that has leading/trailing whitespace
+      const updateResponse = await adaContext.request.patch(
+        `/api/chat?id=${chatId}`,
+        {
+          data: {
+            title: "  My Trimmed Title  ",
+          },
+        },
+      );
+      expect(updateResponse.status()).toBe(200);
+
+      const result = await updateResponse.json();
+      expect(result).toMatchObject({
+        success: true,
+        title: "My Trimmed Title",
+      });
+    });
+
     test("Ada cannot resume stream of chat that does not exist", async ({
       adaContext,
     }) => {

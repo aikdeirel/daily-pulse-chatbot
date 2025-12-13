@@ -56,7 +56,9 @@ const PureChatItem = ({
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(displayTitle || chat.title);
+  const [isSaving, setIsSaving] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const sidebarItemRef = useRef<HTMLLIElement>(null);
 
   // Update editedTitle when displayTitle changes
   useEffect(() => {
@@ -83,6 +85,9 @@ const PureChatItem = ({
   }, [displayTitle, chat.title]);
 
   const handleEditSave = async () => {
+    // Prevent multiple save attempts
+    if (isSaving) return;
+
     const trimmedTitle = editedTitle.trim();
 
     if (!trimmedTitle) {
@@ -97,6 +102,7 @@ const PureChatItem = ({
       return;
     }
 
+    setIsSaving(true);
     try {
       const response = await fetch(`/api/chat?id=${chat.id}`, {
         method: "PATCH",
@@ -119,6 +125,8 @@ const PureChatItem = ({
       toast.error("Failed to update title");
       setEditedTitle(displayTitle || chat.title);
       setIsEditing(false);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -137,12 +145,13 @@ const PureChatItem = ({
     if (!isEditing) return;
 
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        inputRef.current &&
-        !inputRef.current.contains(event.target as Node)
-      ) {
-        handleEditCancel();
+      // Don't cancel if clicking within the sidebar item (including dropdown)
+      if (sidebarItemRef.current?.contains(event.target as Node)) {
+        return;
       }
+
+      // Cancel edit if clicking outside the sidebar item
+      handleEditCancel();
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -152,7 +161,7 @@ const PureChatItem = ({
   }, [isEditing, handleEditCancel]);
 
   return (
-    <SidebarMenuItem data-testid="sidebar-history-item">
+    <SidebarMenuItem data-testid="sidebar-history-item" ref={sidebarItemRef}>
       <SidebarMenuButton asChild isActive={isActive}>
         {isEditing ? (
           <div className="flex items-center gap-2 w-full px-2">
@@ -163,6 +172,8 @@ const PureChatItem = ({
               onKeyDown={handleKeyDown}
               className="h-8 text-sm"
               data-testid="sidebar-history-item-title-input"
+              aria-label="Edit chat title"
+              disabled={isSaving}
             />
           </div>
         ) : (
