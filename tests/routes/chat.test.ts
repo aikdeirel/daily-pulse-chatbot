@@ -111,6 +111,99 @@ test.describe
       expect(deletedChat).toMatchObject({ id: chatId });
     });
 
+    test("Ada can update her own chat title", async ({ adaContext }) => {
+      const chatId = generateUUID();
+
+      // Create a chat first
+      const createResponse = await adaContext.request.post("/api/chat", {
+        data: {
+          id: chatId,
+          message: TEST_PROMPTS.SKY.MESSAGE,
+          selectedChatModel: "chat-model",
+          selectedVisibilityType: "private",
+        },
+      });
+      expect(createResponse.status()).toBe(200);
+
+      // Update the title
+      const updateResponse = await adaContext.request.patch(
+        `/api/chat?id=${chatId}`,
+        {
+          data: {
+            title: "My Custom Title",
+          },
+        },
+      );
+      expect(updateResponse.status()).toBe(200);
+
+      const result = await updateResponse.json();
+      expect(result).toMatchObject({ success: true, title: "My Custom Title" });
+    });
+
+    test("Babbage cannot update Ada's chat title", async ({
+      adaContext,
+      babbageContext,
+    }) => {
+      const chatId = generateUUID();
+
+      // Create a chat as Ada
+      const createResponse = await adaContext.request.post("/api/chat", {
+        data: {
+          id: chatId,
+          message: TEST_PROMPTS.SKY.MESSAGE,
+          selectedChatModel: "chat-model",
+          selectedVisibilityType: "private",
+        },
+      });
+      expect(createResponse.status()).toBe(200);
+
+      // Try to update title as Babbage
+      const updateResponse = await babbageContext.request.patch(
+        `/api/chat?id=${chatId}`,
+        {
+          data: {
+            title: "Babbage's Title",
+          },
+        },
+      );
+      expect(updateResponse.status()).toBe(403);
+
+      const { code, message } = await updateResponse.json();
+      expect(code).toEqual("forbidden:chat");
+      expect(message).toEqual(getMessageByErrorCode("forbidden:chat"));
+    });
+
+    test("Ada cannot update chat title with empty string", async ({
+      adaContext,
+    }) => {
+      const chatId = generateUUID();
+
+      // Create a chat first
+      const createResponse = await adaContext.request.post("/api/chat", {
+        data: {
+          id: chatId,
+          message: TEST_PROMPTS.SKY.MESSAGE,
+          selectedChatModel: "chat-model",
+          selectedVisibilityType: "private",
+        },
+      });
+      expect(createResponse.status()).toBe(200);
+
+      // Try to update with empty title
+      const updateResponse = await adaContext.request.patch(
+        `/api/chat?id=${chatId}`,
+        {
+          data: {
+            title: "   ",
+          },
+        },
+      );
+      expect(updateResponse.status()).toBe(400);
+
+      const { code } = await updateResponse.json();
+      expect(code).toEqual("bad_request:api");
+    });
+
     test("Ada cannot resume stream of chat that does not exist", async ({
       adaContext,
     }) => {
