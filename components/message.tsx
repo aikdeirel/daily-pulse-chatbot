@@ -327,8 +327,9 @@ const PurePreviewMessage = ({
                     );
                   }
 
-                  // Show ArtifactCard when completed, DocumentPreview during streaming
-                  if (state === "output-available" && basicPart.output) {
+                  // Show ArtifactCard when we have output (persists after reload)
+                  // Show DocumentPreview during streaming (before output is available)
+                  if (basicPart.output?.id) {
                     return (
                       <ArtifactCard
                         id={basicPart.output.id as string}
@@ -366,8 +367,9 @@ const PurePreviewMessage = ({
                     );
                   }
 
-                  // Show ArtifactCard when completed, DocumentPreview during streaming
-                  if (state === "output-available" && basicPart.output) {
+                  // Show ArtifactCard when we have output (persists after reload)
+                  // Show DocumentPreview during streaming (before output is available)
+                  if (basicPart.output?.id) {
                     return (
                       <ArtifactCard
                         id={basicPart.output.id as string}
