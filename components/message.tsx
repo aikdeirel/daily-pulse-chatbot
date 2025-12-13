@@ -20,6 +20,7 @@ import {
 } from "@/lib/tools/spotify/ui-config";
 import type { ChatMessage } from "@/lib/types";
 import { cn, sanitizeText } from "@/lib/utils";
+import type { ArtifactKind } from "./artifact";
 import { useDataStream } from "./data-stream-provider";
 import { DocumentToolResult } from "./document";
 import { ArtifactCard } from "./elements/artifact-card";
@@ -338,7 +339,7 @@ const PurePreviewMessage = ({
                       <ArtifactCard
                         id={basicPart.output.id as string}
                         title={basicPart.output.title as string}
-                        kind={basicPart.output.kind as any}
+                        kind={basicPart.output.kind as ArtifactKind}
                         createdAt={
                           new Date(message.metadata?.createdAt ?? Date.now())
                         }
@@ -378,7 +379,7 @@ const PurePreviewMessage = ({
                       <ArtifactCard
                         id={basicPart.output.id as string}
                         title={basicPart.output.title as string}
-                        kind={basicPart.output.kind as any}
+                        kind={basicPart.output.kind as ArtifactKind}
                         createdAt={
                           new Date(message.metadata?.createdAt ?? Date.now())
                         }

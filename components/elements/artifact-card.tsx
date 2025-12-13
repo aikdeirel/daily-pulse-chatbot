@@ -142,6 +142,12 @@ export function ArtifactCard({
 
   const handleCopyLink = (e: React.MouseEvent) => {
     e.stopPropagation();
+
+    if (isReadonly) {
+      toast.error("Copying links in shared chats is not supported.");
+      return;
+    }
+
     const url = `${window.location.origin}${window.location.pathname}#artifact-${id}`;
     navigator.clipboard
       .writeText(url)
@@ -165,6 +171,7 @@ export function ArtifactCard({
         className="flex w-full items-center gap-4 p-4 text-left transition-colors hover:bg-muted/30"
         onClick={handleOpen}
         type="button"
+        aria-label={`Open ${getArtifactLabel(kind)}: ${title}`}
       >
         {/* Icon */}
         <div
