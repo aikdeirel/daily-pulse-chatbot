@@ -638,6 +638,69 @@ export async function POST(request: Request) {
   }
 }
 
+export async function PATCH(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+
+  if (!id) {
+    return new ChatSDKError("bad_request:api").toResponse();
+  }
+
+  const session = await auth();
+
+  if (!session?.user) {
+    return new ChatSDKError("unauthorized:chat").toResponse();
+  }
+
+  const chat = await getChatById({ id });
+
+  if (!chat) {
+    return new ChatSDKError("bad_request:api", "Chat not found").toResponse();
+  }
+
+  if (chat.userId !== session.user.id) {
+    return new ChatSDKError("forbidden:chat").toResponse();
+  }
+
+  try {
+    const body = await request.json();
+    const { title } = body;
+
+    if (!title || typeof title !== "string" || title.trim().length === 0) {
+      return new ChatSDKError(
+        "bad_request:api",
+        "Invalid title provided",
+      ).toResponse();
+    }
+
+    await updateChatTitleById({ chatId: id, title: title.trim() });
+
+    return Response.json(
+      { success: true, title: title.trim() },
+      { status: 200 },
+    );
+  } catch (error) {
+    console.error("Error updating chat title:", error);
+
+    // Check if it's a JSON parsing error or database error
+    if (error instanceof SyntaxError) {
+      return new ChatSDKError(
+        "bad_request:api",
+        "Invalid request body",
+      ).toResponse();
+    }
+
+    if (error instanceof ChatSDKError) {
+      return error.toResponse();
+    }
+
+    return new ChatSDKError(
+      "offline:chat",
+      "Failed to update chat title",
+    ).toResponse();
+  }
+}
+
 export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");

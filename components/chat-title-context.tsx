@@ -92,7 +92,10 @@ export function useTitleForChat(chatId: string, initialTitle?: string) {
 
   // If we have a state in context, use it
   if (titleState) {
-    return titleState;
+    return {
+      ...titleState,
+      setTitle: context?.setTitle || (() => {}),
+    };
   }
 
   // If initial title is "New Chat" or undefined, it's generating
@@ -101,5 +104,6 @@ export function useTitleForChat(chatId: string, initialTitle?: string) {
   return {
     title: initialTitle,
     isGenerating,
+    setTitle: context?.setTitle || (() => {}),
   };
 }
