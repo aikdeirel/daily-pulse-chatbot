@@ -542,11 +542,7 @@ export async function updateChatTitleById({
   }
 }
 
-export async function updateChatUpdatedAtById({
-  chatId,
-}: {
-  chatId: string;
-}) {
+export async function updateChatUpdatedAtById({ chatId }: { chatId: string }) {
   try {
     return await db
       .update(chat)
