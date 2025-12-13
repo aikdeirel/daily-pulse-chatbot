@@ -146,7 +146,10 @@ const PureChatItem = ({
 
     const handleClickOutside = (event: MouseEvent) => {
       // Don't cancel if clicking within the sidebar item (including dropdown)
-      if (sidebarItemRef.current?.contains(event.target as Node)) {
+      if (
+        event.target &&
+        sidebarItemRef.current?.contains(event.target as Node)
+      ) {
         return;
       }
 
@@ -173,6 +176,7 @@ const PureChatItem = ({
               className="h-8 text-sm"
               data-testid="sidebar-history-item-title-input"
               aria-label="Edit chat title"
+              aria-busy={isSaving}
               disabled={isSaving}
             />
           </div>
