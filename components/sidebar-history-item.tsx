@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { memo } from "react";
+import { memo, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
 import type { Chat } from "@/lib/db/schema";
 import { useTitleForChat } from "./chat-title-context";
@@ -9,6 +10,7 @@ import {
   GlobeIcon,
   LockIcon,
   MoreHorizontalIcon,
+  PencilEditIcon,
   ShareIcon,
   TrashIcon,
 } from "./icons";
@@ -22,6 +24,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { Input } from "./ui/input";
 import {
   SidebarMenuAction,
   SidebarMenuButton,
@@ -45,30 +48,121 @@ const PureChatItem = ({
   });
 
   // Use the context-based title state for reactive updates
-  const { title: displayTitle, isGenerating: isTitleGenerating } =
-    useTitleForChat(chat.id, chat.title);
+  const {
+    title: displayTitle,
+    isGenerating: isTitleGenerating,
+    setTitle,
+  } = useTitleForChat(chat.id, chat.title);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedTitle, setEditedTitle] = useState(displayTitle || chat.title);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Update editedTitle when displayTitle changes
+  useEffect(() => {
+    if (!isEditing) {
+      setEditedTitle(displayTitle || chat.title);
+    }
+  }, [displayTitle, chat.title, isEditing]);
+
+  // Focus input when entering edit mode
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  const handleEditStart = () => {
+    setIsEditing(true);
+  };
+
+  const handleEditCancel = () => {
+    setEditedTitle(displayTitle || chat.title);
+    setIsEditing(false);
+  };
+
+  const handleEditSave = async () => {
+    const trimmedTitle = editedTitle.trim();
+
+    if (!trimmedTitle) {
+      toast.error("Title cannot be empty");
+      setEditedTitle(displayTitle || chat.title);
+      setIsEditing(false);
+      return;
+    }
+
+    if (trimmedTitle === (displayTitle || chat.title)) {
+      setIsEditing(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/chat?id=${chat.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ title: trimmedTitle }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update title");
+      }
+
+      setTitle(chat.id, trimmedTitle);
+      toast.success("Title updated successfully");
+      setIsEditing(false);
+    } catch (_error) {
+      toast.error("Failed to update title");
+      setEditedTitle(displayTitle || chat.title);
+      setIsEditing(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleEditSave();
+    } else if (e.key === "Escape") {
+      handleEditCancel();
+    }
+  };
 
   return (
     <SidebarMenuItem data-testid="sidebar-history-item">
       <SidebarMenuButton asChild isActive={isActive}>
-        <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
-          {isTitleGenerating ? (
-            <motion.div
-              className="flex items-center gap-2 w-full"
-              data-testid="sidebar-history-item-generating"
-              initial={{ opacity: 0.5 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="h-4 flex-1 max-w-[120px] animate-pulse rounded bg-sidebar-accent-foreground/20" />
-              <span className="text-[10px] text-sidebar-foreground/40 animate-pulse shrink-0"></span>
-            </motion.div>
-          ) : (
-            <span data-testid="sidebar-history-item-title">
-              {displayTitle || chat.title}
-            </span>
-          )}
-        </Link>
+        {isEditing ? (
+          <div className="flex items-center gap-2 w-full px-2">
+            <Input
+              ref={inputRef}
+              value={editedTitle}
+              onChange={(e) => setEditedTitle(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onBlur={handleEditSave}
+              className="h-8 text-sm"
+              data-testid="sidebar-history-item-title-input"
+            />
+          </div>
+        ) : (
+          <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
+            {isTitleGenerating ? (
+              <motion.div
+                className="flex items-center gap-2 w-full"
+                data-testid="sidebar-history-item-generating"
+                initial={{ opacity: 0.5 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="h-4 flex-1 max-w-[120px] animate-pulse rounded bg-sidebar-accent-foreground/20" />
+                <span className="text-[10px] text-sidebar-foreground/40 animate-pulse shrink-0"></span>
+              </motion.div>
+            ) : (
+              <span data-testid="sidebar-history-item-title">
+                {displayTitle || chat.title}
+              </span>
+            )}
+          </Link>
+        )}
       </SidebarMenuButton>
 
       <DropdownMenu modal={true}>
@@ -83,6 +177,14 @@ const PureChatItem = ({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end" side="bottom">
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={handleEditStart}
+          >
+            <PencilEditIcon />
+            <span>Edit Title</span>
+          </DropdownMenuItem>
+
           <DropdownMenuSub>
             <DropdownMenuSubTrigger className="cursor-pointer">
               <ShareIcon />
