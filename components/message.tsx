@@ -327,9 +327,14 @@ const PurePreviewMessage = ({
                     );
                   }
 
-                  // Show ArtifactCard when we have output (persists after reload)
-                  // Show DocumentPreview during streaming (before output is available)
-                  if (basicPart.output?.id) {
+                  // Always show ArtifactCard when we have output with id/title/kind
+                  // This ensures persistence after page reload
+                  if (
+                    basicPart.output &&
+                    "id" in basicPart.output &&
+                    "title" in basicPart.output &&
+                    "kind" in basicPart.output
+                  ) {
                     return (
                       <ArtifactCard
                         id={basicPart.output.id as string}
@@ -345,6 +350,7 @@ const PurePreviewMessage = ({
                     );
                   }
 
+                  // Fallback to DocumentPreview for any other state
                   return (
                     <DocumentPreview
                       isReadonly={isReadonly}
@@ -367,9 +373,14 @@ const PurePreviewMessage = ({
                     );
                   }
 
-                  // Show ArtifactCard when we have output (persists after reload)
-                  // Show DocumentPreview during streaming (before output is available)
-                  if (basicPart.output?.id) {
+                  // Always show ArtifactCard when we have output with id/title/kind
+                  // This ensures persistence after page reload
+                  if (
+                    basicPart.output &&
+                    "id" in basicPart.output &&
+                    "title" in basicPart.output &&
+                    "kind" in basicPart.output
+                  ) {
                     return (
                       <ArtifactCard
                         id={basicPart.output.id as string}
@@ -385,6 +396,7 @@ const PurePreviewMessage = ({
                     );
                   }
 
+                  // Fallback to DocumentPreview for any other state
                   return (
                     <div className="relative" key={toolCallId}>
                       <DocumentPreview
