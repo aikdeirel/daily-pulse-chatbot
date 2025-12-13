@@ -10,6 +10,7 @@ import {
   gte,
   inArray,
   lt,
+  or,
   type SQL,
 } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
@@ -183,7 +184,7 @@ export async function getChatsByUserId({
             ? and(whereCondition, eq(chat.userId, id))
             : eq(chat.userId, id),
         )
-        .orderBy(desc(chat.updatedAt))
+        .orderBy(desc(chat.updatedAt), desc(chat.id))
         .limit(extendedLimit);
 
     let filteredChats: Chat[] = [];
@@ -202,7 +203,16 @@ export async function getChatsByUserId({
         );
       }
 
-      filteredChats = await query(gt(chat.updatedAt, selectedChat.updatedAt));
+      // For DESC ordering, "after" means earlier timestamps or same timestamp with smaller IDs
+      filteredChats = await query(
+        or(
+          lt(chat.updatedAt, selectedChat.updatedAt),
+          and(
+            eq(chat.updatedAt, selectedChat.updatedAt),
+            lt(chat.id, selectedChat.id),
+          ),
+        ),
+      );
     } else if (endingBefore) {
       const [selectedChat] = await db
         .select()
@@ -217,7 +227,16 @@ export async function getChatsByUserId({
         );
       }
 
-      filteredChats = await query(lt(chat.updatedAt, selectedChat.updatedAt));
+      // For DESC ordering, "before" means later timestamps or same timestamp with larger IDs
+      filteredChats = await query(
+        or(
+          gt(chat.updatedAt, selectedChat.updatedAt),
+          and(
+            eq(chat.updatedAt, selectedChat.updatedAt),
+            gt(chat.id, selectedChat.id),
+          ),
+        ),
+      );
     } else {
       filteredChats = await query();
     }
