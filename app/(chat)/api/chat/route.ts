@@ -492,8 +492,50 @@ export async function POST(request: Request) {
             }
           },
           onFinish: async ({ usage, response }) => {
-            // Final save to ensure all content is persisted
-            await saveAssistantMessage(true);
+            // Final save to ensure all content is persisted, including tool invocations
+            // Get the complete assistant message from response.messages which includes tool parts
+            const assistantMessage = response?.messages?.find(
+              (msg) =>
+                msg.role === "assistant" && msg.id === assistantMessageId,
+            );
+
+            if (assistantMessage?.parts) {
+              // Save/update with complete parts including tool invocations
+              try {
+                if (!messageSaved) {
+                  // First time - create the message
+                  await saveMessages({
+                    messages: [
+                      {
+                        id: assistantMessageId,
+                        chatId: id,
+                        role: "assistant",
+                        parts: assistantMessage.parts,
+                        attachments: [],
+                        createdAt: new Date(),
+                      },
+                    ],
+                  });
+                  messageSaved = true;
+                } else {
+                  // Update existing message with complete parts
+                  await updateMessageById({
+                    id: assistantMessageId,
+                    parts: assistantMessage.parts,
+                  });
+                }
+                lastSaveTime = Date.now();
+              } catch (error) {
+                console.error(
+                  "Failed to save assistant message with tool parts:",
+                  error,
+                );
+              }
+            } else {
+              // Fallback to progressive save if response doesn't have the message
+              await saveAssistantMessage(true);
+            }
+
             finalSaveCompleted = true; // Prevent duplicate save in after() hook
             // Debug: log sources from OpenRouter
             if (response?.messages) {
