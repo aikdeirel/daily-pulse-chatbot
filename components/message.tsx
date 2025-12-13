@@ -22,7 +22,6 @@ import type { ChatMessage } from "@/lib/types";
 import { cn, sanitizeText } from "@/lib/utils";
 import { useDataStream } from "./data-stream-provider";
 import { DocumentToolResult } from "./document";
-import { DocumentPreview } from "./document-preview";
 import { ArtifactCard } from "./elements/artifact-card";
 import { MessageContent } from "./elements/message";
 import { Response } from "./elements/response";
@@ -327,7 +326,7 @@ const PurePreviewMessage = ({
                     );
                   }
 
-                  // Always show ArtifactCard when we have output with id/title/kind
+                  // Show ArtifactCard when we have output with id/title/kind
                   // This ensures persistence after page reload
                   if (
                     basicPart.output &&
@@ -350,14 +349,8 @@ const PurePreviewMessage = ({
                     );
                   }
 
-                  // Fallback to DocumentPreview for any other state
-                  return (
-                    <DocumentPreview
-                      isReadonly={isReadonly}
-                      key={toolCallId}
-                      result={basicPart.output}
-                    />
-                  );
+                  // During streaming or if output is incomplete, show nothing
+                  return null;
                 }
 
                 if (type === "tool-updateDocument") {
@@ -373,7 +366,7 @@ const PurePreviewMessage = ({
                     );
                   }
 
-                  // Always show ArtifactCard when we have output with id/title/kind
+                  // Show ArtifactCard when we have output with id/title/kind
                   // This ensures persistence after page reload
                   if (
                     basicPart.output &&
@@ -396,16 +389,8 @@ const PurePreviewMessage = ({
                     );
                   }
 
-                  // Fallback to DocumentPreview for any other state
-                  return (
-                    <div className="relative" key={toolCallId}>
-                      <DocumentPreview
-                        args={{ ...basicPart.output, isUpdate: true }}
-                        isReadonly={isReadonly}
-                        result={basicPart.output}
-                      />
-                    </div>
-                  );
+                  // During streaming or if output is incomplete, show nothing
+                  return null;
                 }
 
                 // Get title, description and defaultOpen from centralized config
