@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
 import type { Chat } from "@/lib/db/schema";
@@ -77,10 +77,10 @@ const PureChatItem = ({
     setIsEditing(true);
   };
 
-  const handleEditCancel = () => {
+  const handleEditCancel = useCallback(() => {
     setEditedTitle(displayTitle || chat.title);
     setIsEditing(false);
-  };
+  }, [displayTitle, chat.title]);
 
   const handleEditSave = async () => {
     const trimmedTitle = editedTitle.trim();
@@ -110,10 +110,12 @@ const PureChatItem = ({
         throw new Error("Failed to update title");
       }
 
-      setTitle(chat.id, trimmedTitle);
+      const result = await response.json();
+      setTitle(chat.id, result.title);
       toast.success("Title updated successfully");
       setIsEditing(false);
-    } catch (_error) {
+    } catch (error) {
+      console.error("Error updating chat title:", error);
       toast.error("Failed to update title");
       setEditedTitle(displayTitle || chat.title);
       setIsEditing(false);
@@ -122,11 +124,32 @@ const PureChatItem = ({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
+      e.preventDefault();
       handleEditSave();
     } else if (e.key === "Escape") {
+      e.preventDefault();
       handleEditCancel();
     }
   };
+
+  // Handle click outside to cancel edit
+  useEffect(() => {
+    if (!isEditing) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        inputRef.current &&
+        !inputRef.current.contains(event.target as Node)
+      ) {
+        handleEditCancel();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isEditing, handleEditCancel]);
 
   return (
     <SidebarMenuItem data-testid="sidebar-history-item">
@@ -138,7 +161,6 @@ const PureChatItem = ({
               value={editedTitle}
               onChange={(e) => setEditedTitle(e.target.value)}
               onKeyDown={handleKeyDown}
-              onBlur={handleEditSave}
               className="h-8 text-sm"
               data-testid="sidebar-history-item-title-input"
             />

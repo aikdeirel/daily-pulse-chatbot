@@ -670,8 +670,21 @@ export async function PATCH(request: Request) {
     );
   } catch (error) {
     console.error("Error updating chat title:", error);
+
+    // Check if it's a JSON parsing error or database error
+    if (error instanceof SyntaxError) {
+      return new ChatSDKError(
+        "bad_request:api",
+        "Invalid request body",
+      ).toResponse();
+    }
+
+    if (error instanceof ChatSDKError) {
+      return error.toResponse();
+    }
+
     return new ChatSDKError(
-      "bad_request:api",
+      "offline:chat",
       "Failed to update chat title",
     ).toResponse();
   }
