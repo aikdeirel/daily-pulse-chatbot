@@ -32,7 +32,12 @@ export async function proxy(request: NextRequest) {
     );
       */
     if (pathname === "/login") {
-      // Allow unauthenticated access to the login page
+      return NextResponse.next();
+    }
+    if (pathname === "/register") {
+      if (process.env.NEXT_PUBLIC_REGISTRATION_ENABLED !== "true") {
+        return NextResponse.redirect(new URL("/login", request.url));
+      }
       return NextResponse.next();
     }
     return NextResponse.redirect(new URL("/login", request.url));
@@ -53,8 +58,7 @@ export const config = {
     "/chat/:id",
     "/api/:path*",
     "/login",
-    // GUEST AUTHENTICATION DISABLED - Code preserved below for future reference
-    // "/register",
+    "/register",
 
     /*
      * Match all request paths except for the ones starting with:

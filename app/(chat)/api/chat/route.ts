@@ -20,7 +20,8 @@ import { getUsage } from "tokenlens/helpers";
 import { auth, type UserType } from "@/app/(auth)/auth";
 import type { VisibilityType } from "@/components/visibility-selector";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
-import type { ChatModel } from "@/lib/ai/models";
+import type { ChatModelId } from "@/lib/ai/models.config";
+import { modelsWithoutToolSupport } from "@/lib/ai/models.config";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
 import { getLanguageModel } from "@/lib/ai/providers";
 import { discoverSkills } from "@/lib/ai/skills";
@@ -145,7 +146,7 @@ export async function POST(request: Request) {
     }: {
       id: string;
       message: ChatMessage;
-      selectedChatModel: ChatModel["id"];
+      selectedChatModel: ChatModelId;
       selectedVisibilityType: VisibilityType;
       webSearchEnabled: boolean;
       spotifyToolGroups: SpotifyToolGroupId[];
@@ -428,14 +429,6 @@ export async function POST(request: Request) {
         // Determine which tools to activate
         type ToolName = keyof typeof tools;
         let activeTools: ToolName[] | undefined;
-
-        // Models that don't support tools (free models and reasoning models)
-        const modelsWithoutToolSupport = [
-          "chat-model-reasoning",
-          "gemma-3-27b-free",
-          "glm-4.5-air-free",
-          "gpt-oss-20b-free",
-        ];
 
         const baseActiveTools: ToolName[] = [
           "getWeather",

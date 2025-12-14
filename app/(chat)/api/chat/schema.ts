@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { chatModelIdSchema } from "@/lib/ai/models.config";
 import {
   type GoogleToolGroupId,
   googleToolGroupIds,
@@ -35,24 +36,7 @@ export const postRequestBodySchema = z.object({
     role: z.enum(["user"]),
     parts: z.array(partSchema),
   }),
-  selectedChatModel: z.enum([
-    "claude-haiku-4.5",
-    "claude-sonnet-4.5",
-    "claude-opus-4.5",
-    "claude-sonnet-4.5-reasoning",
-    "claude-opus-4.5-reasoning",
-    "gpt-oss-20b-free",
-    "gpt-5-nano",
-    "gpt-5.1-chat",
-    "gpt-5.1",
-    "gpt-5.1-codex-mini",
-    "gpt-5.1-codex",
-    "gpt-5.1-reasoning",
-    "gemma-3-27b-free",
-    "glm-4.5-air-free",
-    "mistral-small-3.1-24b-instruct-free",
-    "mistral-medium-3.1",
-  ]),
+  selectedChatModel: chatModelIdSchema,
   selectedVisibilityType: z.enum(["public", "private"]),
   webSearchEnabled: z.boolean().optional().default(false),
   spotifyToolGroups: z

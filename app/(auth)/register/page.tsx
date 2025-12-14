@@ -1,18 +1,10 @@
-// REGISTRATION DISABLED - Code preserved below for future reference
-// To re-enable: uncomment the code below and comment out the notFound() call
+// Registration is controlled by NEXT_PUBLIC_REGISTRATION_ENABLED env variable
+// Set NEXT_PUBLIC_REGISTRATION_ENABLED=true in .env to enable registration
 
-import { notFound } from "next/navigation";
-
-export default function Page() {
-  notFound();
-}
-
-/*
 "use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { useActionState, useEffect, useState } from "react";
 import { AuthForm } from "@/components/auth-form";
 import { SubmitButton } from "@/components/submit-button";
@@ -32,8 +24,6 @@ export default function Page() {
     }
   );
 
-  const { update: updateSession } = useSession();
-
   useEffect(() => {
     if (state.status === "user_exists") {
       toast({ type: "error", description: "Account already exists!" });
@@ -44,14 +34,19 @@ export default function Page() {
         type: "error",
         description: "Failed validating your submission!",
       });
+    } else if (state.status === "registration_disabled") {
+      toast({
+        type: "error",
+        description: "Registration is currently disabled.",
+      });
+      router.push("/login");
     } else if (state.status === "success") {
       toast({ type: "success", description: "Account created successfully!" });
 
       setIsSuccessful(true);
-      updateSession();
-      router.refresh();
+      router.push("/");
     }
-  }, [state.status]);
+  }, [state.status, router]);
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get("email") as string);
@@ -84,4 +79,3 @@ export default function Page() {
     </div>
   );
 }
-*/

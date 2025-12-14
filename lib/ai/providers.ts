@@ -5,40 +5,16 @@ import {
   wrapLanguageModel,
 } from "ai";
 import { isTestEnvironment } from "../constants";
+import {
+  modelIdToOpenRouter,
+  modelsConfig,
+  reasoningModelIds,
+  specialModels,
+} from "./models.config";
 
 const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY,
 });
-
-// Model ID to OpenRouter model mapping
-const modelIdToOpenRouter: Record<string, string> = {
-  "gpt-oss-20b-free": "openai/gpt-oss-20b:free",
-  "gpt-5-nano": "openai/gpt-5-nano",
-  "gpt-5.1": "openai/gpt-5.1",
-  "gpt-5.1-chat": "openai/gpt-5.1-chat",
-  "gpt-5.1-codex": "openai/gpt-5.1-codex",
-  "gpt-5.1-codex-mini": "openai/gpt-5.1-codex-mini",
-  "claude-sonnet-4.5": "anthropic/claude-sonnet-4.5",
-  "claude-opus-4.5": "anthropic/claude-opus-4.5",
-  "claude-haiku-4.5": "anthropic/claude-haiku-4.5",
-  "gpt-5.1-reasoning": "openai/gpt-5.1",
-  "claude-opus-4.5-reasoning": "anthropic/claude-opus-4.5",
-  "claude-sonnet-4.5-reasoning": "anthropic/claude-sonnet-4.5",
-  "gemma-3-27b-free": "google/gemma-3-27b-it:free",
-  "glm-4.5-air-free": "z-ai/glm-4.5-air:free",
-  "mistral-small-3.1-24b-instruct-free":
-    "mistralai/mistral-small-3.1-24b-instruct:free",
-  "mistral-medium-3.1": "mistralai/mistral-medium-3.1",
-  "title-model": "openai/gpt-5-nano",
-  "artifact-model": "anthropic/claude-haiku-4.5",
-};
-
-// Reasoning models that need middleware
-const reasoningModels = [
-  "gpt-5.1-reasoning",
-  "claude-opus-4.5-reasoning",
-  "claude-sonnet-4.5-reasoning",
-];
 
 /**
  * Web search plugin configuration
@@ -78,7 +54,7 @@ export function getLanguageModel(modelId: string, webSearchEnabled = false) {
     throw new Error(`Unknown model ID: ${modelId}`);
   }
 
-  const isReasoningModel = reasoningModels.includes(modelId);
+  const isReasoningModel = reasoningModelIds.includes(modelId);
 
   // Create base model with optional web search
   const baseModel = openrouter(
@@ -95,6 +71,31 @@ export function getLanguageModel(modelId: string, webSearchEnabled = false) {
   }
 
   return baseModel;
+}
+
+/**
+ * Build the language models object dynamically from config
+ */
+function buildLanguageModels() {
+  const models: Record<string, any> = {};
+
+  for (const config of modelsConfig) {
+    if (config.isReasoning) {
+      models[config.id] = wrapLanguageModel({
+        model: openrouter(config.openRouterId),
+        middleware: extractReasoningMiddleware({ tagName: "think" }),
+      });
+    } else {
+      models[config.id] = openrouter(config.openRouterId);
+    }
+  }
+
+  // Add special purpose models
+  for (const [id, openRouterId] of Object.entries(specialModels)) {
+    models[id] = openrouter(openRouterId);
+  }
+
+  return models;
 }
 
 export const myProvider = isTestEnvironment
@@ -115,48 +116,5 @@ export const myProvider = isTestEnvironment
       });
     })()
   : customProvider({
-      languageModels: {
-        // OpenAI models
-        "gpt-oss-20b-free": openrouter("openai/gpt-oss-20b:free"),
-        "gpt-5-nano": openrouter("openai/gpt-5-nano"),
-        "gpt-5.1": openrouter("openai/gpt-5.1"),
-        "gpt-5.1-chat": openrouter("openai/gpt-5.1-chat"),
-        "gpt-5.1-codex": openrouter("openai/gpt-5.1-codex"),
-        "gpt-5.1-codex-mini": openrouter("openai/gpt-5.1-codex-mini"),
-
-        // Anthropic Claude models
-        "claude-sonnet-4.5": openrouter("anthropic/claude-sonnet-4.5"),
-        "claude-opus-4.5": openrouter("anthropic/claude-opus-4.5"),
-        "claude-haiku-4.5": openrouter("anthropic/claude-haiku-4.5"),
-
-        // Reasoning-enabled variants
-        "gpt-5.1-reasoning": wrapLanguageModel({
-          model: openrouter("openai/gpt-5.1"),
-          middleware: extractReasoningMiddleware({ tagName: "think" }),
-        }),
-        "claude-opus-4.5-reasoning": wrapLanguageModel({
-          model: openrouter("anthropic/claude-opus-4.5"),
-          middleware: extractReasoningMiddleware({ tagName: "think" }),
-        }),
-        "claude-sonnet-4.5-reasoning": wrapLanguageModel({
-          model: openrouter("anthropic/claude-sonnet-4.5"),
-          middleware: extractReasoningMiddleware({ tagName: "think" }),
-        }),
-
-        // Google models
-        "gemma-3-27b-free": openrouter("google/gemma-3-27b-it:free"),
-
-        // Z-AI models
-        "glm-4.5-air-free": openrouter("z-ai/glm-4.5-air:free"),
-
-        // Mistral models
-        "mistral-small-3.1-24b-instruct-free": openrouter(
-          "mistralai/mistral-small-3.1-24b-instruct:free",
-        ),
-        "mistral-medium-3.1": openrouter("mistralai/mistral-medium-3.1"),
-
-        // Special purpose models
-        "title-model": openrouter("openai/gpt-5-nano"),
-        "artifact-model": openrouter("anthropic/claude-haiku-4.5"),
-      },
+      languageModels: buildLanguageModels(),
     });

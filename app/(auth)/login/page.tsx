@@ -1,8 +1,7 @@
 "use client";
 
-// import Link from "next/link"; // Needed if registration link is re-enabled
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { useActionState, useEffect, useState } from "react";
 
 import { AuthForm } from "@/components/auth-form";
@@ -23,8 +22,6 @@ export default function Page() {
     },
   );
 
-  const { update: updateSession } = useSession();
-
   useEffect(() => {
     if (state.status === "failed") {
       toast({
@@ -38,10 +35,9 @@ export default function Page() {
       });
     } else if (state.status === "success") {
       setIsSuccessful(true);
-      updateSession();
-      router.refresh();
+      router.push("/");
     }
-  }, [state.status, router.refresh, updateSession]);
+  }, [state.status, router]);
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get("email") as string);
@@ -59,19 +55,18 @@ export default function Page() {
         </div>
         <AuthForm action={handleSubmit} defaultEmail={email}>
           <SubmitButton isSuccessful={isSuccessful}>Sign in</SubmitButton>
-          {/* REGISTRATION LINK DISABLED - Preserved for future reference */}
-          {/*
-          <p className="mt-4 text-center text-gray-600 text-sm dark:text-zinc-400">
-            {"Don't have an account? "}
-            <Link
-              className="font-semibold text-gray-800 hover:underline dark:text-zinc-200"
-              href="/register"
-            >
-              Sign up
-            </Link>
-            {" for free."}
-          </p>
-          */}
+          {process.env.NEXT_PUBLIC_REGISTRATION_ENABLED === "true" && (
+            <p className="mt-4 text-center text-gray-600 text-sm dark:text-zinc-400">
+              {"Don't have an account? "}
+              <Link
+                className="font-semibold text-gray-800 hover:underline dark:text-zinc-200"
+                href="/register"
+              >
+                Sign up
+              </Link>
+              {" for free."}
+            </p>
+          )}
         </AuthForm>
       </div>
     </div>
