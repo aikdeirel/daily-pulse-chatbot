@@ -15,8 +15,9 @@ type SuggestedActionsProps = {
 
 function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
   const suggestedActions = [
-    "Do you have any recommendations for what music I should listen to next?",
+    "Any music recommendations for me?",
     "What is the weather like today?",
+    "What is on the news today in my area?",
   ];
 
   return (
