@@ -9,6 +9,7 @@ triggers:
   - tldr news
   - what's this article about
   - fass den artikel zusammen
+  - fasse mir den Artikel bitte [kurz] zusammen 
 ---
 
 # News Summary Skill
