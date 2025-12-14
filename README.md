@@ -1,6 +1,6 @@
 <div align="center">
   <img alt="Daily Pulse AI Chatbot" src="public/images/readme-title.jpeg" width="100%">
-  <h1>✨ Daily Pulse</h1>
+  <h1>✨ Daily Pulse ✨</h1>
   <p><em>Your personal AI assistant for daily tasks, music, research and creative work</em></p>
   
   [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
