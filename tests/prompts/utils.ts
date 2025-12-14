@@ -159,6 +159,17 @@ export const getResponseChunksByPrompt = (
     ];
   }
 
+  if (compareMessages(recentMessage, TEST_PROMPTS.USER_WEATHER_TODAY)) {
+    return [
+      ...textToDeltas("Today's weather is sunny with a high of 22°C."),
+      {
+        type: "finish",
+        finishReason: "stop",
+        usage: { inputTokens: 3, outputTokens: 10, totalTokens: 13 },
+      },
+    ];
+  }
+
   if (compareMessages(recentMessage, TEST_PROMPTS.USER_IMAGE_ATTACHMENT)) {
     return [
       ...textToDeltas("This painting is by Monet!"),
