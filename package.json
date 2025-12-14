@@ -1,7 +1,6 @@
 {
   "name": "daily-pulse",
   "version": "3.1.0",
-  "private": true,
   "scripts": {
     "dev": "next dev --turbo",
     "build": "tsx lib/db/migrate && next build",
