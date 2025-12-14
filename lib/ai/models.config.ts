@@ -40,7 +40,7 @@ export const modelsConfig: ModelConfig[] = [
       supportsTools: true,
       isReasoning: false,
       isFree: false,
-      availableFor: ["guest", "regular"],
+      availableFor: ["regular"],
     },
   {
     id: "mistral-small-3.1-24b-instruct-free",
@@ -62,7 +62,7 @@ export const modelsConfig: ModelConfig[] = [
     supportsTools: true,
     isReasoning: false,
     isFree: false,
-    availableFor: ["guest", "regular"],
+    availableFor: ["regular"],
   },
   {
     id: "claude-sonnet-4.5",
@@ -72,7 +72,7 @@ export const modelsConfig: ModelConfig[] = [
     supportsTools: true,
     isReasoning: false,
     isFree: false,
-    availableFor: ["guest", "regular"],
+    availableFor: ["regular"],
   },
   {
     id: "claude-opus-4.5",
@@ -82,7 +82,7 @@ export const modelsConfig: ModelConfig[] = [
     supportsTools: true,
     isReasoning: false,
     isFree: false,
-    availableFor: ["guest", "regular"],
+    availableFor: ["regular"],
   },
   {
     id: "claude-sonnet-4.5-reasoning",
@@ -92,7 +92,7 @@ export const modelsConfig: ModelConfig[] = [
     supportsTools: true,
     isReasoning: true,
     isFree: false,
-    availableFor: ["guest", "regular"],
+    availableFor: ["regular"],
   },
   {
     id: "claude-opus-4.5-reasoning",
@@ -102,7 +102,7 @@ export const modelsConfig: ModelConfig[] = [
     supportsTools: true,
     isReasoning: true,
     isFree: false,
-    availableFor: ["guest", "regular"],
+    availableFor: ["regular"],
   },
 
   // OpenAI GPT models
@@ -114,7 +114,7 @@ export const modelsConfig: ModelConfig[] = [
     supportsTools: true,
     isReasoning: false,
     isFree: false,
-    availableFor: ["guest", "regular"],
+    availableFor: ["regular"],
   },
   {
     id: "gpt-5.1-chat",
@@ -124,7 +124,7 @@ export const modelsConfig: ModelConfig[] = [
     supportsTools: true,
     isReasoning: false,
     isFree: false,
-    availableFor: ["guest", "regular"],
+    availableFor: ["regular"],
   },
 ];
 
