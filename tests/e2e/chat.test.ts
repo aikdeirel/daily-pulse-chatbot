@@ -41,7 +41,7 @@ test.describe("Chat activity", () => {
       throw new Error("Assistant message not found");
     }
     expect(assistantMessage.content).toContain(
-      "With Next.js, you can ship fast!",
+      "Today's weather is sunny with a high of 22°C.",
     );
   });
 
