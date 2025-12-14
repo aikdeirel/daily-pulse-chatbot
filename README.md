@@ -8,6 +8,20 @@
   [![React](https://img.shields.io/badge/React-19-61dafb)](https://react.dev)
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)](https://typescriptlang.org)
   [![Tests](https://img.shields.io/badge/tests-Playwright-green)](https://playwright.dev)
+
+  <br>
+
+### 🌤️ Smart Weather Insights
+
+  <img src="public/images/weather-insights.jpg" width="400" alt="Weather insights">
+
+### 🎵 AI-Powered Music Discovery
+
+  <img src="public/images/music-discovery.jpg" width="400" alt="Music discovery">
+
+### And more...
+
+  <img src="public/images/news-research.jpg" width="400" alt="More features">
 </div>
 
 ---
