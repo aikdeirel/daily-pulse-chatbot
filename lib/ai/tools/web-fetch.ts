@@ -9,6 +9,17 @@ const turndownService = new TurndownService({
   codeBlockStyle: "fenced",
 });
 
+// Remove unwanted elements as defense-in-depth
+turndownService
+  .remove("script")
+  .remove("style")
+  .remove("nav")
+  .remove("footer")
+  .remove("header")
+  .remove("aside")
+  .remove("iframe")
+  .remove("noscript");
+
 // Content extraction selectors in priority order
 const CONTENT_SELECTORS = [
   "main",
@@ -118,8 +129,7 @@ export const webFetch = tool({
       // Detect if content is HTML more precisely
       const isHtml =
         contentType.includes("text/html") ||
-        trimmedText.startsWith("<!DOCTYPE") ||
-        trimmedText.startsWith("<!doctype") ||
+        /^\s*<!DOCTYPE/i.test(trimmedText) ||
         /^\s*<html[\s>]/i.test(trimmedText);
 
       // Convert HTML to markdown if detected
