@@ -34,7 +34,7 @@ function htmlToCleanMarkdown(html: string): string {
   // Try to extract main content using priority selectors
   let content = "";
   for (const selector of CONTENT_SELECTORS) {
-    content = $(selector).html() || "";
+    content = $(selector).first().html() || "";
     if (content.trim()) {
       break;
     }
@@ -113,13 +113,14 @@ export const webFetch = tool({
       }
 
       const text = await response.text();
+      const trimmedText = text.trim();
 
       // Detect if content is HTML more precisely
       const isHtml =
         contentType.includes("text/html") ||
-        text.trim().startsWith("<!DOCTYPE") ||
-        text.trim().startsWith("<!doctype") ||
-        /^\s*<html[\s>]/i.test(text);
+        trimmedText.startsWith("<!DOCTYPE") ||
+        trimmedText.startsWith("<!doctype") ||
+        /^\s*<html[\s>]/i.test(trimmedText);
 
       // Convert HTML to markdown if detected
       const processedText = isHtml ? htmlToCleanMarkdown(text) : text;
