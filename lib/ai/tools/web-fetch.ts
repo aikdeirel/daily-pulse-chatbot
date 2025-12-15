@@ -9,6 +9,15 @@ const turndownService = new TurndownService({
   codeBlockStyle: "fenced",
 });
 
+// Content extraction selectors in priority order
+const CONTENT_SELECTORS = [
+  "main",
+  "article",
+  '[role="main"]',
+  ".content",
+  "#content",
+];
+
 /**
  * Converts HTML to clean markdown by removing unnecessary elements and extracting main content
  */
@@ -22,21 +31,27 @@ function htmlToCleanMarkdown(html: string): string {
   $('[role="navigation"], [role="banner"], [role="contentinfo"]').remove();
   $(".ads, .sidebar, .menu, .nav").remove();
 
-  // Try to extract main content
-  let content =
-    $("main").html() ||
-    $("article").html() ||
-    $('[role="main"]').html() ||
-    $(".content").html() ||
-    $("#content").html();
+  // Try to extract main content using priority selectors
+  let content = "";
+  for (const selector of CONTENT_SELECTORS) {
+    content = $(selector).html() || "";
+    if (content.trim()) {
+      break;
+    }
+  }
 
   // Fall back to body if no main content found
-  if (!content) {
-    content = $("body").html();
+  if (!content.trim()) {
+    content = $("body").html() || "";
+  }
+
+  // Return empty string if no meaningful content
+  if (!content.trim()) {
+    return "";
   }
 
   // Convert to markdown
-  return turndownService.turndown(content || "");
+  return turndownService.turndown(content);
 }
 
 export const webFetch = tool({
@@ -99,11 +114,12 @@ export const webFetch = tool({
 
       const text = await response.text();
 
-      // Detect if content is HTML
+      // Detect if content is HTML more precisely
       const isHtml =
         contentType.includes("text/html") ||
-        text.trim().startsWith("<!") ||
-        text.includes("<html");
+        text.trim().startsWith("<!DOCTYPE") ||
+        text.trim().startsWith("<!doctype") ||
+        /^\s*<html[\s>]/i.test(text);
 
       // Convert HTML to markdown if detected
       const processedText = isHtml ? htmlToCleanMarkdown(text) : text;
