@@ -9,18 +9,6 @@ const turndownService = new TurndownService({
   codeBlockStyle: "fenced",
 });
 
-// Remove elements that should be ignored
-turndownService.remove([
-  "script",
-  "style",
-  "nav",
-  "footer",
-  "header",
-  "aside",
-  "iframe",
-  "noscript",
-]);
-
 /**
  * Converts HTML to clean markdown by removing unnecessary elements and extracting main content
  */
