@@ -1,9 +1,59 @@
 import { tool } from "ai";
+import * as cheerio from "cheerio";
+import TurndownService from "turndown";
 import { z } from "zod";
+
+// Initialize TurndownService with configuration
+const turndownService = new TurndownService({
+  headingStyle: "atx",
+  codeBlockStyle: "fenced",
+});
+
+// Remove elements that should be ignored
+turndownService.remove([
+  "script",
+  "style",
+  "nav",
+  "footer",
+  "header",
+  "aside",
+  "iframe",
+  "noscript",
+]);
+
+/**
+ * Converts HTML to clean markdown by removing unnecessary elements and extracting main content
+ */
+function htmlToCleanMarkdown(html: string): string {
+  const $ = cheerio.load(html);
+
+  // Remove unwanted elements
+  $(
+    "script, style, nav, footer, header, aside, iframe, noscript, svg, form, button, input",
+  ).remove();
+  $('[role="navigation"], [role="banner"], [role="contentinfo"]').remove();
+  $(".ads, .sidebar, .menu, .nav").remove();
+
+  // Try to extract main content
+  let content =
+    $("main").html() ||
+    $("article").html() ||
+    $('[role="main"]').html() ||
+    $(".content").html() ||
+    $("#content").html();
+
+  // Fall back to body if no main content found
+  if (!content) {
+    content = $("body").html();
+  }
+
+  // Convert to markdown
+  return turndownService.turndown(content || "");
+}
 
 export const webFetch = tool({
   description:
-    "Fetch content directly from a COMPLETE, SPECIFIC URL (API endpoint, specific webpage, or document). Requires the exact full URL to be known in advance. Example: 'https://api.example.com/users/123'. Cannot discover URLs or search the web.",
+    "Fetch content directly from a COMPLETE, SPECIFIC URL (API endpoint, specific webpage, or document). Requires the exact full URL to be known in advance. Example: 'https://api.example.com/users/123'. Cannot discover URLs or search the web. HTML responses are automatically converted to clean markdown.",
   inputSchema: z.object({
     url: z.string().url().describe("The URL to fetch content from"),
     responseType: z
@@ -60,11 +110,21 @@ export const webFetch = tool({
       }
 
       const text = await response.text();
-      // Limit text response to prevent context overflow
+
+      // Detect if content is HTML
+      const isHtml =
+        contentType.includes("text/html") ||
+        text.trim().startsWith("<!") ||
+        text.includes("<html");
+
+      // Convert HTML to markdown if detected
+      const processedText = isHtml ? htmlToCleanMarkdown(text) : text;
+
+      // Limit text response to prevent context overflow (markdown is more compact)
       const truncatedText =
-        text.length > 50000
-          ? `${text.substring(0, 50000)}\n...[truncated]`
-          : text;
+        processedText.length > 15000
+          ? `${processedText.substring(0, 15000)}\n...[truncated]`
+          : processedText;
 
       return {
         success: true,
