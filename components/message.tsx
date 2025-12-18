@@ -98,6 +98,7 @@ const PurePreviewMessage = ({
     [],
   );
 
+  // Handle backward compatibility for older message formats
   const attachmentsFromMessage = message.parts.filter(
     (part) => part.type === "file",
   );
@@ -189,6 +190,43 @@ const PurePreviewMessage = ({
             {message.parts?.map((part, index) => {
               const { type } = part;
               const key = `message-${message.id}-part-${index}`;
+
+              // Debug: Log part structure for tool parts
+              if (type && (type.startsWith('tool-') || type === 'tool-call' || type === 'tool-result')) {
+                console.log('Tool part structure:', {
+                  messageId: message.id,
+                  partIndex: index,
+                  partType: type,
+                  partData: part,
+                  messageCreatedAt: message.metadata?.createdAt
+                });
+              }
+
+              // Backward compatibility: Handle legacy tool call format
+              if (type === 'tool-call' && !part.toolCallId) {
+                console.warn('Legacy tool-call format detected, attempting fallback rendering');
+                return (
+                  <div key={key} className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-700 dark:bg-amber-950/50">
+                    <strong>Tool Execution (Legacy Format):</strong>
+                    <pre className="mt-2 text-xs overflow-auto whitespace-pre-wrap break-words">
+                      {JSON.stringify(part, null, 2)}
+                    </pre>
+                  </div>
+                );
+              }
+
+              // Backward compatibility: Handle legacy tool result format
+              if (type === 'tool-result' && !part.toolCallId) {
+                console.warn('Legacy tool-result format detected, attempting fallback rendering');
+                return (
+                  <div key={key} className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-700 dark:bg-emerald-950/50">
+                    <strong>Tool Result (Legacy Format):</strong>
+                    <pre className="mt-2 text-xs overflow-auto whitespace-pre-wrap break-words">
+                      {JSON.stringify(part, null, 2)}
+                    </pre>
+                  </div>
+                );
+              }
 
               // Skip source-url parts - they're rendered in WebSearchSources
               const p = part as Record<string, unknown>;

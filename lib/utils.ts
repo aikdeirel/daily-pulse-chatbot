@@ -104,14 +104,31 @@ export function sanitizeText(text: string) {
 }
 
 export function convertToUIMessages(messages: DBMessage[]): ChatMessage[] {
-  return messages.map((message) => ({
-    id: message.id,
-    role: message.role as "user" | "assistant" | "system",
-    parts: message.parts as UIMessagePart<CustomUIDataTypes, ChatTools>[],
-    metadata: {
-      createdAt: formatISO(message.createdAt),
-    },
-  }));
+  return messages.map((message) => {
+    // Debug: Log message structure during conversion
+    const hasToolParts = message.parts.some((part: any) =>
+      part.type && (part.type.startsWith('tool-') || part.type === 'tool-call' || part.type === 'tool-result')
+    );
+    
+    if (hasToolParts) {
+      console.log('Converting message with tool parts:', {
+        messageId: message.id,
+        role: message.role,
+        createdAt: message.createdAt,
+        partsCount: message.parts.length,
+        partsPreview: message.parts.slice(0, 3).map(p => ({ type: p.type, hasToolCallId: !!p.toolCallId }))
+      });
+    }
+    
+    return {
+      id: message.id,
+      role: message.role as "user" | "assistant" | "system",
+      parts: message.parts as UIMessagePart<CustomUIDataTypes, ChatTools>[],
+      metadata: {
+        createdAt: formatISO(message.createdAt),
+      },
+    };
+  });
 }
 
 export function getTextFromMessage(message: ChatMessage | UIMessage): string {
