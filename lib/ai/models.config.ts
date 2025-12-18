@@ -31,17 +31,17 @@ export type ModelConfig = {
  * Add new models here - everything else is derived automatically.
  */
 export const modelsConfig: ModelConfig[] = [
-    // Mistral models
-    {
-      id: "mistral-medium-3.1",
-      name: "Mistral Medium 3.1",
-      description: "Medium-sized model for balanced performance (default)",
-      openRouterId: "mistralai/mistral-medium-3.1",
-      supportsTools: true,
-      isReasoning: false,
-      isFree: false,
-      availableFor: ["regular"],
-    },
+  // Mistral models
+  {
+    id: "mistral-medium-3.1",
+    name: "Mistral Medium 3.1",
+    description: "Medium-sized model for balanced performance (default)",
+    openRouterId: "mistralai/mistral-medium-3.1",
+    supportsTools: true,
+    isReasoning: false,
+    isFree: false,
+    availableFor: ["regular"],
+  },
   {
     id: "mistral-small-3.1-24b-instruct-free",
     name: "Mistral Small 3.1 24B Instruct",
@@ -123,6 +123,18 @@ export const modelsConfig: ModelConfig[] = [
     openRouterId: "openai/gpt-5.1-chat",
     supportsTools: true,
     isReasoning: false,
+    isFree: false,
+    availableFor: ["regular"],
+  },
+
+  // Google Gemini models
+  {
+    id: "gemini-3-flash-preview",
+    name: "Gemini 3 Flash Preview",
+    description: "Fast and efficient Google model with preview features",
+    openRouterId: "google/gemini-3-flash-preview",
+    supportsTools: true,
+    isReasoning: true,
     isFree: false,
     availableFor: ["regular"],
   },
