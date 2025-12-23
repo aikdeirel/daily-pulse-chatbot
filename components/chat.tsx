@@ -8,7 +8,7 @@ import useSWR, { useSWRConfig } from "swr";
 import { unstable_serialize } from "swr/infinite";
 import { useLocalStorage } from "usehooks-ts";
 import { ChatHeader } from "@/components/chat-header";
-import { useArtifactSelector } from "@/hooks/use-artifact";
+import { useArtifact, useArtifactSelector } from "@/hooks/use-artifact";
 import { useAutoResume } from "@/hooks/use-auto-resume";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
 import {
@@ -66,6 +66,15 @@ export function Chat({
   const { mutate } = useSWRConfig();
   const { setDataStream } = useDataStream();
   const { setTitleGenerating, setTitle } = useChatTitle();
+  const { setArtifact } = useArtifact();
+
+  // Reset artifact visibility on component mount to prevent duplicate inputs after reload
+  useEffect(() => {
+    setArtifact((current) => ({
+      ...current,
+      isVisible: false,
+    }));
+  }, [setArtifact]);
 
   // Use the context-based title state for this chat
   const { title: currentTitle, isGenerating: isTitleGenerating } =

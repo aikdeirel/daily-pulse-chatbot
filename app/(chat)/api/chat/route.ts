@@ -571,8 +571,28 @@ export async function POST(request: Request) {
         return generateUUID();
       },
       onFinish: async ({ messages }) => {
-        // Filter out the assistant message we're already saving progressively
-        // and only save other messages (like tool results, etc.)
+        // Update the assistant message with complete parts (including tool invocations)
+        // The messages array here contains UI messages with all parts
+        const completeAssistantMessage = messages.find(
+          (msg) => msg.role === "assistant" && msg.id === assistantMessageId,
+        );
+
+        if (completeAssistantMessage?.parts && messageSaved) {
+          // Update the assistant message with complete parts including tool invocations
+          try {
+            await updateMessageById({
+              id: assistantMessageId,
+              parts: completeAssistantMessage.parts,
+            });
+          } catch (error) {
+            console.error(
+              "Failed to update assistant message with tool parts:",
+              error,
+            );
+          }
+        }
+
+        // Save other messages (like tool results, etc.)
         const messagesToSave = messages.filter(
           (msg) => !(msg.role === "assistant" && msg.id === assistantMessageId),
         );

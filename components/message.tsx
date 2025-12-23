@@ -20,9 +20,10 @@ import {
 } from "@/lib/tools/spotify/ui-config";
 import type { ChatMessage } from "@/lib/types";
 import { cn, sanitizeText } from "@/lib/utils";
+import type { ArtifactKind } from "./artifact";
 import { useDataStream } from "./data-stream-provider";
 import { DocumentToolResult } from "./document";
-import { DocumentPreview } from "./document-preview";
+import { ArtifactCard } from "./elements/artifact-card";
 import { MessageContent } from "./elements/message";
 import { Response } from "./elements/response";
 import {
@@ -312,7 +313,7 @@ const PurePreviewMessage = ({
                 const { toolCallId, state } = basicPart;
                 const action = basicPart.input?.action as string | undefined;
 
-                // Special handling for createDocument and updateDocument - they don't use Tool wrapper
+                // Special handling for createDocument and updateDocument
                 if (type === "tool-createDocument") {
                   if (basicPart.output && "error" in basicPart.output) {
                     return (
@@ -326,13 +327,31 @@ const PurePreviewMessage = ({
                     );
                   }
 
-                  return (
-                    <DocumentPreview
-                      isReadonly={isReadonly}
-                      key={toolCallId}
-                      result={basicPart.output}
-                    />
-                  );
+                  // Show ArtifactCard when we have output with id/title/kind
+                  // This ensures persistence after page reload
+                  if (
+                    basicPart.output &&
+                    "id" in basicPart.output &&
+                    "title" in basicPart.output &&
+                    "kind" in basicPart.output
+                  ) {
+                    return (
+                      <ArtifactCard
+                        id={basicPart.output.id as string}
+                        title={basicPart.output.title as string}
+                        kind={basicPart.output.kind as ArtifactKind}
+                        createdAt={
+                          new Date(message.metadata?.createdAt ?? Date.now())
+                        }
+                        isReadonly={isReadonly}
+                        action="created"
+                        key={toolCallId}
+                      />
+                    );
+                  }
+
+                  // During streaming or if output is incomplete, show nothing
+                  return null;
                 }
 
                 if (type === "tool-updateDocument") {
@@ -348,15 +367,31 @@ const PurePreviewMessage = ({
                     );
                   }
 
-                  return (
-                    <div className="relative" key={toolCallId}>
-                      <DocumentPreview
-                        args={{ ...basicPart.output, isUpdate: true }}
+                  // Show ArtifactCard when we have output with id/title/kind
+                  // This ensures persistence after page reload
+                  if (
+                    basicPart.output &&
+                    "id" in basicPart.output &&
+                    "title" in basicPart.output &&
+                    "kind" in basicPart.output
+                  ) {
+                    return (
+                      <ArtifactCard
+                        id={basicPart.output.id as string}
+                        title={basicPart.output.title as string}
+                        kind={basicPart.output.kind as ArtifactKind}
+                        createdAt={
+                          new Date(message.metadata?.createdAt ?? Date.now())
+                        }
                         isReadonly={isReadonly}
-                        result={basicPart.output}
+                        action="updated"
+                        key={toolCallId}
                       />
-                    </div>
-                  );
+                    );
+                  }
+
+                  // During streaming or if output is incomplete, show nothing
+                  return null;
                 }
 
                 // Get title, description and defaultOpen from centralized config
