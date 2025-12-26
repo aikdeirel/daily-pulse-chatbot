@@ -783,7 +783,7 @@ The search tool returns formatted results that the LLM can naturally reference:
   results: [
     {
       content: "Last week we discussed setting up a home server...",
-      conversationId: "abc-123",
+      chatId: "abc-123",
       timestamp: "2024-01-10T14:30:00Z",
       role: "assistant",
       relevanceScore: 0.89
