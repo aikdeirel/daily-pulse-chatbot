@@ -3,7 +3,7 @@ import {
   extractTextFromParts,
   generateEmbedding,
 } from "@/lib/services/embedding";
-import { upsertMessageVector } from "@/lib/services/qdrant";
+import { ensureCollection, upsertMessageVector } from "@/lib/services/qdrant";
 
 const QUEUE_NAME = "message-indexing-queue";
 
@@ -45,6 +45,9 @@ async function processIndexingJob(job: IndexingJob): Promise<void> {
   if (!text || text.length < 10) {
     return;
   }
+
+  // Ensure collection exists before upserting
+  await ensureCollection();
 
   const embedding = await generateEmbedding(text);
 

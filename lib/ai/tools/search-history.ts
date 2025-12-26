@@ -1,7 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { generateEmbedding } from "@/lib/services/embedding";
-import { searchSimilar } from "@/lib/services/qdrant";
+import { ensureCollection, searchSimilar } from "@/lib/services/qdrant";
 
 interface SearchHistoryProps {
   userId: string;
@@ -43,6 +43,9 @@ to recall previous information. Results include conversation snippets with relev
     }),
     execute: async ({ query, limit = 5, timeRange, chatId }) => {
       try {
+        // Ensure collection exists before searching
+        await ensureCollection();
+
         // Generate embedding for query
         const queryEmbedding = await generateEmbedding(query);
 
