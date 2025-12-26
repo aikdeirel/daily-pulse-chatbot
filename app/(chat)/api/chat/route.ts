@@ -81,7 +81,11 @@ import { ChatSDKError } from "@/lib/errors";
 import type { ChatMessage, ChatTools, CustomUIDataTypes } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { convertToUIMessages, generateUUID } from "@/lib/utils";
-import { queueMessageForIndexing } from "@/lib/workers/message-indexer";
+import {
+  indexMessageSync,
+  isAsyncIndexingEnabled,
+  queueMessageForIndexing,
+} from "@/lib/workers/message-indexer";
 import { generateTitleFromUserMessage } from "../../actions";
 import { type PostRequestBody, postRequestBodySchema } from "./schema";
 
@@ -242,15 +246,24 @@ export async function POST(request: Request) {
       ],
     });
 
-    // Queue user message for vector indexing (fire and forget)
+    // Index user message for vector search (sync by default, async with worker if VECTOR_INDEX_MODE=async)
     if (process.env.QDRANT_URL) {
-      queueMessageForIndexing({
+      const indexJob = {
         messageId: message.id,
         chatId: id,
         userId: session.user.id,
-        role: "user",
+        role: "user" as const,
         parts: message.parts,
-      }).catch((err) => console.warn("Vector indexing queue failed:", err));
+      };
+      if (isAsyncIndexingEnabled()) {
+        queueMessageForIndexing(indexJob).catch((err) =>
+          console.warn("Vector indexing queue failed:", err),
+        );
+      } else {
+        indexMessageSync(indexJob).catch((err) =>
+          console.warn("Vector indexing failed:", err),
+        );
+      }
     }
 
     // Update the chat's updatedAt timestamp
@@ -523,21 +536,28 @@ export async function POST(request: Request) {
             await saveAssistantMessage(true);
             finalSaveCompleted = true; // Prevent duplicate save in after() hook
 
-            // Queue assistant message for vector indexing (fire and forget)
+            // Index assistant message for vector search (sync by default, async with worker if VECTOR_INDEX_MODE=async)
             if (process.env.QDRANT_URL && currentTextContent) {
               const parts: UIMessagePart<CustomUIDataTypes, ChatTools>[] = [];
               if (currentTextContent) {
                 parts.push({ type: "text", text: currentTextContent });
               }
-              queueMessageForIndexing({
+              const indexJob = {
                 messageId: assistantMessageId,
                 chatId: id,
                 userId: session.user.id,
-                role: "assistant",
+                role: "assistant" as const,
                 parts,
-              }).catch((err) =>
-                console.warn("Vector indexing queue failed:", err),
-              );
+              };
+              if (isAsyncIndexingEnabled()) {
+                queueMessageForIndexing(indexJob).catch((err) =>
+                  console.warn("Vector indexing queue failed:", err),
+                );
+              } else {
+                indexMessageSync(indexJob).catch((err) =>
+                  console.warn("Vector indexing failed:", err),
+                );
+              }
             }
 
             // Debug: log sources from OpenRouter

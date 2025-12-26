@@ -27,12 +27,29 @@ async function getRedisClient() {
 }
 
 /**
- * Queue a message for async vector indexing
- * Called from chat route after message save
+ * Check if async worker mode is enabled via env variable
+ * VECTOR_INDEX_MODE=async uses Redis queue + worker
+ * Default (not set or any other value) uses synchronous indexing
+ */
+export function isAsyncIndexingEnabled(): boolean {
+  return process.env.VECTOR_INDEX_MODE === "async";
+}
+
+/**
+ * Queue a message for async vector indexing (worker mode)
+ * Called from chat route after message save when VECTOR_INDEX_MODE=async
  */
 export async function queueMessageForIndexing(job: IndexingJob): Promise<void> {
   const redis = await getRedisClient();
   await redis.lPush(QUEUE_NAME, JSON.stringify(job));
+}
+
+/**
+ * Index a message synchronously (serverless mode - default)
+ * Called from chat route when VECTOR_INDEX_MODE is not set or not "async"
+ */
+export async function indexMessageSync(job: IndexingJob): Promise<void> {
+  await processIndexingJob(job);
 }
 
 /**
