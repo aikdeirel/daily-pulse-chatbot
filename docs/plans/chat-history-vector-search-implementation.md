@@ -342,7 +342,7 @@ export interface SearchResult {
 
 ```typescript
 // lib/services/embedding.ts (NEW FILE)
-import { embed } from "ai";
+import { embed, embedMany } from "ai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 
 const openrouter = createOpenRouter({
@@ -850,9 +850,10 @@ gantt
 4. **Progress tracking**: Log last processed timestamp
 
 ```bash
-# Run backfill script
-BACKFILL_BATCH_SIZE=100 \
-BACKFILL_SINCE_DAYS=30 \
+# Run backfill script with options
+# Options are passed as function arguments - modify the script call as needed:
+# - sinceDate: Only backfill messages from this date forward
+# - dryRun: Test run without actually indexing
 npx tsx lib/scripts/backfill-vectors.ts
 ```
 
