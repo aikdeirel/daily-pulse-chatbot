@@ -479,10 +479,11 @@ export async function startWorker(): Promise<void> {
   }
 }
 
-// Run worker if executed directly
-if (require.main === module) {
-  startWorker().catch(console.error);
-}
+// Start worker when this module is loaded (ES module–compatible pattern)
+startWorker().catch(error => {
+  console.error(error);
+  process.exit(1);
+});
 ```
 
 ### Modified: lib/db/queries.ts
