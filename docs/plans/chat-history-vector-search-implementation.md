@@ -83,7 +83,6 @@ const collectionConfig = {
   vectors: {
     size: 1536,
     distance: "Cosine",
-    on_disk: true,  // For large collections
   },
   hnsw_config: {
     m: 16,
