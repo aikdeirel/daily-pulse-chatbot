@@ -111,6 +111,12 @@ For messages exceeding token limits:
 // lib/services/embedding.ts
 const MAX_TOKENS = 8000;  // text-embedding-3-small limit is 8191
 
+// Simple token estimation: ~4 chars per token for English text
+// For production, consider using js-tiktoken or gpt-tokenizer library
+function estimateTokens(text: string): number {
+  return Math.ceil(text.length / 4);
+}
+
 function chunkMessage(text: string): string[] {
   const tokens = estimateTokens(text);
   
@@ -326,7 +332,7 @@ export async function searchSimilar(
   
   return results.map(r => ({
     messageId: r.id as string,
-    score: r.score,
+    score: r.score ?? 0,
     payload: r.payload as ChatMessageVectorPayload,
   }));
 }
@@ -386,6 +392,100 @@ export function extractTextFromParts(parts: unknown[]): string {
 }
 ```
 
+### lib/workers/message-indexer.ts
+
+```typescript
+// lib/workers/message-indexer.ts (NEW FILE)
+import { createClient } from "redis";
+import { generateEmbedding, extractTextFromParts } from "@/lib/services/embedding";
+import { upsertMessageVector } from "@/lib/services/qdrant";
+import type { UIMessagePart } from "ai";
+
+const QUEUE_NAME = "message-indexing-queue";
+
+// Message payload for indexing queue
+export interface IndexingJob {
+  messageId: string;
+  chatId: string;
+  userId: string;
+  role: "user" | "assistant";
+  parts: UIMessagePart[];
+}
+
+let redisClient: ReturnType<typeof createClient> | null = null;
+
+async function getRedisClient() {
+  if (!redisClient) {
+    redisClient = createClient({ url: process.env.REDIS_URL });
+    await redisClient.connect();
+  }
+  return redisClient;
+}
+
+/**
+ * Queue a message for async vector indexing
+ * Called from chat route after message save
+ */
+export async function queueMessageForIndexing(job: IndexingJob): Promise<void> {
+  const redis = await getRedisClient();
+  await redis.lPush(QUEUE_NAME, JSON.stringify(job));
+}
+
+/**
+ * Process a single indexing job
+ */
+async function processIndexingJob(job: IndexingJob): Promise<void> {
+  const text = extractTextFromParts(job.parts as unknown[]);
+  
+  // Skip empty or very short messages
+  if (!text || text.length < 10) {
+    return;
+  }
+  
+  const embedding = await generateEmbedding(text);
+  
+  await upsertMessageVector(job.messageId, embedding, {
+    user_id: job.userId,
+    chat_id: job.chatId,
+    message_id: job.messageId,
+    role: job.role,
+    timestamp: new Date().toISOString(),
+    content_preview: text.slice(0, 500),
+  });
+}
+
+/**
+ * Worker loop - poll queue and process jobs
+ * Run as a separate process: npx tsx lib/workers/message-indexer.ts
+ */
+export async function startWorker(): Promise<void> {
+  const redis = await getRedisClient();
+  console.log("Message indexer worker started");
+  
+  while (true) {
+    try {
+      // Blocking pop with 5 second timeout
+      const result = await redis.brPop(QUEUE_NAME, 5);
+      
+      if (result) {
+        const job: IndexingJob = JSON.parse(result.element);
+        await processIndexingJob(job);
+        console.log(`Indexed message: ${job.messageId}`);
+      }
+    } catch (error) {
+      console.error("Worker error:", error);
+      // Wait before retrying on error
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+}
+
+// Run worker if executed directly
+if (require.main === module) {
+  startWorker().catch(console.error);
+}
+```
+
 ### Modified: lib/db/queries.ts
 
 Add vector cleanup to deletion functions:
@@ -435,6 +535,9 @@ export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
 Add indexing hook after message save:
 
 ```typescript
+// Add import at top of file
+import { queueMessageForIndexing } from "@/lib/workers/message-indexer";
+
 // In saveAssistantMessage function, after messageSaved = true:
 
 // Queue for vector indexing (fire and forget)
@@ -457,7 +560,7 @@ import { db } from "@/lib/db";
 import { chat, message } from "@/lib/db/schema";
 import { generateEmbedding, extractTextFromParts } from "@/lib/services/embedding";
 import { upsertMessageVector, ensureCollection } from "@/lib/services/qdrant";
-import { eq, desc } from "drizzle-orm";
+import { and, eq, desc, gte } from "drizzle-orm";
 
 const BATCH_SIZE = 100;
 
@@ -471,9 +574,18 @@ export async function backfillVectors(options: {
   let processed = 0;
   let offset = 0;
   
+  // Build filter conditions based on options
+  const conditions = [];
+  if (options.userId) {
+    conditions.push(eq(chat.userId, options.userId));
+  }
+  if (options.sinceDate) {
+    conditions.push(gte(message.createdAt, options.sinceDate));
+  }
+  
   while (true) {
     // Fetch messages in batches, newest first
-    const messages = await db
+    let query = db
       .select({
         id: message.id,
         chatId: message.chatId,
@@ -483,7 +595,14 @@ export async function backfillVectors(options: {
         userId: chat.userId,
       })
       .from(message)
-      .innerJoin(chat, eq(message.chatId, chat.id))
+      .innerJoin(chat, eq(message.chatId, chat.id));
+    
+    // Apply filters if any
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as typeof query;
+    }
+    
+    const messages = await query
       .orderBy(desc(message.createdAt))
       .limit(BATCH_SIZE)
       .offset(offset);
@@ -568,12 +687,12 @@ to recall previous information. Results include conversation snippets with relev
         })
         .optional()
         .describe("Optional time range filter"),
-      conversationId: z
+      chatId: z
         .string()
         .optional()
-        .describe("Limit search to a specific conversation"),
+        .describe("Limit search to a specific chat/conversation"),
     }),
-    execute: async ({ query, limit = 5, timeRange, conversationId }) => {
+    execute: async ({ query, limit = 5, timeRange, chatId }) => {
       try {
         // Generate embedding for query
         const queryEmbedding = await generateEmbedding(query);
@@ -581,7 +700,7 @@ to recall previous information. Results include conversation snippets with relev
         // Search Qdrant
         const results = await searchSimilar(queryEmbedding, userId, {
           limit,
-          chatId: conversationId,
+          chatId,
           afterTimestamp: timeRange?.after,
           beforeTimestamp: timeRange?.before,
           scoreThreshold: 0.65,  // Filter low relevance
@@ -600,7 +719,7 @@ to recall previous information. Results include conversation snippets with relev
           message: `Found ${results.length} relevant conversation(s).`,
           results: results.map(r => ({
             content: r.payload.content_preview,
-            conversationId: r.payload.chat_id,
+            chatId: r.payload.chat_id,
             timestamp: r.payload.timestamp,
             role: r.payload.role,
             relevanceScore: Math.round(r.score * 100) / 100,
