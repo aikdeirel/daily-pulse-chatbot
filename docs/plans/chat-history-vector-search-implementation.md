@@ -95,7 +95,7 @@ const collectionConfig = {
     memmap_threshold: 50000,
   },
   payload_schema: {
-    user_id: { type: "keyword", is_tenant: true },
+    user_id: { type: "keyword" },
     chat_id: { type: "keyword" },
     role: { type: "keyword" },
     timestamp: { type: "datetime" },
