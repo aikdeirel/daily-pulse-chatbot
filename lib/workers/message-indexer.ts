@@ -84,11 +84,10 @@ export async function startWorker(): Promise<void> {
   }
 }
 
-// Only start worker when run directly as a script
-// Check if this is the main module being executed
-const isMainModule = typeof require !== "undefined" && require.main === module;
-
-if (isMainModule) {
+// Export functions for use by other modules
+// To start the worker as a standalone process, run:
+// npx tsx lib/workers/message-indexer.ts --start-worker
+if (process.argv.includes("--start-worker")) {
   startWorker().catch((error) => {
     console.error(error);
     process.exit(1);
