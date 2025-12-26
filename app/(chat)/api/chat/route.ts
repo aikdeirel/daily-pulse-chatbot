@@ -40,6 +40,7 @@ import {
   getGoogleToolNamesForGroups,
 } from "@/lib/ai/tools/google/groups";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
+import { searchPastConversations } from "@/lib/ai/tools/search-history";
 import {
   spotifyAlbums,
   spotifyArtists,
@@ -80,6 +81,7 @@ import { ChatSDKError } from "@/lib/errors";
 import type { ChatMessage, ChatTools, CustomUIDataTypes } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { convertToUIMessages, generateUUID } from "@/lib/utils";
+import { queueMessageForIndexing } from "@/lib/workers/message-indexer";
 import { generateTitleFromUserMessage } from "../../actions";
 import { type PostRequestBody, postRequestBodySchema } from "./schema";
 
@@ -240,6 +242,17 @@ export async function POST(request: Request) {
       ],
     });
 
+    // Queue user message for vector indexing (fire and forget)
+    if (process.env.QDRANT_URL) {
+      queueMessageForIndexing({
+        messageId: message.id,
+        chatId: id,
+        userId: session.user.id,
+        role: "user",
+        parts: message.parts,
+      }).catch((err) => console.warn("Vector indexing queue failed:", err));
+    }
+
     // Update the chat's updatedAt timestamp
     await updateChatUpdatedAtById({ chatId: id });
 
@@ -374,6 +387,14 @@ export async function POST(request: Request) {
           useSkill: useSkill({ availableSkills }),
           getSkillResource: getSkillResource({ availableSkills }),
           webFetch,
+          // Add semantic search tool for chat history (only when QDRANT_URL is configured)
+          ...(process.env.QDRANT_URL
+            ? {
+                searchPastConversations: searchPastConversations({
+                  userId: session.user.id,
+                }),
+              }
+            : {}),
         };
 
         const spotifyTools = {
@@ -436,6 +457,10 @@ export async function POST(request: Request) {
           "updateDocument",
           "requestSuggestions",
           "webFetch",
+          // Add search tool to active tools when configured
+          ...(process.env.QDRANT_URL
+            ? (["searchPastConversations"] as ToolName[])
+            : []),
         ];
 
         const skillActiveTools: ToolName[] =
@@ -497,6 +522,24 @@ export async function POST(request: Request) {
             // Final save to ensure all content is persisted
             await saveAssistantMessage(true);
             finalSaveCompleted = true; // Prevent duplicate save in after() hook
+
+            // Queue assistant message for vector indexing (fire and forget)
+            if (process.env.QDRANT_URL && currentTextContent) {
+              const parts: UIMessagePart<CustomUIDataTypes, ChatTools>[] = [];
+              if (currentTextContent) {
+                parts.push({ type: "text", text: currentTextContent });
+              }
+              queueMessageForIndexing({
+                messageId: assistantMessageId,
+                chatId: id,
+                userId: session.user.id,
+                role: "assistant",
+                parts,
+              }).catch((err) =>
+                console.warn("Vector indexing queue failed:", err),
+              );
+            }
+
             // Debug: log sources from OpenRouter
             if (response?.messages) {
               for (const msg of response.messages) {

@@ -5,6 +5,7 @@ import type { createDocument } from "./ai/tools/create-document";
 import type { getWeather } from "./ai/tools/get-weather";
 import type { googleCalendars, googleEvents } from "./ai/tools/google";
 import type { requestSuggestions } from "./ai/tools/request-suggestions";
+import type { searchPastConversations } from "./ai/tools/search-history";
 import type {
   spotifyAlbums,
   spotifyArtists,
@@ -38,6 +39,9 @@ type requestSuggestionsTool = InferUITool<
 type useSkillTool = InferUITool<ReturnType<typeof useSkill>>;
 type getSkillResourceTool = InferUITool<ReturnType<typeof getSkillResource>>;
 type webFetchTool = InferUITool<typeof webFetch>;
+type searchPastConversationsTool = InferUITool<
+  ReturnType<typeof searchPastConversations>
+>;
 type spotifySearchTool = InferUITool<ReturnType<typeof spotifySearch>>;
 type spotifyAlbumsTool = InferUITool<ReturnType<typeof spotifyAlbums>>;
 type spotifyArtistsTool = InferUITool<ReturnType<typeof spotifyArtists>>;
@@ -57,6 +61,7 @@ export type ChatTools = {
   useSkill: useSkillTool;
   getSkillResource: getSkillResourceTool;
   webFetch: webFetchTool;
+  searchPastConversations: searchPastConversationsTool;
   spotifySearch: spotifySearchTool;
   spotifyAlbums: spotifyAlbumsTool;
   spotifyArtists: spotifyArtistsTool;

@@ -37,6 +37,20 @@ import {
 } from "./schema";
 import { generateHashedPassword } from "./utils";
 
+// Import vector cleanup functions (conditionally used when QDRANT_URL is set)
+let deleteByChatId: ((chatId: string) => Promise<void>) | null = null;
+let deleteByUserId: ((userId: string) => Promise<void>) | null = null;
+
+// Lazy load qdrant functions to avoid initialization errors when QDRANT_URL is not set
+async function getQdrantFunctions() {
+  if (process.env.QDRANT_URL && !deleteByChatId) {
+    const qdrant = await import("@/lib/services/qdrant");
+    deleteByChatId = qdrant.deleteByChatId;
+    deleteByUserId = qdrant.deleteByUserId;
+  }
+  return { deleteByChatId, deleteByUserId };
+}
+
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
 // https://authjs.dev/reference/adapter/drizzle
@@ -113,6 +127,15 @@ export async function saveChat({
 
 export async function deleteChatById({ id }: { id: string }) {
   try {
+    // Delete from vector database first (if configured)
+    const { deleteByChatId: deleteVectorsByChatId } =
+      await getQdrantFunctions();
+    if (deleteVectorsByChatId) {
+      await deleteVectorsByChatId(id).catch((err) =>
+        console.warn("Vector deletion failed:", err),
+      );
+    }
+
     await db.delete(vote).where(eq(vote.chatId, id));
     await db.delete(message).where(eq(message.chatId, id));
     await db.delete(stream).where(eq(stream.chatId, id));
@@ -132,6 +155,15 @@ export async function deleteChatById({ id }: { id: string }) {
 
 export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
   try {
+    // Delete all vectors for user (GDPR compliance)
+    const { deleteByUserId: deleteVectorsByUserId } =
+      await getQdrantFunctions();
+    if (deleteVectorsByUserId) {
+      await deleteVectorsByUserId(userId).catch((err) =>
+        console.warn("Vector deletion failed:", err),
+      );
+    }
+
     const userChats = await db
       .select({ id: chat.id })
       .from(chat)
