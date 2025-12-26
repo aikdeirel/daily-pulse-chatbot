@@ -40,6 +40,7 @@ import {
   getGoogleToolNamesForGroups,
 } from "@/lib/ai/tools/google/groups";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
+import { searchPastConversations } from "@/lib/ai/tools/search-history";
 import {
   spotifyAlbums,
   spotifyArtists,
@@ -80,6 +81,11 @@ import { ChatSDKError } from "@/lib/errors";
 import type { ChatMessage, ChatTools, CustomUIDataTypes } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { convertToUIMessages, generateUUID } from "@/lib/utils";
+import {
+  indexMessageSync,
+  isAsyncIndexingEnabled,
+  queueMessageForIndexing,
+} from "@/lib/workers/message-indexer";
 import { generateTitleFromUserMessage } from "../../actions";
 import { type PostRequestBody, postRequestBodySchema } from "./schema";
 
@@ -240,6 +246,26 @@ export async function POST(request: Request) {
       ],
     });
 
+    // Index user message for vector search (sync by default, async with worker if VECTOR_INDEX_MODE=async)
+    if (process.env.QDRANT_URL) {
+      const indexJob = {
+        messageId: message.id,
+        chatId: id,
+        userId: session.user.id,
+        role: "user" as const,
+        parts: message.parts,
+      };
+      if (isAsyncIndexingEnabled()) {
+        queueMessageForIndexing(indexJob).catch((err) =>
+          console.warn("Vector indexing queue failed:", err),
+        );
+      } else {
+        indexMessageSync(indexJob).catch((err) =>
+          console.warn("Vector indexing failed:", err),
+        );
+      }
+    }
+
     // Update the chat's updatedAt timestamp
     await updateChatUpdatedAtById({ chatId: id });
 
@@ -374,6 +400,14 @@ export async function POST(request: Request) {
           useSkill: useSkill({ availableSkills }),
           getSkillResource: getSkillResource({ availableSkills }),
           webFetch,
+          // Add semantic search tool for chat history (only when QDRANT_URL is configured)
+          ...(process.env.QDRANT_URL
+            ? {
+                searchPastConversations: searchPastConversations({
+                  userId: session.user.id,
+                }),
+              }
+            : {}),
         };
 
         const spotifyTools = {
@@ -436,6 +470,10 @@ export async function POST(request: Request) {
           "updateDocument",
           "requestSuggestions",
           "webFetch",
+          // Add search tool to active tools when configured
+          ...(process.env.QDRANT_URL
+            ? (["searchPastConversations"] as ToolName[])
+            : []),
         ];
 
         const skillActiveTools: ToolName[] =
@@ -497,6 +535,31 @@ export async function POST(request: Request) {
             // Final save to ensure all content is persisted
             await saveAssistantMessage(true);
             finalSaveCompleted = true; // Prevent duplicate save in after() hook
+
+            // Index assistant message for vector search (sync by default, async with worker if VECTOR_INDEX_MODE=async)
+            if (process.env.QDRANT_URL && currentTextContent) {
+              const parts: UIMessagePart<CustomUIDataTypes, ChatTools>[] = [];
+              if (currentTextContent) {
+                parts.push({ type: "text", text: currentTextContent });
+              }
+              const indexJob = {
+                messageId: assistantMessageId,
+                chatId: id,
+                userId: session.user.id,
+                role: "assistant" as const,
+                parts,
+              };
+              if (isAsyncIndexingEnabled()) {
+                queueMessageForIndexing(indexJob).catch((err) =>
+                  console.warn("Vector indexing queue failed:", err),
+                );
+              } else {
+                indexMessageSync(indexJob).catch((err) =>
+                  console.warn("Vector indexing failed:", err),
+                );
+              }
+            }
+
             // Debug: log sources from OpenRouter
             if (response?.messages) {
               for (const msg of response.messages) {
