@@ -44,8 +44,8 @@ export const modelsConfig: ModelConfig[] = [
   },
   {
     id: "mistral-small-3.1-24b-instruct-free",
-    name: "Mistral Small 3.1 24B Instruct",
-    description: "Free: 24B parameter instruction-tuned model",
+    name: "Mistral Small 3.1 24B Instruct (Free)",
+    description: "24B parameter instruction-tuned model",
     openRouterId: "mistralai/mistral-small-3.1-24b-instruct:free",
     supportsTools: true,
     isReasoning: false,
