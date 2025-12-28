@@ -231,6 +231,7 @@ export async function POST(request: Request) {
       latitude,
       city,
       country,
+      chatId: id,
     };
 
     await saveMessages({
