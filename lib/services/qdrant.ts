@@ -97,6 +97,7 @@ export async function searchSimilar(
     chatId?: string;
     afterTimestamp?: string;
     beforeTimestamp?: string;
+    role?: "user" | "assistant";
   } = {},
 ): Promise<SearchResult[]> {
   const qdrantClient = getQdrantClient();
@@ -107,6 +108,7 @@ export async function searchSimilar(
     chatId,
     afterTimestamp,
     beforeTimestamp,
+    role,
   } = options;
 
   const must: Array<{
@@ -131,6 +133,10 @@ export async function searchSimilar(
       key: "timestamp",
       range: { lte: beforeTimestamp },
     });
+  }
+
+  if (role) {
+    must.push({ key: "role", match: { value: role } });
   }
 
   const results = await qdrantClient.search(COLLECTION_NAME, {

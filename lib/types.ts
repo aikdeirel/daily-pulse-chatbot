@@ -24,8 +24,15 @@ import type { AppUsage } from "./usage";
 
 export type DataPart = { type: "append-message"; message: string };
 
+/**
+ * Message role enum to distinguish between user prompts and agent answers
+ */
+export const messageRoleSchema = z.enum(["user", "assistant"]);
+export type MessageRole = z.infer<typeof messageRoleSchema>;
+
 export const messageMetadataSchema = z.object({
   createdAt: z.string(),
+  role: messageRoleSchema,
 });
 
 export type MessageMetadata = z.infer<typeof messageMetadataSchema>;

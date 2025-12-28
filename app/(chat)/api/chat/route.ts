@@ -538,10 +538,19 @@ export async function POST(request: Request) {
             finalSaveCompleted = true; // Prevent duplicate save in after() hook
 
             // Index assistant message for vector search (sync by default, async with worker if VECTOR_INDEX_MODE=async)
-            if (process.env.QDRANT_URL && currentTextContent) {
+            if (
+              process.env.QDRANT_URL &&
+              (currentTextContent || currentReasoningContent)
+            ) {
               const parts: UIMessagePart<CustomUIDataTypes, ChatTools>[] = [];
               if (currentTextContent) {
                 parts.push({ type: "text", text: currentTextContent });
+              }
+              if (currentReasoningContent) {
+                parts.push({
+                  type: "reasoning",
+                  text: currentReasoningContent,
+                });
               }
               const indexJob = {
                 messageId: assistantMessageId,

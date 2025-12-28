@@ -40,8 +40,12 @@ to recall previous information. Results include conversation snippets with relev
         .string()
         .optional()
         .describe("Limit search to a specific chat/conversation"),
+      role: z
+        .enum(["user", "assistant"])
+        .optional()
+        .describe("Filter results by message role (user or assistant)"),
     }),
-    execute: async ({ query, limit = 5, timeRange, chatId }) => {
+    execute: async ({ query, limit = 5, timeRange, chatId, role }) => {
       try {
         // Ensure collection exists before searching
         await ensureCollection();
@@ -55,6 +59,7 @@ to recall previous information. Results include conversation snippets with relev
           chatId,
           afterTimestamp: timeRange?.after,
           beforeTimestamp: timeRange?.before,
+          role,
           scoreThreshold: 0.65, // Filter low relevance
         });
 

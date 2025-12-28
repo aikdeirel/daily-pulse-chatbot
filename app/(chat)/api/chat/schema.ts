@@ -33,7 +33,7 @@ export const postRequestBodySchema = z.object({
   id: z.string().uuid(),
   message: z.object({
     id: z.string().uuid(),
-    role: z.enum(["user"]),
+    role: z.enum(["user", "assistant"]),
     parts: z.array(partSchema),
   }),
   selectedChatModel: chatModelIdSchema,
