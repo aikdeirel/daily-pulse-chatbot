@@ -104,14 +104,21 @@ export function sanitizeText(text: string) {
 }
 
 export function convertToUIMessages(messages: DBMessage[]): ChatMessage[] {
-  return messages.map((message) => ({
-    id: message.id,
-    role: message.role as "user" | "assistant" | "system",
-    parts: message.parts as UIMessagePart<CustomUIDataTypes, ChatTools>[],
-    metadata: {
-      createdAt: formatISO(message.createdAt),
-    },
-  }));
+  return messages.map((message) => {
+    // Convert system roles to user roles for compatibility with MessageMetadata
+    const dbRole = message.role as "user" | "assistant" | "system";
+    const uiRole: "user" | "assistant" = dbRole === "system" ? "user" : dbRole;
+
+    return {
+      id: message.id,
+      role: dbRole,
+      parts: message.parts as UIMessagePart<CustomUIDataTypes, ChatTools>[],
+      metadata: {
+        createdAt: formatISO(message.createdAt),
+        role: uiRole,
+      },
+    };
+  });
 }
 
 export function getTextFromMessage(message: ChatMessage | UIMessage): string {
