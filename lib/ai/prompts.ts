@@ -94,7 +94,8 @@ export const getKnowledgeBasePrompt = (entries: KnowledgeBase[]): string => {
 
   const entryList = entries
     .map(
-      (e) => `- [${format(new Date(e.createdAt), "yyyy-MM-dd")}]: ${e.content}`,
+      (entry) =>
+        `- [${format(new Date(entry.createdAt), "yyyy-MM-dd")}]: ${entry.content}`,
     )
     .join("\n");
 

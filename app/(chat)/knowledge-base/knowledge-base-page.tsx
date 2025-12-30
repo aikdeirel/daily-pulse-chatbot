@@ -1,6 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
+import DOMPurify from "dompurify";
 import { ArrowLeft, Pencil, Plus, Trash2 } from "lucide-react";
 import { marked } from "marked";
 import Link from "next/link";
@@ -23,6 +24,12 @@ marked.setOptions({
 });
 
 type KnowledgeBaseEntry = KnowledgeBase;
+
+// Safely render markdown content with DOMPurify sanitization
+function renderMarkdown(content: string): string {
+  const html = marked.parse(content) as string;
+  return DOMPurify.sanitize(html);
+}
 
 export function KnowledgeBasePage({
   initialEntries,
@@ -278,80 +285,86 @@ export function KnowledgeBasePage({
           )}
 
           {/* Entries list */}
-          {entries.map((entry) => (
-            <Card key={entry.id}>
-              <CardHeader className="pb-2">
-                <span className="font-medium text-sm text-muted-foreground">
-                  {format(new Date(entry.createdAt), "yyyy-MM-dd")}
-                  {entry.updatedAt &&
-                    new Date(entry.updatedAt).getTime() !==
-                      new Date(entry.createdAt).getTime() && (
+          {entries.map((entry) => {
+            const createdDate = new Date(entry.createdAt);
+            const updatedDate = entry.updatedAt
+              ? new Date(entry.updatedAt)
+              : null;
+            const wasEdited =
+              updatedDate && updatedDate.getTime() !== createdDate.getTime();
+
+            return (
+              <Card key={entry.id}>
+                <CardHeader className="pb-2">
+                  <span className="font-medium text-sm text-muted-foreground">
+                    {format(createdDate, "yyyy-MM-dd")}
+                    {wasEdited && updatedDate && (
                       <span className="ml-2 text-muted-foreground/60">
-                        (edited{" "}
-                        {format(new Date(entry.updatedAt), "yyyy-MM-dd")})
+                        (edited {format(updatedDate, "yyyy-MM-dd")})
                       </span>
                     )}
-                </span>
-              </CardHeader>
-              <CardContent>
-                {editingId === entry.id ? (
-                  <Textarea
-                    autoFocus
-                    className="min-h-[120px] resize-none"
-                    onChange={(e) => setEditContent(e.target.value)}
-                    value={editContent}
-                  />
-                ) : (
-                  <div
-                    className="prose prose-sm dark:prose-invert max-w-none"
-                    dangerouslySetInnerHTML={{
-                      __html: marked.parse(entry.content) as string,
-                    }}
-                  />
-                )}
-              </CardContent>
-              <CardFooter className="flex justify-end gap-2">
-                {editingId === entry.id ? (
-                  <>
-                    <Button
-                      disabled={isSubmitting}
-                      onClick={cancelEdit}
-                      variant="outline"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      disabled={!editContent.trim() || isSubmitting}
-                      onClick={() => handleUpdate(entry.id)}
-                    >
-                      {isSubmitting ? "Saving..." : "Save"}
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button
-                      disabled={isSubmitting}
-                      onClick={() => startEdit(entry)}
-                      size="sm"
-                      variant="outline"
-                    >
-                      <Pencil className="size-4" />
-                      <span className="ml-2 hidden sm:inline">Edit</span>
-                    </Button>
-                    <Button
-                      disabled={isSubmitting}
-                      onClick={() => handleDelete(entry.id)}
-                      size="sm"
-                      variant="outline"
-                    >
-                      <Trash2 className="size-4" />
-                      <span className="ml-2 hidden sm:inline">Delete</span>
-                    </Button>
-                  </>
-                )}
-              </CardFooter>
-            </Card>
-          ))}
+                  </span>
+                </CardHeader>
+                <CardContent>
+                  {editingId === entry.id ? (
+                    <Textarea
+                      autoFocus
+                      className="min-h-[120px] resize-none"
+                      onChange={(e) => setEditContent(e.target.value)}
+                      value={editContent}
+                    />
+                  ) : (
+                    <div
+                      className="prose prose-sm dark:prose-invert max-w-none"
+                      dangerouslySetInnerHTML={{
+                        __html: renderMarkdown(entry.content),
+                      }}
+                    />
+                  )}
+                </CardContent>
+                <CardFooter className="flex justify-end gap-2">
+                  {editingId === entry.id ? (
+                    <>
+                      <Button
+                        disabled={isSubmitting}
+                        onClick={cancelEdit}
+                        variant="outline"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        disabled={!editContent.trim() || isSubmitting}
+                        onClick={() => handleUpdate(entry.id)}
+                      >
+                        {isSubmitting ? "Saving..." : "Save"}
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        disabled={isSubmitting}
+                        onClick={() => startEdit(entry)}
+                        size="sm"
+                        variant="outline"
+                      >
+                        <Pencil className="size-4" />
+                        <span className="ml-2 hidden sm:inline">Edit</span>
+                      </Button>
+                      <Button
+                        disabled={isSubmitting}
+                        onClick={() => handleDelete(entry.id)}
+                        size="sm"
+                        variant="outline"
+                      >
+                        <Trash2 className="size-4" />
+                        <span className="ml-2 hidden sm:inline">Delete</span>
+                      </Button>
+                    </>
+                  )}
+                </CardFooter>
+              </Card>
+            );
+          })}
         </div>
       </main>
     </div>
