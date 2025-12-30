@@ -205,3 +205,24 @@ export const oauthConnection = pgTable(
 );
 
 export type OAuthConnection = InferSelectModel<typeof oauthConnection>;
+
+export const knowledgeBase = pgTable(
+  "KnowledgeBase",
+  {
+    id: uuid("id").primaryKey().notNull().defaultRandom(),
+    userId: uuid("userId")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    content: text("content").notNull(),
+    createdAt: timestamp("createdAt").notNull().defaultNow(),
+    updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  },
+  (table) => ({
+    userIdCreatedAtIdx: index("KnowledgeBase_userId_createdAt_idx").on(
+      table.userId,
+      table.createdAt.desc(),
+    ),
+  }),
+);
+
+export type KnowledgeBase = InferSelectModel<typeof knowledgeBase>;

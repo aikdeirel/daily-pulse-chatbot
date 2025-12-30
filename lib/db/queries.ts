@@ -25,6 +25,8 @@ import {
   chat,
   type DBMessage,
   document,
+  type KnowledgeBase,
+  knowledgeBase,
   message,
   type OAuthConnection,
   oauthConnection,
@@ -794,5 +796,110 @@ export async function hasOAuthConnection(
     return !!connection;
   } catch (_error) {
     return false;
+  }
+}
+
+// Knowledge Base queries
+export async function getKnowledgeBaseEntries(
+  userId: string,
+): Promise<KnowledgeBase[]> {
+  try {
+    return await db
+      .select()
+      .from(knowledgeBase)
+      .where(eq(knowledgeBase.userId, userId))
+      .orderBy(desc(knowledgeBase.createdAt));
+  } catch (_error) {
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to get knowledge base entries",
+    );
+  }
+}
+
+export async function getKnowledgeBaseEntry(
+  id: string,
+  userId: string,
+): Promise<KnowledgeBase | undefined> {
+  try {
+    const [entry] = await db
+      .select()
+      .from(knowledgeBase)
+      .where(and(eq(knowledgeBase.id, id), eq(knowledgeBase.userId, userId)));
+    return entry;
+  } catch (_error) {
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to get knowledge base entry",
+    );
+  }
+}
+
+export async function createKnowledgeBaseEntry({
+  userId,
+  content,
+}: {
+  userId: string;
+  content: string;
+}): Promise<KnowledgeBase> {
+  try {
+    const [entry] = await db
+      .insert(knowledgeBase)
+      .values({
+        userId,
+        content,
+      })
+      .returning();
+    return entry;
+  } catch (_error) {
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to create knowledge base entry",
+    );
+  }
+}
+
+export async function updateKnowledgeBaseEntry({
+  id,
+  userId,
+  content,
+}: {
+  id: string;
+  userId: string;
+  content: string;
+}): Promise<KnowledgeBase | undefined> {
+  try {
+    const [entry] = await db
+      .update(knowledgeBase)
+      .set({
+        content,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(knowledgeBase.id, id), eq(knowledgeBase.userId, userId)))
+      .returning();
+    return entry;
+  } catch (_error) {
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to update knowledge base entry",
+    );
+  }
+}
+
+export async function deleteKnowledgeBaseEntry(
+  id: string,
+  userId: string,
+): Promise<boolean> {
+  try {
+    const result = await db
+      .delete(knowledgeBase)
+      .where(and(eq(knowledgeBase.id, id), eq(knowledgeBase.userId, userId)))
+      .returning({ id: knowledgeBase.id });
+    return result.length > 0;
+  } catch (_error) {
+    throw new ChatSDKError(
+      "bad_request:database",
+      "Failed to delete knowledge base entry",
+    );
   }
 }

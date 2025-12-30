@@ -5,8 +5,8 @@
  * @see ./models.config.ts for the single source of truth
  */
 export {
-  DEFAULT_CHAT_MODEL,
-  chatModels,
   type ChatModel,
   type ChatModelId,
+  chatModels,
+  DEFAULT_CHAT_MODEL,
 } from "./models.config";

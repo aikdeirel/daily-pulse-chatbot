@@ -1,6 +1,11 @@
 "use client";
 
-import { Calendar as CalendarIcon, ChevronUp, Music } from "lucide-react";
+import {
+  BookText,
+  Calendar as CalendarIcon,
+  ChevronUp,
+  Music,
+} from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { User } from "next-auth";
@@ -113,6 +118,16 @@ export function SidebarUserNav({ user }: { user: User }) {
           >
             {!isGuest && (
               <>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onSelect={() => {
+                    router.push("/knowledge-base");
+                  }}
+                >
+                  <BookText className="mr-2 h-4 w-4 text-amber-500" />
+                  Knowledge Base
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="cursor-pointer"
                   onSelect={async () => {
