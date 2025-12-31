@@ -67,6 +67,7 @@ import {
   createStreamId,
   deleteChatById,
   getChatById,
+  getKnowledgeBaseEntries,
   getMessageCountByUserId,
   getMessagesByChatId,
   saveChat,
@@ -275,6 +276,9 @@ export async function POST(request: Request) {
 
     // Discover available skills (Level 1 - metadata only)
     const availableSkills = await discoverSkills();
+
+    // Fetch knowledge base entries for user context
+    const knowledgeBaseEntries = await getKnowledgeBaseEntries(session.user.id);
 
     let finalMergedUsage: AppUsage | undefined;
 
@@ -508,6 +512,7 @@ export async function POST(request: Request) {
             skills: availableSkills,
             spotifyGroups: spotifyToolGroups,
             googleGroups: googleToolGroups,
+            knowledgeBaseEntries,
           }),
           messages: convertToModelMessages(uiMessages),
           stopWhen: stepCountIs(5),

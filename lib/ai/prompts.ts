@@ -1,10 +1,12 @@
 import type { Geo } from "@vercel/functions";
+import { format } from "date-fns";
 import type { ArtifactKind } from "@/components/artifact";
 import type { SkillSummary } from "@/lib/ai/skills";
 import type { GoogleToolGroupId } from "@/lib/ai/tools/google/groups";
 import { getGooglePromptForGroups } from "@/lib/ai/tools/google/groups";
 import type { SpotifyToolGroupId } from "@/lib/ai/tools/spotify/groups";
 import { getSpotifyPromptForGroups } from "@/lib/ai/tools/spotify/groups";
+import type { KnowledgeBase } from "@/lib/db/schema";
 
 export const artifactsPrompt = `
 Artifacts is a special user interface mode that helps users with writing, editing, and other content creation tasks. When artifact is open, it is on the right side of the screen, while the conversation is on the left side. When creating or updating documents, changes are reflected in real-time on the artifacts and visible to the user.
@@ -81,27 +83,55 @@ ${skillList}
 `;
 };
 
+/**
+ * Generate user context from knowledge base entries
+ * This provides persistent memory about the user to personalize responses
+ */
+export const getKnowledgeBasePrompt = (entries: KnowledgeBase[]): string => {
+  if (entries.length === 0) {
+    return "";
+  }
+
+  const entryList = entries
+    .map(
+      (entry) =>
+        `- [${format(new Date(entry.createdAt), "yyyy-MM-dd")}]: ${entry.content}`,
+    )
+    .join("\n");
+
+  return `
+## User Context (Knowledge Base)
+
+The following are facts and information the user has shared about themselves. Use this context to provide more personalized and relevant responses:
+
+${entryList}
+`;
+};
+
 export const systemPrompt = ({
   requestHints,
   skills = [],
   spotifyGroups = [],
   googleGroups = [],
+  knowledgeBaseEntries = [],
 }: {
   requestHints: RequestHints;
   skills?: SkillSummary[];
   spotifyGroups?: SpotifyToolGroupId[];
   googleGroups?: GoogleToolGroupId[];
+  knowledgeBaseEntries?: KnowledgeBase[];
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
   const skillsPrompt = getSkillsPrompt(skills);
   const spotifyPrompt = getSpotifyPromptForGroups(spotifyGroups);
   const googlePrompt = getGooglePromptForGroups(googleGroups);
+  const knowledgeBasePrompt = getKnowledgeBasePrompt(knowledgeBaseEntries);
 
   // Keep it minimal - modern LLMs understand tools from their descriptions alone.
   // We rely on the intelligence of the model rather than over-engineering prompts.
   return `${regularPrompt}
 
-${requestPrompt}${skillsPrompt}${googlePrompt}${spotifyPrompt}`;
+${requestPrompt}${knowledgeBasePrompt}${skillsPrompt}${googlePrompt}${spotifyPrompt}`;
 };
 
 export const codePrompt = `

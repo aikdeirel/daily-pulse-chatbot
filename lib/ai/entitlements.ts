@@ -1,5 +1,5 @@
 import type { UserType } from "@/app/(auth)/auth";
-import { getAvailableModelIds, type ChatModelId } from "./models.config";
+import { type ChatModelId, getAvailableModelIds } from "./models.config";
 
 type Entitlements = {
   maxMessagesPerDay: number;

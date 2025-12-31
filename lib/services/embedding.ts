@@ -57,7 +57,9 @@ async function callOpenRouterEmbedding(
   const data: OpenRouterEmbeddingResponse = await response.json();
 
   // Sort by index to ensure correct order when batching
-  return data.data.sort((a, b) => a.index - b.index).map((item) => item.embedding);
+  return data.data
+    .sort((a, b) => a.index - b.index)
+    .map((item) => item.embedding);
 }
 
 export async function generateEmbedding(text: string): Promise<number[]> {

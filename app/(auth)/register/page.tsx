@@ -21,7 +21,7 @@ export default function Page() {
     register,
     {
       status: "idle",
-    }
+    },
   );
 
   useEffect(() => {
