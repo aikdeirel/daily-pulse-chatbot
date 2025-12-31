@@ -184,12 +184,12 @@ export function SidebarUserNav({ user }: { user: User }) {
                         router.refresh();
                         toast({
                           type: "success",
-                          description: "Google Calendar disconnected",
+                          description: "Google disconnected",
                         });
                       } catch {
                         toast({
                           type: "error",
-                          description: "Failed to disconnect Google Calendar",
+                          description: "Failed to disconnect Google",
                         });
                       }
                     } else {

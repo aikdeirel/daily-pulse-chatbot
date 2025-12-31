@@ -9,7 +9,7 @@ export default function Page() {
     <Suspense
       fallback={
         <div className="flex h-dvh items-center justify-center">
-          <div className="animate-spin text-muted-foreground">Loading...</div>
+          <div className="text-muted-foreground">Loading...</div>
         </div>
       }
     >

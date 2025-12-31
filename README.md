@@ -19,7 +19,7 @@
 
   <img src="public/images/music-discovery.jpg" width="400" alt="Music discovery">
 
-### And more...
+### And more
 
   <img src="public/images/news-research.jpg" width="400" alt="More features">
 </div>
@@ -221,6 +221,7 @@ Create and edit interactive content directly in chat:
 3. **Set up the database**
 
    ```bash
+   pnpm db:generate
    pnpm db:migrate
    ```
 
