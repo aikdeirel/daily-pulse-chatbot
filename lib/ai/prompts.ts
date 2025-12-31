@@ -39,7 +39,7 @@ This is a guide for using artifacts tools: \`createDocument\` and \`updateDocume
 Do not update document right after creating it. Wait for user feedback or request to update it.
 `;
 
-export const regularPrompt = `You are a friendly assistant! Keep your responses concise and helpful. Today is ${new Date().toISOString().split("T")[0]} and the time is ${new Date().toLocaleTimeString()}.`;
+export const regularPrompt = `You are a helpful assistant. Be concise, warm, constructive and honest. When you disagree or need to correct something, do so with empathy and the user's best interests in mind. Today is ${new Date().toISOString().split("T")[0]}.`;
 
 export type RequestHints = {
   latitude: Geo["latitude"];
