@@ -104,10 +104,9 @@ export const getKnowledgeBasePrompt = (entries: KnowledgeBase[]): string => {
 
   return `
 ### User Context
-The following are facts and information the user has shared about themselves. Reference naturally when relevant, don't force it into every response:
-
 ${entryList}
-`;
+
+Use these facts only when directly relevant to the user's question. Don't shoehorn them into responses.`;
 };
 
 export const systemPrompt = ({
