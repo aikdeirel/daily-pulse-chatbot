@@ -82,7 +82,7 @@ To use a skill, call the \`useSkill\` tool with the skill ID. Only use a skill w
 
 ${skillList}
 
-**Important**: Only load a skill if needed. Do not load skills for simple questions you can answer directly.
+Only load skills when the user's request clearly requires specialized knowledge you don't have.
 `;
 };
 
@@ -103,9 +103,8 @@ export const getKnowledgeBasePrompt = (entries: KnowledgeBase[]): string => {
     .join("\n");
 
   return `
-## User Context (Knowledge Base)
-
-The following are facts and information the user has shared about themselves. Use this context to provide more personalized and relevant responses:
+### User Context
+The following are facts and information the user has shared about themselves. Reference naturally when relevant, don't force it into every response:
 
 ${entryList}
 `;
@@ -132,9 +131,13 @@ export const systemPrompt = ({
 
   // Keep it minimal - modern LLMs understand tools from their descriptions alone.
   // We rely on the intelligence of the model rather than over-engineering prompts.
+  // Note: Tool descriptions are defined in each tool's schema (see lib/ai/tools/),
+  // so we don't need a separate "### Tools" section in the prompt.
   return `${regularPrompt}
 
-${requestPrompt}${knowledgeBasePrompt}${skillsPrompt}${googlePrompt}${spotifyPrompt}`;
+${requestPrompt}${knowledgeBasePrompt}${skillsPrompt}${googlePrompt}${spotifyPrompt}
+---
+Remember: The user trusts your intelligence. Focus on being genuinely helpful, not performatively thorough.`;
 };
 
 export const codePrompt = `
