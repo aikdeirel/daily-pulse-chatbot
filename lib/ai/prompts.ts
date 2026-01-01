@@ -111,8 +111,8 @@ export const getKnowledgeBasePrompt = (entries: KnowledgeBase[]): string => {
 ### User Context
 ${entryList}
 
-Use these facts when they genuinely add value to your response.
-Let relevance emerge naturally from the conversation.`;
+This is background context only.
+Do not proactively suggest activities or reference these facts unless the user's question directly relates to them.`;
 };
 
 export const systemPrompt = ({
