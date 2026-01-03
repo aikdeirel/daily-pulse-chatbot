@@ -64,9 +64,9 @@ function playCuteSound(audioContext: AudioContext): void {
     vibrato.start(startTime);
     vibrato.stop(startTime + noteDuration);
 
-    // Envelope for each note - increased volume (was 0.3, now 0.6)
+    // Envelope for each note - increased volume
     gainNode.gain.setValueAtTime(0, startTime);
-    gainNode.gain.linearRampToValueAtTime(0.6, startTime + 0.02);
+    gainNode.gain.linearRampToValueAtTime(0.8, startTime + 0.02);
     gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + noteDuration);
 
     oscillator.connect(gainNode);
@@ -75,13 +75,13 @@ function playCuteSound(audioContext: AudioContext): void {
     oscillator.start(startTime);
     oscillator.stop(startTime + noteDuration);
 
-    // Add a soft high harmonic for sparkle - increased volume (was 0.1, now 0.2)
+    // Add a soft high harmonic for sparkle - increased volume
     const harmonic = audioContext.createOscillator();
     const harmonicGain = audioContext.createGain();
     harmonic.type = "sine";
     harmonic.frequency.setValueAtTime(freq * 2, startTime);
     harmonicGain.gain.setValueAtTime(0, startTime);
-    harmonicGain.gain.linearRampToValueAtTime(0.2, startTime + 0.02);
+    harmonicGain.gain.linearRampToValueAtTime(0.3, startTime + 0.02);
     harmonicGain.gain.exponentialRampToValueAtTime(
       0.01,
       startTime + noteDuration,
@@ -92,14 +92,14 @@ function playCuteSound(audioContext: AudioContext): void {
     harmonic.stop(startTime + noteDuration);
   });
 
-  // Add a final chime at the end - increased volume (was 0.25, now 0.5)
+  // Add a final chime at the end - increased volume
   const chimeTime = now + notes.length * (noteDuration + noteGap);
   const chime = audioContext.createOscillator();
   const chimeGain = audioContext.createGain();
   chime.type = "triangle";
   chime.frequency.setValueAtTime(1046.5, chimeTime); // C6
   chimeGain.gain.setValueAtTime(0, chimeTime);
-  chimeGain.gain.linearRampToValueAtTime(0.5, chimeTime + 0.01);
+  chimeGain.gain.linearRampToValueAtTime(0.7, chimeTime + 0.01);
   chimeGain.gain.exponentialRampToValueAtTime(0.01, chimeTime + 0.5);
   chime.connect(chimeGain);
   chimeGain.connect(audioContext.destination);
