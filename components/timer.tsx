@@ -401,6 +401,11 @@ export function Timer({ timerData }: TimerProps) {
               },
             )}
             style={{ width: `${isCompleted ? 100 : progress}%` }}
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(isCompleted ? 100 : progress)}
+            aria-label="Timer progress"
           />
         </div>
 
