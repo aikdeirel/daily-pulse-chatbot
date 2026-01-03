@@ -301,7 +301,7 @@ export function Timer({ timerData }: TimerProps) {
     // Clean up any existing audio
     cleanupAudio();
     // Reset all states
-    setRemainingSeconds(data.seconds);
+    setRemainingSeconds(timerData?.seconds ?? data.seconds);
     setIsRunning(true);
     setIsCompleted(false);
     setIsStopped(false);
