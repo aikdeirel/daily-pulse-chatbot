@@ -102,6 +102,18 @@ function playCuteSound(audioContext: AudioContext): void {
   chimeGain.gain.exponentialRampToValueAtTime(0.01, chimeTime + 0.5);
   chime.connect(chimeGain);
   chimeGain.connect(audioContext.destination);
+  chime.onended = () => {
+    try {
+      chime.disconnect();
+    } catch {
+      // ignore if already disconnected or context is closed
+    }
+    try {
+      chimeGain.disconnect();
+    } catch {
+      // ignore if already disconnected or context is closed
+    }
+  };
   chime.start(chimeTime);
   chime.stop(chimeTime + 0.5);
 }
