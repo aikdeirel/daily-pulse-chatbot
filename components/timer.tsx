@@ -237,7 +237,7 @@ export function Timer({ timerData }: TimerProps) {
     if (isRunning && remainingSeconds > 0) {
       intervalRef.current = setInterval(() => {
         setRemainingSeconds((prev) => {
-          if (prev <= 1) {
+          if (prev === 1) {
             setIsRunning(false);
             setIsCompleted(true);
             return 0;
