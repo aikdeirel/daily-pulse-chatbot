@@ -84,6 +84,7 @@ function getBestVoice(): SpeechSynthesisVoice | null {
 export function useSpeechSynthesis(): UseSpeechSynthesisReturn {
   const [state, setState] = useState<SpeakingState>("idle");
   const [isSupported, setIsSupported] = useState(false);
+  const [voicesLoaded, setVoicesLoaded] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   // Check for browser support and load voices
@@ -95,10 +96,19 @@ export function useSpeechSynthesis(): UseSpeechSynthesisReturn {
 
     setIsSupported(true);
 
-    // Voices may load asynchronously
+    // Voices may load asynchronously - track when they're ready
     const handleVoicesChanged = () => {
-      // Voices are now available
+      const voices = window.speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        setVoicesLoaded(true);
+      }
     };
+
+    // Check if voices are already available
+    const initialVoices = window.speechSynthesis.getVoices();
+    if (initialVoices.length > 0) {
+      setVoicesLoaded(true);
+    }
 
     window.speechSynthesis.addEventListener(
       "voiceschanged",

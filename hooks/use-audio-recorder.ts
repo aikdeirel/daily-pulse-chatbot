@@ -108,12 +108,12 @@ export function useAudioRecorder(
         throw new Error("MediaRecorder is not supported in this browser");
       }
 
-      // Request microphone permission
+      // Request microphone permission with standard audio constraints
+      // Let the browser choose optimal sample rate for the device
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
-          sampleRate: 16000,
         },
       });
 

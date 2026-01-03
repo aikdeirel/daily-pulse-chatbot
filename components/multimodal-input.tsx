@@ -31,7 +31,7 @@ import type { SpotifyToolGroupId } from "@/lib/ai/tools/spotify/groups";
 import { FILE_INPUT_ACCEPT } from "@/lib/file-types";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
-import { cn } from "@/lib/utils";
+import { cn, generateUUID } from "@/lib/utils";
 import { Context } from "./elements/context";
 import {
   PromptInput,
@@ -178,9 +178,9 @@ function PureMultimodalInput({
           // Update URL to show we're in a chat
           window.history.pushState({}, "", `/chat/${chatId}`);
 
-          // Generate unique IDs for messages
-          const userMessageId = crypto.randomUUID();
-          const assistantMessageId = crypto.randomUUID();
+          // Generate unique IDs for messages using cross-browser compatible UUID
+          const userMessageId = generateUUID();
+          const assistantMessageId = generateUUID();
 
           // Add both user and assistant messages to the chat
           setMessages((prevMessages) => [
@@ -191,7 +191,7 @@ function PureMultimodalInput({
               parts: [
                 {
                   type: "text" as const,
-                  text: "🎤 [Voice message]",
+                  text: "🎤 Voice message",
                 },
               ],
               createdAt: new Date(),
