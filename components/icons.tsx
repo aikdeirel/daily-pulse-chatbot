@@ -1310,3 +1310,60 @@ export const ShareIcon = ({ size = 16 }: { size?: number }) => {
     </svg>
   );
 };
+
+export const MicrophoneIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      style={{ color: "currentcolor" }}
+      viewBox="0 0 16 16"
+      width={size}
+    >
+      <path
+        clipRule="evenodd"
+        d="M8 1C6.89543 1 6 1.89543 6 3V8C6 9.10457 6.89543 10 8 10C9.10457 10 10 9.10457 10 8V3C10 1.89543 9.10457 1 8 1ZM4.5 3C4.5 1.067 6.067 -0.5 8 -0.5C9.933 -0.5 11.5 1.067 11.5 3V8C11.5 9.933 9.933 11.5 8 11.5C6.067 11.5 4.5 9.933 4.5 8V3ZM3 7.25V8C3 10.7614 5.23858 13 8 13C10.7614 13 13 10.7614 13 8V7.25H14.5V8C14.5 11.3137 12.0376 14.0507 8.75 14.4463V15.5H11V17H5V15.5H7.25V14.4463C3.96243 14.0507 1.5 11.3137 1.5 8V7.25H3Z"
+        fill="currentColor"
+        fillRule="evenodd"
+      />
+    </svg>
+  );
+};
+
+export const SpeakerIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      style={{ color: "currentcolor" }}
+      viewBox="0 0 16 16"
+      width={size}
+    >
+      <path
+        clipRule="evenodd"
+        d="M8.5 2.5V13.5L4.5 10.5H1.5V5.5H4.5L8.5 2.5ZM10 5.5C10.8284 5.5 11.5 6.17157 11.5 7V9C11.5 9.82843 10.8284 10.5 10 10.5V9C10 8.72386 10.2239 8.5 10.5 8.5V7.5C10.2239 7.5 10 7.27614 10 7V5.5ZM12.5 4C14.1569 4 15.5 5.34315 15.5 7V9C15.5 10.6569 14.1569 12 12.5 12V10.5C13.3284 10.5 14 9.82843 14 9V7C14 6.17157 13.3284 5.5 12.5 5.5V4Z"
+        fill="currentColor"
+        fillRule="evenodd"
+      />
+    </svg>
+  );
+};
+
+export const SpeakerOffIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      style={{ color: "currentcolor" }}
+      viewBox="0 0 16 16"
+      width={size}
+    >
+      <path
+        clipRule="evenodd"
+        d="M8.5 2.5V13.5L4.5 10.5H1.5V5.5H4.5L8.5 2.5ZM11.6464 6.14645L10.7929 7L11.6464 7.85355L12.5 8.70711L13.3536 7.85355L14.2071 7L13.3536 6.14645L12.5 5.29289L11.6464 6.14645ZM10.7929 9L11.6464 9.85355L12.5 10.7071L13.3536 9.85355L14.2071 9L13.3536 8.14645L12.5 7.29289L11.6464 8.14645L10.7929 9Z"
+        fill="currentColor"
+        fillRule="evenodd"
+      />
+    </svg>
+  );
+};

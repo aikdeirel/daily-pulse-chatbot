@@ -20,6 +20,11 @@ import { toast } from "sonner";
 import { useLocalStorage, useWindowSize } from "usehooks-ts";
 import { saveChatModelAsCookie } from "@/app/(chat)/actions";
 import { SelectItem } from "@/components/ui/select";
+import {
+  audioToBase64,
+  getAudioFormat,
+  useAudioRecorder,
+} from "@/hooks/use-audio-recorder";
 import { chatModels } from "@/lib/ai/models";
 import type { GoogleToolGroupId } from "@/lib/ai/tools/google/groups";
 import type { SpotifyToolGroupId } from "@/lib/ai/tools/spotify/groups";
@@ -51,6 +56,7 @@ import { SpotifyToolSelector } from "./spotify-tool-selector";
 import { SuggestedActions } from "./suggested-actions";
 import { Button } from "./ui/button";
 import type { VisibilityType } from "./visibility-selector";
+import { VoiceRecordButton } from "./voice-record-button";
 
 function PureMultimodalInput({
   chatId,
@@ -105,6 +111,18 @@ function PureMultimodalInput({
     "",
   );
 
+  // Voice recording state
+  const [isVoiceProcessing, setIsVoiceProcessing] = useState(false);
+  const {
+    state: recordingState,
+    toggleRecording,
+    mimeType,
+  } = useAudioRecorder({
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
   useEffect(() => {
     if (textareaRef.current) {
       const domValue = textareaRef.current.value;
@@ -126,6 +144,81 @@ function PureMultimodalInput({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadQueue, setUploadQueue] = useState<string[]>([]);
+
+  // Handle voice recording toggle
+  const handleVoiceToggle = useCallback(async () => {
+    const audioBlob = await toggleRecording();
+
+    // If we got a blob back, recording just stopped - process it
+    if (audioBlob) {
+      setIsVoiceProcessing(true);
+
+      try {
+        const base64Audio = await audioToBase64(audioBlob);
+        const format = getAudioFormat(mimeType);
+
+        const response = await fetch("/api/voice", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            audio: base64Audio,
+            format,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to process voice input");
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.text) {
+          // Update URL to show we're in a chat
+          window.history.pushState({}, "", `/chat/${chatId}`);
+
+          // Generate unique IDs for messages
+          const userMessageId = crypto.randomUUID();
+          const assistantMessageId = crypto.randomUUID();
+
+          // Add both user and assistant messages to the chat
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            {
+              id: userMessageId,
+              role: "user" as const,
+              parts: [
+                {
+                  type: "text" as const,
+                  text: "🎤 [Voice message]",
+                },
+              ],
+              createdAt: new Date(),
+            },
+            {
+              id: assistantMessageId,
+              role: "assistant" as const,
+              parts: [
+                {
+                  type: "text" as const,
+                  text: data.text,
+                },
+              ],
+              createdAt: new Date(),
+            },
+          ]);
+        } else {
+          toast.error("No response from voice processing");
+        }
+      } catch (error) {
+        console.error("Voice processing error:", error);
+        toast.error("Failed to process voice input. Please try again.");
+      } finally {
+        setIsVoiceProcessing(false);
+      }
+    }
+  }, [toggleRecording, mimeType, chatId, setMessages]);
 
   const submitForm = useCallback(() => {
     window.history.pushState({}, "", `/chat/${chatId}`);
@@ -372,6 +465,11 @@ function PureMultimodalInput({
               selectedModelId={selectedModelId}
               status={status}
             />
+            <VoiceRecordButton
+              disabled={status !== "ready" || isVoiceProcessing}
+              onClick={handleVoiceToggle}
+              state={isVoiceProcessing ? "processing" : recordingState}
+            />
             <SpotifyToolSelector
               disabled={status !== "ready"}
               onChange={onSpotifyToolGroupsChange}
@@ -393,8 +491,14 @@ function PureMultimodalInput({
             />
           </PromptInputTools>
 
-          {status === "submitted" ? (
-            <StopButton setMessages={setMessages} stop={stop} />
+          {status === "submitted" || isVoiceProcessing ? (
+            isVoiceProcessing ? (
+              <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-r from-orange-500/50 to-amber-500/50">
+                <div className="size-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              </div>
+            ) : (
+              <StopButton setMessages={setMessages} stop={stop} />
+            )
           ) : (
             <PromptInputSubmit
               className="size-10 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/30 transition-all duration-200 hover:from-orange-400 hover:to-amber-400 hover:shadow-xl hover:shadow-orange-500/40 disabled:from-muted disabled:to-muted disabled:text-muted-foreground disabled:shadow-none dark:from-orange-500 dark:to-amber-500 dark:shadow-orange-500/25"
