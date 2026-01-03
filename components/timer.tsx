@@ -267,6 +267,8 @@ export function Timer({ timerData }: TimerProps) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
+    // Ensure any audio is cleaned up (safety measure)
+    cleanupAudio();
   };
 
   // Handle end sound
