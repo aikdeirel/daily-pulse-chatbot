@@ -127,23 +127,11 @@ export function Timer({ timerData }: TimerProps) {
       ? timerData
       : SAMPLE;
 
-  // Calculate initial remaining time based on startedAt if available
-  const calculateInitialRemaining = useCallback(() => {
-    if (data.startedAt) {
-      const elapsedMs = Date.now() - data.startedAt;
-      const elapsedSeconds = Math.floor(elapsedMs / 1000);
-      const remaining = Math.max(0, data.seconds - elapsedSeconds);
-      return remaining;
-    }
-    return data.seconds;
-  }, [data.seconds, data.startedAt]);
-
-  const initialRemaining = calculateInitialRemaining();
-  const isInitiallyCompleted = initialRemaining === 0;
-
-  const [remainingSeconds, setRemainingSeconds] = useState(initialRemaining);
-  const [isRunning, setIsRunning] = useState(!isInitiallyCompleted);
-  const [isCompleted, setIsCompleted] = useState(isInitiallyCompleted);
+  // On re-render/recreation, reset to initial state (not running) to avoid unexpected sound playback
+  // The simplest approach: timer starts fresh each time the component mounts
+  const [remainingSeconds, setRemainingSeconds] = useState(data.seconds);
+  const [isRunning, setIsRunning] = useState(false); // Start paused to avoid unexpected behavior on re-render
+  const [isCompleted, setIsCompleted] = useState(false);
   const [isStopped, setIsStopped] = useState(false); // Stopped manually without completion
   const [isSoundPlaying, setIsSoundPlaying] = useState(false);
   const [soundWasStopped, setSoundWasStopped] = useState(false); // Track if user stopped the sound
