@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 type TimerData = {
   seconds: number;
   label?: string;
+  // startedAt can be used for more accurate time tracking if component is recreated
   startedAt?: number;
 };
 
