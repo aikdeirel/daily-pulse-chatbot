@@ -2,10 +2,12 @@
 
 import cx from "classnames";
 import {
+  BellIcon,
   PauseIcon,
   PlayIcon,
   RotateCcwIcon,
   Square,
+  TimerIcon,
   VolumeX,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -118,60 +120,6 @@ function playCuteSound(audioContext: AudioContext): void {
   chime.stop(chimeTime + 0.5);
 }
 
-// Timer Icon SVG
-const TimerIcon = ({ size = 48 }: { size?: number }) => (
-  <svg fill="none" height={size} viewBox="0 0 24 24" width={size}>
-    <circle
-      cx="12"
-      cy="13"
-      fill="none"
-      r="8"
-      stroke="currentColor"
-      strokeWidth="2"
-    />
-    <path
-      d="M12 9v4l2 2"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-    />
-    <path
-      d="M9 2h6"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeWidth="2"
-    />
-    <path
-      d="M12 2v2"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeWidth="2"
-    />
-  </svg>
-);
-
-// Bell Icon for completed state
-const BellIcon = ({ size = 48 }: { size?: number }) => (
-  <svg fill="none" height={size} viewBox="0 0 24 24" width={size}>
-    <path
-      d="M18 8A6 6 0 1 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-    />
-    <path
-      d="M13.73 21a2 2 0 0 1-3.46 0"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-    />
-    <circle cx="12" cy="8" fill="currentColor" r="1" className="animate-ping" />
-  </svg>
-);
-
 export function Timer({ timerData }: TimerProps) {
   // Use SAMPLE as fallback if timerData is undefined or missing required data
   const data =
@@ -179,9 +127,23 @@ export function Timer({ timerData }: TimerProps) {
       ? timerData
       : SAMPLE;
 
-  const [remainingSeconds, setRemainingSeconds] = useState(data.seconds);
-  const [isRunning, setIsRunning] = useState(true);
-  const [isCompleted, setIsCompleted] = useState(false);
+  // Calculate initial remaining time based on startedAt if available
+  const calculateInitialRemaining = useCallback(() => {
+    if (data.startedAt) {
+      const elapsedMs = Date.now() - data.startedAt;
+      const elapsedSeconds = Math.floor(elapsedMs / 1000);
+      const remaining = Math.max(0, data.seconds - elapsedSeconds);
+      return remaining;
+    }
+    return data.seconds;
+  }, [data.seconds, data.startedAt]);
+
+  const initialRemaining = calculateInitialRemaining();
+  const isInitiallyCompleted = initialRemaining === 0;
+
+  const [remainingSeconds, setRemainingSeconds] = useState(initialRemaining);
+  const [isRunning, setIsRunning] = useState(!isInitiallyCompleted);
+  const [isCompleted, setIsCompleted] = useState(isInitiallyCompleted);
   const [isStopped, setIsStopped] = useState(false); // Stopped manually without completion
   const [isSoundPlaying, setIsSoundPlaying] = useState(false);
   const [soundWasStopped, setSoundWasStopped] = useState(false); // Track if user stopped the sound
@@ -212,7 +174,11 @@ export function Timer({ timerData }: TimerProps) {
 
   // Play completion sound
   const playSound = useCallback(() => {
-    if (!audioContextRef.current) {
+    // Create new AudioContext if none exists or if the existing one is closed
+    if (
+      !audioContextRef.current ||
+      audioContextRef.current.state === "closed"
+    ) {
       audioContextRef.current = new AudioContext();
     }
 
@@ -226,7 +192,7 @@ export function Timer({ timerData }: TimerProps) {
 
     // Repeat the sound every 2 seconds until stopped
     soundIntervalRef.current = setInterval(() => {
-      if (audioContextRef.current) {
+      if (audioContextRef.current && audioContextRef.current.state !== "closed") {
         playCuteSound(audioContextRef.current);
       }
     }, 2000);
@@ -357,7 +323,11 @@ export function Timer({ timerData }: TimerProps) {
                 "text-white/60": isStopped,
               })}
             >
-              {isCompleted ? <BellIcon size={48} /> : <TimerIcon size={48} />}
+              {isCompleted ? (
+                <BellIcon className="size-12" />
+              ) : (
+                <TimerIcon className="size-12" />
+              )}
             </div>
             <div
               className="font-light text-5xl text-white tabular-nums"
