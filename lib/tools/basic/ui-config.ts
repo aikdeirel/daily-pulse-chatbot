@@ -81,7 +81,7 @@ export const basicToolUIConfig: Record<BasicToolType, BasicToolUIConfig> = {
   },
   "tool-setTimer": {
     label: "Timer",
-    color: "text-teal-600 dark:text-teal-400",
+    color: "text-red-600 dark:text-red-400",
     defaultDescription: "Setting countdown timer",
     icon: "TimerIcon",
     defaultOpen: true,
