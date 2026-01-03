@@ -47,6 +47,7 @@ import { MessageEditor } from "./message-editor";
 import { MessageReasoning } from "./message-reasoning";
 import { PreviewAttachment } from "./preview-attachment";
 import { SpotifyPlayer } from "./spotify-player";
+import { Timer } from "./timer";
 import { Weather } from "./weather";
 
 const PurePreviewMessage = ({
@@ -398,6 +399,10 @@ const PurePreviewMessage = ({
                                   <Weather
                                     weatherAtLocation={basicPart.output as any}
                                   />
+                                );
+                              case "tool-setTimer":
+                                return (
+                                  <Timer timerData={basicPart.output as any} />
                                 );
                               case "tool-requestSuggestions":
                                 return basicPart.output &&

@@ -6,6 +6,7 @@ import type { getWeather } from "./ai/tools/get-weather";
 import type { googleCalendars, googleEvents } from "./ai/tools/google";
 import type { requestSuggestions } from "./ai/tools/request-suggestions";
 import type { searchPastConversations } from "./ai/tools/search-history";
+import type { setTimer } from "./ai/tools/set-timer";
 import type {
   spotifyAlbums,
   spotifyArtists,
@@ -38,6 +39,7 @@ export const messageMetadataSchema = z.object({
 export type MessageMetadata = z.infer<typeof messageMetadataSchema>;
 
 type weatherTool = InferUITool<typeof getWeather>;
+type setTimerTool = InferUITool<typeof setTimer>;
 type createDocumentTool = InferUITool<ReturnType<typeof createDocument>>;
 type updateDocumentTool = InferUITool<ReturnType<typeof updateDocument>>;
 type requestSuggestionsTool = InferUITool<
@@ -62,6 +64,7 @@ type googleEventsTool = InferUITool<ReturnType<typeof googleEvents>>;
 
 export type ChatTools = {
   getWeather: weatherTool;
+  setTimer: setTimerTool;
   createDocument: createDocumentTool;
   updateDocument: updateDocumentTool;
   requestSuggestions: requestSuggestionsTool;

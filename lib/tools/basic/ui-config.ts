@@ -7,6 +7,7 @@ export const BASIC_TOOL_TYPES = [
   "tool-useSkill",
   "tool-getSkillResource",
   "tool-webFetch",
+  "tool-setTimer",
 ] as const;
 
 export type BasicToolType = (typeof BASIC_TOOL_TYPES)[number];
@@ -76,6 +77,14 @@ export const basicToolUIConfig: Record<BasicToolType, BasicToolUIConfig> = {
     color: "text-indigo-600 dark:text-indigo-400",
     defaultDescription: "Fetching web content",
     icon: "GlobeIcon",
+    actions: {},
+  },
+  "tool-setTimer": {
+    label: "Timer",
+    color: "text-teal-600 dark:text-teal-400",
+    defaultDescription: "Setting countdown timer",
+    icon: "TimerIcon",
+    defaultOpen: true,
     actions: {},
   },
 };

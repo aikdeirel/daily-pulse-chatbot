@@ -13,6 +13,7 @@ import {
   LightbulbIcon,
   PencilIcon,
   SparklesIcon,
+  TimerIcon,
   WrenchIcon,
   XCircleIcon,
   ZapIcon,
@@ -106,6 +107,8 @@ function getToolIcon(type: string, className: string = "size-4"): ReactNode {
   switch (type) {
     case "tool-getWeather":
       return <CloudIcon className={className} />;
+    case "tool-setTimer":
+      return <TimerIcon className={className} />;
     case "tool-createDocument":
       return <FileTextIcon className={className} />;
     case "tool-updateDocument":

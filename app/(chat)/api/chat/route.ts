@@ -41,6 +41,7 @@ import {
 } from "@/lib/ai/tools/google/groups";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
 import { searchPastConversations } from "@/lib/ai/tools/search-history";
+import { setTimer } from "@/lib/ai/tools/set-timer";
 import {
   spotifyAlbums,
   spotifyArtists,
@@ -395,6 +396,7 @@ export async function POST(request: Request) {
         // Skills are discovered at runtime, tools are always available
         const baseTools = {
           getWeather,
+          setTimer,
           createDocument: createDocument({ session, dataStream }),
           updateDocument: updateDocument({ session, dataStream }),
           requestSuggestions: requestSuggestions({
@@ -471,6 +473,7 @@ export async function POST(request: Request) {
 
         const baseActiveTools: ToolName[] = [
           "getWeather",
+          "setTimer",
           "createDocument",
           "updateDocument",
           "requestSuggestions",
