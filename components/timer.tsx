@@ -359,18 +359,30 @@ export function Timer({ timerData }: TimerProps) {
             >
               {isCompleted ? <BellIcon size={48} /> : <TimerIcon size={48} />}
             </div>
-            <div className="font-light text-5xl text-white tabular-nums">
+            <div
+              className="font-light text-5xl text-white tabular-nums"
+              role="timer"
+              aria-live="polite"
+              aria-label={`${formatTime(remainingSeconds)} remaining`}
+            >
               {formatTime(remainingSeconds)}
             </div>
           </div>
 
           {/* Progress indicator (only when running) */}
           {!isCompleted && !isStopped && (
-            <div className="text-right">
-              <div className="font-medium text-sm text-white/90">
+            <div
+              className="text-right"
+              role="status"
+              aria-live="polite"
+              aria-label={`${Math.round(progress)} percent complete`}
+            >
+              <div className="font-medium text-sm text-white/90" aria-hidden="true">
                 {Math.round(progress)}%
               </div>
-              <div className="text-sm text-white/70">complete</div>
+              <div className="text-sm text-white/70" aria-hidden="true">
+                complete
+              </div>
             </div>
           )}
         </div>
