@@ -57,9 +57,9 @@ function playCuteSound(audioContext: AudioContext): void {
     vibrato.start(startTime);
     vibrato.stop(startTime + noteDuration);
 
-    // Envelope for each note
+    // Envelope for each note - increased volume (was 0.3, now 0.6)
     gainNode.gain.setValueAtTime(0, startTime);
-    gainNode.gain.linearRampToValueAtTime(0.3, startTime + 0.02);
+    gainNode.gain.linearRampToValueAtTime(0.6, startTime + 0.02);
     gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + noteDuration);
 
     oscillator.connect(gainNode);
@@ -68,13 +68,13 @@ function playCuteSound(audioContext: AudioContext): void {
     oscillator.start(startTime);
     oscillator.stop(startTime + noteDuration);
 
-    // Add a soft high harmonic for sparkle
+    // Add a soft high harmonic for sparkle - increased volume (was 0.1, now 0.2)
     const harmonic = audioContext.createOscillator();
     const harmonicGain = audioContext.createGain();
     harmonic.type = "sine";
     harmonic.frequency.setValueAtTime(freq * 2, startTime);
     harmonicGain.gain.setValueAtTime(0, startTime);
-    harmonicGain.gain.linearRampToValueAtTime(0.1, startTime + 0.02);
+    harmonicGain.gain.linearRampToValueAtTime(0.2, startTime + 0.02);
     harmonicGain.gain.exponentialRampToValueAtTime(
       0.01,
       startTime + noteDuration,
@@ -85,14 +85,14 @@ function playCuteSound(audioContext: AudioContext): void {
     harmonic.stop(startTime + noteDuration);
   });
 
-  // Add a final chime at the end
+  // Add a final chime at the end - increased volume (was 0.25, now 0.5)
   const chimeTime = now + notes.length * (noteDuration + noteGap);
   const chime = audioContext.createOscillator();
   const chimeGain = audioContext.createGain();
   chime.type = "triangle";
   chime.frequency.setValueAtTime(1046.5, chimeTime); // C6
   chimeGain.gain.setValueAtTime(0, chimeTime);
-  chimeGain.gain.linearRampToValueAtTime(0.25, chimeTime + 0.01);
+  chimeGain.gain.linearRampToValueAtTime(0.5, chimeTime + 0.01);
   chimeGain.gain.exponentialRampToValueAtTime(0.01, chimeTime + 0.5);
   chime.connect(chimeGain);
   chimeGain.connect(audioContext.destination);
@@ -164,6 +164,7 @@ export function Timer({ timerData }: TimerProps) {
   const [remainingSeconds, setRemainingSeconds] = useState(data.seconds);
   const [isRunning, setIsRunning] = useState(true);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isStopped, setIsStopped] = useState(false); // Stopped manually without completion
   const [isSoundPlaying, setIsSoundPlaying] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -173,13 +174,17 @@ export function Timer({ timerData }: TimerProps) {
   const totalSeconds = data.seconds;
   const progress = ((totalSeconds - remainingSeconds) / totalSeconds) * 100;
 
-  // Cleanup audio context
+  // Cleanup audio context - creates a new context to stop all scheduled sounds
   const cleanupAudio = useCallback(() => {
+    // Clear the repeating sound interval
     if (soundIntervalRef.current) {
       clearInterval(soundIntervalRef.current);
       soundIntervalRef.current = null;
     }
+    // Close and nullify the audio context to stop all scheduled sounds immediately
     if (audioContextRef.current) {
+      // Suspend first to stop audio immediately, then close
+      audioContextRef.current.suspend().catch(() => {});
       audioContextRef.current.close().catch(() => {});
       audioContextRef.current = null;
     }
@@ -254,12 +259,14 @@ export function Timer({ timerData }: TimerProps) {
     }
   };
 
-  // Handle stop (end timer completely)
+  // Handle stop (end timer completely without playing sound)
   const handleStop = () => {
     setIsRunning(false);
-    setRemainingSeconds(0);
-    setIsCompleted(true);
-    cleanupAudio();
+    setIsStopped(true); // Mark as stopped, not completed
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
   };
 
   // Handle end sound
@@ -273,11 +280,15 @@ export function Timer({ timerData }: TimerProps) {
         "relative flex w-full flex-col gap-4 overflow-hidden rounded-3xl p-6 shadow-lg backdrop-blur-sm",
         {
           "bg-gradient-to-br from-teal-400 via-cyan-500 to-teal-600":
-            !isCompleted,
+            !isCompleted && !isStopped,
         },
         {
           "bg-gradient-to-br from-rose-400 via-pink-500 to-rose-600 animate-pulse":
             isCompleted,
+        },
+        {
+          "bg-gradient-to-br from-slate-400 via-slate-500 to-slate-600":
+            isStopped,
         },
       )}
     >
@@ -294,6 +305,11 @@ export function Timer({ timerData }: TimerProps) {
               Time&apos;s up!
             </div>
           )}
+          {isStopped && (
+            <div className="rounded-full bg-white/20 px-3 py-1 font-medium text-sm text-white">
+              Stopped
+            </div>
+          )}
         </div>
 
         {/* Main display */}
@@ -301,8 +317,9 @@ export function Timer({ timerData }: TimerProps) {
           <div className="flex items-center gap-4">
             <div
               className={cx("text-white/90", {
-                "text-yellow-200": !isCompleted,
+                "text-yellow-200": !isCompleted && !isStopped,
                 "text-white animate-bounce": isCompleted,
+                "text-white/60": isStopped,
               })}
             >
               {isCompleted ? <BellIcon size={48} /> : <TimerIcon size={48} />}
@@ -312,8 +329,8 @@ export function Timer({ timerData }: TimerProps) {
             </div>
           </div>
 
-          {/* Progress indicator (only when not completed) */}
-          {!isCompleted && (
+          {/* Progress indicator (only when running) */}
+          {!isCompleted && !isStopped && (
             <div className="text-right">
               <div className="font-medium text-sm text-white/90">
                 {Math.round(progress)}%
@@ -329,9 +346,11 @@ export function Timer({ timerData }: TimerProps) {
             className={cx(
               "h-full rounded-full transition-all duration-1000 ease-linear",
               {
-                "bg-gradient-to-r from-yellow-300 to-white": !isCompleted,
+                "bg-gradient-to-r from-yellow-300 to-white":
+                  !isCompleted && !isStopped,
                 "bg-gradient-to-r from-white to-pink-200 animate-pulse":
                   isCompleted,
+                "bg-gradient-to-r from-slate-300 to-slate-200": isStopped,
               },
             )}
             style={{ width: `${isCompleted ? 100 : progress}%` }}
@@ -340,8 +359,8 @@ export function Timer({ timerData }: TimerProps) {
 
         {/* Control buttons */}
         <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
-          {/* Pause/Resume button - only show when not completed */}
-          {!isCompleted && (
+          {/* Pause/Resume button - only show when running (not completed or stopped) */}
+          {!isCompleted && !isStopped && (
             <button
               onClick={togglePause}
               type="button"
@@ -365,8 +384,8 @@ export function Timer({ timerData }: TimerProps) {
             </button>
           )}
 
-          {/* Stop button - show when timer is running (not completed) */}
-          {!isCompleted && (
+          {/* Stop button - show when timer is running (not completed or stopped) */}
+          {!isCompleted && !isStopped && (
             <button
               onClick={handleStop}
               type="button"
