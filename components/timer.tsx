@@ -1,7 +1,14 @@
 "use client";
 
 import cx from "classnames";
-import { PauseIcon, PlayIcon, Square, Volume2, VolumeX } from "lucide-react";
+import {
+  PauseIcon,
+  PlayIcon,
+  RotateCcwIcon,
+  Square,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type TimerData = {
@@ -166,6 +173,7 @@ export function Timer({ timerData }: TimerProps) {
   const [isCompleted, setIsCompleted] = useState(false);
   const [isStopped, setIsStopped] = useState(false); // Stopped manually without completion
   const [isSoundPlaying, setIsSoundPlaying] = useState(false);
+  const [soundWasStopped, setSoundWasStopped] = useState(false); // Track if user stopped the sound
   const audioContextRef = useRef<AudioContext | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const soundIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -235,12 +243,12 @@ export function Timer({ timerData }: TimerProps) {
     };
   }, [isRunning, remainingSeconds]);
 
-  // Play sound when completed
+  // Play sound when completed (but only if user hasn't stopped it)
   useEffect(() => {
-    if (isCompleted && !isSoundPlaying) {
+    if (isCompleted && !isSoundPlaying && !soundWasStopped) {
       playSound();
     }
-  }, [isCompleted, isSoundPlaying, playSound]);
+  }, [isCompleted, isSoundPlaying, soundWasStopped, playSound]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -273,7 +281,21 @@ export function Timer({ timerData }: TimerProps) {
 
   // Handle end sound
   const handleEndSound = () => {
+    setSoundWasStopped(true); // Prevent sound from restarting
     cleanupAudio();
+  };
+
+  // Handle restart timer
+  const handleRestart = () => {
+    // Clean up any existing audio
+    cleanupAudio();
+    // Reset all states
+    setRemainingSeconds(data.seconds);
+    setIsRunning(true);
+    setIsCompleted(false);
+    setIsStopped(false);
+    setSoundWasStopped(false);
+    setIsSoundPlaying(false);
   };
 
   return (
@@ -403,7 +425,7 @@ export function Timer({ timerData }: TimerProps) {
           )}
 
           {/* End sound button - only show when completed and sound is playing */}
-          {isCompleted && (
+          {isCompleted && isSoundPlaying && (
             <button
               onClick={handleEndSound}
               type="button"
@@ -411,23 +433,27 @@ export function Timer({ timerData }: TimerProps) {
                 "flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 font-medium text-sm transition-all active:scale-95",
                 "bg-white/30 text-white hover:bg-white/40 backdrop-blur-sm",
                 "min-h-[48px]", // Mobile-friendly touch target
-                {
-                  "ring-2 ring-white/50 ring-offset-2 ring-offset-transparent":
-                    isSoundPlaying,
-                },
+                "ring-2 ring-white/50 ring-offset-2 ring-offset-transparent",
               )}
             >
-              {isSoundPlaying ? (
-                <>
-                  <VolumeX className="size-5" />
-                  <span>Stop Sound</span>
-                </>
-              ) : (
-                <>
-                  <Volume2 className="size-5" />
-                  <span>Sound Off</span>
-                </>
+              <VolumeX className="size-5" />
+              <span>Stop Sound</span>
+            </button>
+          )}
+
+          {/* Restart button - show when timer is completed or stopped */}
+          {(isCompleted || isStopped) && (
+            <button
+              onClick={handleRestart}
+              type="button"
+              className={cx(
+                "flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 font-medium text-sm transition-all active:scale-95",
+                "bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm",
+                "min-h-[48px]", // Mobile-friendly touch target
               )}
+            >
+              <RotateCcwIcon className="size-5" />
+              <span>Restart Timer</span>
             </button>
           )}
         </div>
