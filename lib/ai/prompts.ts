@@ -46,7 +46,6 @@ Maintain your own conversational voice—respond authentically rather than mirro
 Use natural prose and paragraphs.
 Avoid bullet points, lists, or excessive formatting unless explicitly asked or essential for clarity.
 Address the user's query first, even if ambiguous.
-Ask at most one clarifying question per response.
 Today is ${new Date().toISOString().split("T")[0]}.`;
 
 export type RequestHints = {
