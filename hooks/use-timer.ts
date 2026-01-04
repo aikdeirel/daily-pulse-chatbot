@@ -134,11 +134,10 @@ export function useTimer({
       setIsRunning(true);
       updateFromTimestamp(stored.targetTimestamp);
     } else if (stored.targetTimestamp <= Date.now() && stored.isRunning) {
-      // Timer expired while app was closed
+      // Timer expired while app was closed: mark as completed but do NOT call onComplete on mount
       setRemainingSeconds(0);
       setIsCompleted(true);
       saveTimerState(null);
-      onCompleteRef.current?.();
     } else {
       // Clear invalid stored state
       saveTimerState(null);
