@@ -41,6 +41,7 @@ import {
 } from "@/lib/ai/tools/google/groups";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
 import { searchPastConversations } from "@/lib/ai/tools/search-history";
+import { setTimer } from "@/lib/ai/tools/set-timer";
 import {
   spotifyAlbums,
   spotifyArtists,
@@ -67,6 +68,7 @@ import {
   createStreamId,
   deleteChatById,
   getChatById,
+  getKnowledgeBaseEntries,
   getMessageCountByUserId,
   getMessagesByChatId,
   saveChat,
@@ -276,6 +278,9 @@ export async function POST(request: Request) {
     // Discover available skills (Level 1 - metadata only)
     const availableSkills = await discoverSkills();
 
+    // Fetch knowledge base entries for user context
+    const knowledgeBaseEntries = await getKnowledgeBaseEntries(session.user.id);
+
     let finalMergedUsage: AppUsage | undefined;
 
     // Track streaming content for progressive database saves
@@ -391,6 +396,7 @@ export async function POST(request: Request) {
         // Skills are discovered at runtime, tools are always available
         const baseTools = {
           getWeather,
+          setTimer,
           createDocument: createDocument({ session, dataStream }),
           updateDocument: updateDocument({ session, dataStream }),
           requestSuggestions: requestSuggestions({
@@ -467,6 +473,7 @@ export async function POST(request: Request) {
 
         const baseActiveTools: ToolName[] = [
           "getWeather",
+          "setTimer",
           "createDocument",
           "updateDocument",
           "requestSuggestions",
@@ -508,6 +515,7 @@ export async function POST(request: Request) {
             skills: availableSkills,
             spotifyGroups: spotifyToolGroups,
             googleGroups: googleToolGroups,
+            knowledgeBaseEntries,
           }),
           messages: convertToModelMessages(uiMessages),
           stopWhen: stepCountIs(5),

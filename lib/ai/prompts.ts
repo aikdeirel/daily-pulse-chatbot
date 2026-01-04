@@ -1,10 +1,12 @@
 import type { Geo } from "@vercel/functions";
+import { format } from "date-fns";
 import type { ArtifactKind } from "@/components/artifact";
 import type { SkillSummary } from "@/lib/ai/skills";
 import type { GoogleToolGroupId } from "@/lib/ai/tools/google/groups";
 import { getGooglePromptForGroups } from "@/lib/ai/tools/google/groups";
 import type { SpotifyToolGroupId } from "@/lib/ai/tools/spotify/groups";
 import { getSpotifyPromptForGroups } from "@/lib/ai/tools/spotify/groups";
+import type { KnowledgeBase } from "@/lib/db/schema";
 
 export const artifactsPrompt = `
 Artifacts is a special user interface mode that helps users with writing, editing, and other content creation tasks. When artifact is open, it is on the right side of the screen, while the conversation is on the left side. When creating or updating documents, changes are reflected in real-time on the artifacts and visible to the user.
@@ -37,7 +39,14 @@ This is a guide for using artifacts tools: \`createDocument\` and \`updateDocume
 Do not update document right after creating it. Wait for user feedback or request to update it.
 `;
 
-export const regularPrompt = `You are a friendly assistant! Keep your responses concise and helpful. Today is ${new Date().toISOString().split("T")[0]} and the time is ${new Date().toLocaleTimeString()}.`;
+export const regularPrompt = `You are a highly intelligent and empathetic assistant.
+Be concise, warm, constructive and honest.
+When you disagree or need to correct something, do so with empathy and the user's best interests in mind.
+Maintain your own conversational voice—respond authentically rather than mirroring the user's style or vocabulary.
+Use natural prose and paragraphs.
+Avoid bullet points, lists, or excessive formatting unless explicitly asked or essential for clarity.
+Address the user's query first, even if ambiguous.
+Today is ${new Date().toISOString().split("T")[0]}.`;
 
 export type RequestHints = {
   latitude: Geo["latitude"];
@@ -77,8 +86,32 @@ To use a skill, call the \`useSkill\` tool with the skill ID. Only use a skill w
 
 ${skillList}
 
-**Important**: Only load a skill if needed. Do not load skills for simple questions you can answer directly.
+Only load skills when the user's request clearly requires specialized knowledge you don't have.
 `;
+};
+
+/**
+ * Generate user context from knowledge base entries
+ * This provides persistent memory about the user to personalize responses
+ */
+export const getKnowledgeBasePrompt = (entries: KnowledgeBase[]): string => {
+  if (entries.length === 0) {
+    return "";
+  }
+
+  const entryList = entries
+    .map(
+      (entry) =>
+        `- [${format(new Date(entry.createdAt), "yyyy-MM-dd")}]: ${entry.content}`,
+    )
+    .join("\n");
+
+  return `
+### User Context
+${entryList}
+
+This is background context only.
+Do not proactively suggest activities or reference these facts unless the conversation directly relates to them.`;
 };
 
 export const systemPrompt = ({
@@ -86,22 +119,29 @@ export const systemPrompt = ({
   skills = [],
   spotifyGroups = [],
   googleGroups = [],
+  knowledgeBaseEntries = [],
 }: {
   requestHints: RequestHints;
   skills?: SkillSummary[];
   spotifyGroups?: SpotifyToolGroupId[];
   googleGroups?: GoogleToolGroupId[];
+  knowledgeBaseEntries?: KnowledgeBase[];
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
   const skillsPrompt = getSkillsPrompt(skills);
   const spotifyPrompt = getSpotifyPromptForGroups(spotifyGroups);
   const googlePrompt = getGooglePromptForGroups(googleGroups);
+  const knowledgeBasePrompt = getKnowledgeBasePrompt(knowledgeBaseEntries);
 
   // Keep it minimal - modern LLMs understand tools from their descriptions alone.
   // We rely on the intelligence of the model rather than over-engineering prompts.
+  // Note: Tool descriptions are defined in each tool's schema (see lib/ai/tools/),
+  // so we don't need a separate "### Tools" section in the prompt.
   return `${regularPrompt}
 
-${requestPrompt}${skillsPrompt}${googlePrompt}${spotifyPrompt}`;
+${requestPrompt}${knowledgeBasePrompt}${skillsPrompt}${googlePrompt}${spotifyPrompt}
+---
+Remember: The user trusts your intelligence. Focus on being genuinely helpful, not performatively thorough.`;
 };
 
 export const codePrompt = `

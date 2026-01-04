@@ -78,10 +78,10 @@ flowchart TB
 erDiagram
     User ||--o{ Chat : "owns"
     User ||--o{ OAuthConnection : "has"
-    Chat ||--o{ Message_v2 : "contains"
-    Chat ||--o{ Vote_v2 : "has"
+    Chat ||--o{ Message : "contains"
+    Chat ||--o{ Vote : "has"
     Chat ||--o{ Stream : "tracks"
-    Message_v2 ||--o| Vote_v2 : "receives"
+    Message ||--o| Vote : "receives"
 
     User {
         uuid id PK
@@ -99,7 +99,7 @@ erDiagram
         jsonb lastContext "AppUsage"
     }
 
-    Message_v2 {
+    Message {
         uuid id PK
         uuid chatId FK
         varchar role "user|assistant|system"
@@ -108,7 +108,7 @@ erDiagram
         timestamp createdAt
     }
 
-    Vote_v2 {
+    Vote {
         uuid chatId PK_FK
         uuid messageId PK_FK
         boolean isUpvoted
@@ -310,6 +310,7 @@ sequenceDiagram
 ```
 
 Key implementation details:
+
 - `SAVE_INTERVAL_MS = 3000` - Save every 3 seconds
 - Uses `after()` hook for reliable final save even on timeout
 - Prevents duplicate saves with `finalSaveCompleted` flag
@@ -319,12 +320,14 @@ Key implementation details:
 ## Code References
 
 ### Schema Definitions
+
 - **Chat table**: `lib/db/schema.ts:26-47`
-- **Message_v2 table**: `lib/db/schema.ts:65-76`
-- **Vote_v2 table**: `lib/db/schema.ts:100-118`
+- **Message table**: `lib/db/schema.ts:65-76`
+- **Vote table**: `lib/db/schema.ts:100-118`
 - **Stream table**: `lib/db/schema.ts:169-185`
 
 ### Query Functions
+
 - **saveChat**: `lib/db/queries.ts:88-112`
 - **saveMessages**: `lib/db/queries.ts:271-277`
 - **getMessagesByChatId**: `lib/db/queries.ts:296-309`
@@ -334,17 +337,20 @@ Key implementation details:
 - **updateMessageById**: `lib/db/queries.ts:279-294`
 
 ### API Endpoints
+
 - **Chat POST handler**: `app/(chat)/api/chat/route.ts:126-632`
 - **Chat DELETE handler**: `app/(chat)/api/chat/route.ts:697-720`
 - **History GET handler**: `app/(chat)/api/history/route.ts:6-34`
 - **History DELETE handler**: `app/(chat)/api/history/route.ts:36-46`
 
 ### UI Components
+
 - **Message rendering**: `components/messages.tsx:1-117`
 - **Sidebar history**: `components/sidebar-history.tsx:1-369`
 - **Message conversion utility**: `lib/utils.ts:106-115`
 
 ### Type Definitions
+
 - **ChatMessage type**: `lib/types.ts:87-92`
 - **DBMessage type**: `lib/db/schema.ts:76`
 - **Chat type**: `lib/db/schema.ts:49`
