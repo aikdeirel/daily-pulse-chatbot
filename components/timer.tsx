@@ -225,9 +225,21 @@ export function Timer({ timerData }: TimerProps) {
     timer.start();
 
     // Schedule push notification for fail-safe alarm
-    const result = await scheduleTimerPush(targetTimestamp, data.label);
-    if (result.success && result.scheduledAt) {
-      scheduledPushRef.current = result.scheduledAt;
+    try {
+      const result = await scheduleTimerPush(targetTimestamp, data.label);
+      if (result.success && result.scheduledAt) {
+        scheduledPushRef.current = result.scheduledAt;
+      } else {
+        // Log failure so it is not silently ignored
+        console.error("Failed to schedule timer push notification", {
+          targetTimestamp,
+          label: data.label,
+          result,
+        });
+      }
+    } catch (error) {
+      // Ensure thrown errors are also surfaced
+      console.error("Error while scheduling timer push notification", error);
     }
   };
 
