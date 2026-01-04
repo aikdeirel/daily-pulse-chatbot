@@ -304,10 +304,10 @@ export function KnowledgeBasePage({
               <Card key={entry.id}>
                 <CardHeader className="pb-2">
                   <span className="font-medium text-sm text-muted-foreground">
-                    {format(createdDate, "yyyy-MM-dd")}
+                    {format(createdDate, "yyyy-MM-dd HH:mm")}
                     {wasEdited && updatedDate && (
                       <span className="ml-2 text-muted-foreground/60">
-                        (edited {format(updatedDate, "yyyy-MM-dd")})
+                        (edited {format(updatedDate, "yyyy-MM-dd HH:mm")})
                       </span>
                     )}
                   </span>

@@ -102,7 +102,7 @@ export const getKnowledgeBasePrompt = (entries: KnowledgeBase[]): string => {
   const entryList = entries
     .map(
       (entry) =>
-        `- [${format(new Date(entry.createdAt), "yyyy-MM-dd")}]: ${entry.content}`,
+        `- [${format(new Date(entry.createdAt), "yyyy-MM-dd HH:mm")}]: ${entry.content}`,
     )
     .join("\n");
 
@@ -110,7 +110,7 @@ export const getKnowledgeBasePrompt = (entries: KnowledgeBase[]): string => {
 ### User Context
 ${entryList}
 
-This is background context only.
+This is background context only. Prioritize newer information if entries conflict.
 Do not proactively suggest activities or reference these facts unless the conversation directly relates to them.`;
 };
 
