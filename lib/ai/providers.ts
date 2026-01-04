@@ -103,6 +103,7 @@ export const myProvider = isTestEnvironment
       const {
         artifactModel,
         chatModel,
+        memorySummaryModel,
         reasoningModel,
         titleModel,
       } = require("./models.mock");
@@ -112,6 +113,7 @@ export const myProvider = isTestEnvironment
           "chat-model-reasoning": reasoningModel,
           "title-model": titleModel,
           "artifact-model": artifactModel,
+          "memory-summary-model": memorySummaryModel,
         },
       });
     })()

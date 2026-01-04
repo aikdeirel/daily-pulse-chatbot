@@ -9,6 +9,7 @@ import { Action, Actions } from "./elements/actions";
 import {
   BrainIcon,
   CopyIcon,
+  LoaderIcon,
   PencilEditIcon,
   ThumbDownIcon,
   ThumbUpIcon,
@@ -80,8 +81,23 @@ export function PureMessageActions({
         return;
       }
 
-      // Create a memory entry with the full conversation
-      const memoryContent = `Chat Memory (${new Date().toLocaleDateString()}):\n\n${conversationParts.join("\n\n---\n\n")}`;
+      const conversationString = conversationParts.join("\n\n---\n\n");
+
+      // Send conversation to LLM for summarization
+      const summarizeResponse = await fetch("/api/summarize-memory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ conversation: conversationString }),
+      });
+
+      if (!summarizeResponse.ok) {
+        throw new Error("Failed to summarize conversation");
+      }
+
+      const { summary } = await summarizeResponse.json();
+
+      // Create a memory entry with the summarized content
+      const memoryContent = `Memory (${new Date().toLocaleDateString()}):\n${summary}`;
 
       const response = await fetch("/api/knowledge-base", {
         method: "POST",
@@ -137,7 +153,13 @@ export function PureMessageActions({
         onClick={handleStoreAsMemory}
         tooltip={isStoringMemory ? "Storing to memory..." : "Store as Memory"}
       >
-        <BrainIcon />
+        {isStoringMemory ? (
+          <span className="animate-spin">
+            <LoaderIcon />
+          </span>
+        ) : (
+          <BrainIcon />
+        )}
       </Action>
 
       <Action

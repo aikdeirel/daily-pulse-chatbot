@@ -146,7 +146,11 @@ export const modelsConfig: ModelConfig[] = [
 export const specialModels = {
   "title-model": "openai/gpt-5-nano",
   "artifact-model": "anthropic/claude-haiku-4.5",
+  "memory-summary-model": "google/gemini-3-flash-preview",
 } as const;
+
+/** Type for special model keys */
+export type SpecialModelId = keyof typeof specialModels;
 
 // ============================================================================
 // DERIVED VALUES - Auto-generated from config above
