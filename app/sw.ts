@@ -64,19 +64,27 @@ self.addEventListener("push", (event: PushEvent) => {
 self.addEventListener("notificationclick", (event: NotificationEvent) => {
   event.notification.close();
 
-  const url = (event.notification.data?.url as string) || "/";
+  const targetUrl = (event.notification.data?.url as string) || "/";
 
   event.waitUntil(
     self.clients.matchAll({ type: "window" }).then((clientList) => {
-      // If the app is already open, focus it
+      // First, try to find a client that's already on the target URL
       for (const client of clientList) {
-        if ("focus" in client) {
+        if (client.url.includes(targetUrl) && "focus" in client) {
           return client.focus();
+        }
+      }
+      // If no matching URL, try to navigate an existing window
+      for (const client of clientList) {
+        if ("focus" in client && "navigate" in client) {
+          return (client as WindowClient)
+            .navigate(targetUrl)
+            .then((c) => c?.focus());
         }
       }
       // Otherwise, open a new window
       if (self.clients.openWindow) {
-        return self.clients.openWindow(url);
+        return self.clients.openWindow(targetUrl);
       }
     }),
   );

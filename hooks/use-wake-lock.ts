@@ -24,10 +24,21 @@ type UseWakeLockReturn = {
 export function useWakeLock(shouldBeActive: boolean): UseWakeLockReturn {
   const [isActive, setIsActive] = useState(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  const mountedRef = useRef(true);
+  const releaseListenerRef = useRef<(() => void) | null>(null);
   const isSupported =
     typeof navigator !== "undefined" && "wakeLock" in navigator;
 
   const release = useCallback(async () => {
+    // Remove existing release listener before releasing
+    if (wakeLockRef.current && releaseListenerRef.current) {
+      wakeLockRef.current.removeEventListener(
+        "release",
+        releaseListenerRef.current,
+      );
+      releaseListenerRef.current = null;
+    }
+
     if (wakeLockRef.current) {
       try {
         await wakeLockRef.current.release();
@@ -35,7 +46,9 @@ export function useWakeLock(shouldBeActive: boolean): UseWakeLockReturn {
         // Ignore release errors
       }
       wakeLockRef.current = null;
-      setIsActive(false);
+      if (mountedRef.current) {
+        setIsActive(false);
+      }
     }
   }, []);
 
@@ -46,17 +59,32 @@ export function useWakeLock(shouldBeActive: boolean): UseWakeLockReturn {
     if (wakeLockRef.current) return;
 
     try {
-      wakeLockRef.current = await navigator.wakeLock.request("screen");
+      const sentinel = await navigator.wakeLock.request("screen");
+
+      // Check if component unmounted during async request
+      if (!mountedRef.current) {
+        sentinel.release().catch(() => {});
+        return;
+      }
+
+      wakeLockRef.current = sentinel;
       setIsActive(true);
 
-      // Handle the release event (e.g., when tab becomes hidden)
-      wakeLockRef.current.addEventListener("release", () => {
+      // Create and store the release handler for cleanup
+      const handleRelease = () => {
         wakeLockRef.current = null;
-        setIsActive(false);
-      });
+        releaseListenerRef.current = null;
+        if (mountedRef.current) {
+          setIsActive(false);
+        }
+      };
+      releaseListenerRef.current = handleRelease;
+      sentinel.addEventListener("release", handleRelease);
     } catch {
       // Wake lock request failed (e.g., low battery mode)
-      setIsActive(false);
+      if (mountedRef.current) {
+        setIsActive(false);
+      }
     }
   }, [isSupported]);
 
@@ -74,8 +102,12 @@ export function useWakeLock(shouldBeActive: boolean): UseWakeLockReturn {
     if (!isSupported) return;
 
     function handleVisibilityChange() {
-      if (document.visibilityState === "visible" && shouldBeActive) {
-        // Re-acquire wake lock when tab becomes visible again
+      // Only request if visible, should be active, AND we don't already have a lock
+      if (
+        document.visibilityState === "visible" &&
+        shouldBeActive &&
+        !wakeLockRef.current
+      ) {
         request();
       }
     }
@@ -86,10 +118,22 @@ export function useWakeLock(shouldBeActive: boolean): UseWakeLockReturn {
     };
   }, [isSupported, shouldBeActive, request]);
 
-  // Cleanup on unmount
+  // Track mounted state and cleanup on unmount
   useEffect(() => {
+    mountedRef.current = true;
     return () => {
-      release();
+      mountedRef.current = false;
+      // Inline cleanup to avoid stale closure issues
+      if (wakeLockRef.current) {
+        if (releaseListenerRef.current) {
+          wakeLockRef.current.removeEventListener(
+            "release",
+            releaseListenerRef.current,
+          );
+        }
+        wakeLockRef.current.release().catch(() => {});
+        wakeLockRef.current = null;
+      }
     };
   }, []);
 

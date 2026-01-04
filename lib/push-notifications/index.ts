@@ -62,46 +62,60 @@ export function urlBase64ToUint8Array(base64String: string): Uint8Array {
 
 /**
  * Request notification permission from the user.
- * Returns true if permission was granted.
+ * Returns an object with success status and error details.
  */
-export async function requestNotificationPermission(): Promise<boolean> {
+export async function requestNotificationPermission(): Promise<{
+  granted: boolean;
+  error?: string;
+}> {
   if (!("Notification" in window)) {
-    console.warn("This browser does not support notifications");
-    return false;
+    const error = "This browser does not support notifications";
+    console.error("Push notifications:", error);
+    return { granted: false, error };
   }
 
   if (Notification.permission === "granted") {
-    return true;
+    return { granted: true };
   }
 
   if (Notification.permission === "denied") {
-    console.warn("Notification permission was previously denied");
-    return false;
+    const error = "Notification permission was previously denied";
+    console.error("Push notifications:", error);
+    return { granted: false, error };
   }
 
   const permission = await Notification.requestPermission();
-  return permission === "granted";
+  if (permission !== "granted") {
+    return { granted: false, error: "Notification permission not granted" };
+  }
+  return { granted: true };
 }
 
 /**
  * Subscribe to push notifications.
- * Returns the PushSubscription object if successful.
+ * Returns the PushSubscription object if successful, or an error message.
  */
-export async function subscribeToPush(): Promise<PushSubscription | null> {
+export async function subscribeToPush(): Promise<{
+  subscription: PushSubscription | null;
+  error?: string;
+}> {
   if (!("serviceWorker" in navigator)) {
-    console.warn("Service Worker not supported");
-    return null;
+    const error = "Service Worker not supported";
+    console.error("Push notifications:", error);
+    return { subscription: null, error };
   }
 
   if (!("PushManager" in window)) {
-    console.warn("Push notifications not supported");
-    return null;
+    const error = "Push notifications not supported";
+    console.error("Push notifications:", error);
+    return { subscription: null, error };
   }
 
   const vapidKey = getVapidPublicKey();
   if (!vapidKey) {
-    console.warn("VAPID public key not configured");
-    return null;
+    const error = "VAPID public key not configured";
+    console.error("Push notifications:", error);
+    return { subscription: null, error };
   }
 
   try {
@@ -114,14 +128,16 @@ export async function subscribeToPush(): Promise<PushSubscription | null> {
       const applicationServerKey = urlBase64ToUint8Array(vapidKey);
       subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey,
+        applicationServerKey: applicationServerKey.buffer as ArrayBuffer,
       });
     }
 
-    return subscription;
+    return { subscription };
   } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unknown subscription error";
     console.error("Failed to subscribe to push notifications:", error);
-    return null;
+    return { subscription: null, error: message };
   }
 }
 
@@ -134,15 +150,21 @@ export async function scheduleTimerPush(
 ): Promise<ScheduleTimerPushResponse> {
   try {
     // Request permission first
-    const hasPermission = await requestNotificationPermission();
-    if (!hasPermission) {
-      return { success: false, error: "Notification permission denied" };
+    const permissionResult = await requestNotificationPermission();
+    if (!permissionResult.granted) {
+      return {
+        success: false,
+        error: permissionResult.error || "Notification permission denied",
+      };
     }
 
     // Get push subscription
-    const subscription = await subscribeToPush();
-    if (!subscription) {
-      return { success: false, error: "Failed to get push subscription" };
+    const subscriptionResult = await subscribeToPush();
+    if (!subscriptionResult.subscription) {
+      return {
+        success: false,
+        error: subscriptionResult.error || "Failed to get push subscription",
+      };
     }
 
     // Send to backend
@@ -152,7 +174,9 @@ export async function scheduleTimerPush(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        subscription: serializePushSubscription(subscription),
+        subscription: serializePushSubscription(
+          subscriptionResult.subscription,
+        ),
         targetTimestamp,
         label,
       }),
@@ -166,27 +190,44 @@ export async function scheduleTimerPush(
     return await response.json();
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("Error scheduling timer push:", error);
     return { success: false, error: message };
   }
 }
 
 /**
  * Cancel a scheduled push notification.
+ * Returns success status and logs any errors.
  */
 export async function cancelScheduledPush(
   targetTimestamp: number,
 ): Promise<boolean> {
   try {
+    // Get the subscription endpoint for authorization
+    const subscriptionResult = await subscribeToPush();
+    const endpoint = subscriptionResult.subscription?.endpoint;
+
     const response = await fetch("/api/schedule-timer-push", {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ targetTimestamp }),
+      body: JSON.stringify({ targetTimestamp, endpoint }),
     });
 
-    return response.ok;
-  } catch {
+    if (!response.ok) {
+      console.error(
+        "Failed to cancel scheduled push:",
+        response.status,
+        await response.text(),
+      );
+      return false;
+    }
+
+    const result = await response.json();
+    return result.success === true;
+  } catch (error) {
+    console.error("Error cancelling scheduled push:", error);
     return false;
   }
 }

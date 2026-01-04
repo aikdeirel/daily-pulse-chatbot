@@ -249,7 +249,10 @@ export function Timer({ timerData }: TimerProps) {
 
     // Cancel scheduled push notification when paused
     if (scheduledPushRef.current) {
-      await cancelScheduledPush(scheduledPushRef.current);
+      const cancelled = await cancelScheduledPush(scheduledPushRef.current);
+      if (!cancelled) {
+        console.error("Failed to cancel scheduled push notification on pause");
+      }
       scheduledPushRef.current = null;
     }
   };
@@ -272,7 +275,10 @@ export function Timer({ timerData }: TimerProps) {
 
     // Cancel scheduled push notification
     if (scheduledPushRef.current) {
-      await cancelScheduledPush(scheduledPushRef.current);
+      const cancelled = await cancelScheduledPush(scheduledPushRef.current);
+      if (!cancelled) {
+        console.error("Failed to cancel scheduled push notification on stop");
+      }
       scheduledPushRef.current = null;
     }
   };
@@ -291,16 +297,37 @@ export function Timer({ timerData }: TimerProps) {
 
     // Cancel any existing scheduled push
     if (scheduledPushRef.current) {
-      await cancelScheduledPush(scheduledPushRef.current);
+      const cancelled = await cancelScheduledPush(scheduledPushRef.current);
+      if (!cancelled) {
+        console.error(
+          "Failed to cancel scheduled push notification on restart",
+        );
+      }
     }
+
+    // Calculate target timestamp BEFORE calling restart (same as handleStart)
+    // This ensures push notification matches the actual timer target
+    const targetTimestamp = Date.now() + data.seconds * 1000;
 
     timer.restart();
 
     // Schedule new push notification
-    const targetTimestamp = Date.now() + data.seconds * 1000;
-    const result = await scheduleTimerPush(targetTimestamp, data.label);
-    if (result.success && result.scheduledAt) {
-      scheduledPushRef.current = result.scheduledAt;
+    try {
+      const result = await scheduleTimerPush(targetTimestamp, data.label);
+      if (result.success && result.scheduledAt) {
+        scheduledPushRef.current = result.scheduledAt;
+      } else {
+        console.error("Failed to schedule timer push notification on restart", {
+          targetTimestamp,
+          label: data.label,
+          result,
+        });
+      }
+    } catch (error) {
+      console.error(
+        "Error while scheduling timer push notification on restart",
+        error,
+      );
     }
   };
 

@@ -40,7 +40,8 @@ function loadTimerState(): TimerStorageState | null {
     const stored = localStorage.getItem(TIMER_STORAGE_KEY);
     if (!stored) return null;
     return JSON.parse(stored) as TimerStorageState;
-  } catch {
+  } catch (error) {
+    console.error("Failed to load timer state from localStorage:", error);
     return null;
   }
 }
@@ -57,8 +58,12 @@ function saveTimerState(state: TimerStorageState | null): void {
     } else {
       localStorage.setItem(TIMER_STORAGE_KEY, JSON.stringify(state));
     }
-  } catch {
-    // Ignore storage errors
+  } catch (error) {
+    // Log error so users know background persistence may not work
+    console.error(
+      "Failed to save timer state to localStorage. Timer may not persist across page reloads:",
+      error,
+    );
   }
 }
 
@@ -120,7 +125,7 @@ export function useTimer({
         onCompleteRef.current?.();
       }
     },
-    [],
+    [clearTimerInterval],
   );
 
   // Restore timer state from localStorage on mount
