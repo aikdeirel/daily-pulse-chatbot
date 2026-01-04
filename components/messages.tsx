@@ -60,6 +60,7 @@ function PureMessages({
             isTitleGenerating={isTitleGenerating}
             key={message.id}
             message={message}
+            messages={messages}
             regenerate={regenerate}
             requiresScrollPadding={
               hasSentMessage && index === messages.length - 1

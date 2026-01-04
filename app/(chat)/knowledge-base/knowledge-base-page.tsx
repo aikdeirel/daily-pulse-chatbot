@@ -28,6 +28,13 @@ type KnowledgeBaseEntry = KnowledgeBase;
 // Safely render markdown content with DOMPurify sanitization
 function renderMarkdown(content: string): string {
   const html = marked.parse(content) as string;
+
+  // DOMPurify only works in browser environment
+  if (typeof window === "undefined") {
+    // On server, return raw HTML (will be sanitized on client hydration)
+    return html;
+  }
+
   return DOMPurify.sanitize(html);
 }
 

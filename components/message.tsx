@@ -53,6 +53,7 @@ import { Weather } from "./weather";
 const PurePreviewMessage = ({
   chatId,
   message,
+  messages,
   vote,
   isLoading,
   setMessages,
@@ -64,6 +65,7 @@ const PurePreviewMessage = ({
 }: {
   chatId: string;
   message: ChatMessage;
+  messages: ChatMessage[];
   vote: Vote | undefined;
   isLoading: boolean;
   setMessages: UseChatHelpers<ChatMessage>["setMessages"];
@@ -566,6 +568,7 @@ const PurePreviewMessage = ({
                 isLoading={isLoading}
                 key={`action-${message.id}`}
                 message={message}
+                messages={messages}
                 setMode={setMode}
                 vote={vote}
               />
@@ -662,6 +665,7 @@ const PurePreviewMessage = ({
                 isLoading={isLoading}
                 key={`action-${message.id}`}
                 message={message}
+                messages={messages}
                 setMode={setMode}
                 vote={vote}
               />
@@ -695,6 +699,9 @@ export const PreviewMessage = memo(
       return false;
     }
     if (prevProps.isTitleGenerating !== nextProps.isTitleGenerating) {
+      return false;
+    }
+    if (prevProps.messages.length !== nextProps.messages.length) {
       return false;
     }
 

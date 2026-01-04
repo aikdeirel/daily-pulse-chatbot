@@ -1310,3 +1310,22 @@ export const ShareIcon = ({ size = 16 }: { size?: number }) => {
     </svg>
   );
 };
+
+export const BrainIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      style={{ color: "currentcolor" }}
+      viewBox="0 0 16 16"
+      width={size}
+    >
+      <path
+        clipRule="evenodd"
+        d="M8.5 1C11 1 13 2.5 13 5.5C13 6.5 12.5 7.5 11.5 8.5C12.5 9.5 13 10.5 13 11.5C13 12.5 12 13.5 10.5 13.5C10.5 14.5 9.5 15.5 8 15.5C6.5 15.5 5.5 14.5 5.5 13.5C4 13.5 3 12.5 3 11.5C3 10.5 3.5 9.5 4.5 8.5C3.5 7.5 3 6.5 3 5.5C3 2.5 6 1 8.5 1ZM6.5 5C6.5 4 7.5 3 8.5 3C9.5 3 10.5 4 10.5 5C10.5 6 9.5 7 8.5 7C7.5 7 6.5 6 6.5 5ZM5.5 9C5.5 8 6.5 7 7.5 7C8.5 7 9.5 8 9.5 9C9.5 10 8.5 11 7.5 11C6.5 11 5.5 10 5.5 9ZM10.5 9C10.5 8 11.5 7 12.5 7C13.5 7 14.5 8 14.5 9C14.5 10 13.5 11 12.5 11C11.5 11 10.5 10 10.5 9Z"
+        fill="currentColor"
+        fillRule="evenodd"
+      />
+    </svg>
+  );
+};

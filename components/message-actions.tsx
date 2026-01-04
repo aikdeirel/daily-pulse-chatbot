@@ -1,28 +1,37 @@
 import equal from "fast-deep-equal";
-import { memo } from "react";
+import React, { memo } from "react";
 import { toast } from "sonner";
 import { useSWRConfig } from "swr";
 import { useCopyToClipboard } from "usehooks-ts";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
 import { Action, Actions } from "./elements/actions";
-import { CopyIcon, PencilEditIcon, ThumbDownIcon, ThumbUpIcon } from "./icons";
+import {
+  BrainIcon,
+  CopyIcon,
+  PencilEditIcon,
+  ThumbDownIcon,
+  ThumbUpIcon,
+} from "./icons";
 
 export function PureMessageActions({
   chatId,
   message,
+  messages,
   vote,
   isLoading,
   setMode,
 }: {
   chatId: string;
   message: ChatMessage;
+  messages: ChatMessage[];
   vote: Vote | undefined;
   isLoading: boolean;
   setMode?: (mode: "view" | "edit") => void;
 }) {
   const { mutate } = useSWRConfig();
   const [_, copyToClipboard] = useCopyToClipboard();
+  const [isStoringMemory, setIsStoringMemory] = React.useState(false);
 
   if (isLoading) {
     return null;
@@ -42,6 +51,55 @@ export function PureMessageActions({
 
     await copyToClipboard(textFromParts);
     toast.success("Copied to clipboard!");
+  };
+
+  const handleStoreAsMemory = async () => {
+    if (isStoringMemory) return;
+
+    setIsStoringMemory(true);
+
+    try {
+      // Format the entire conversation
+      const conversationParts: string[] = [];
+
+      for (const msg of messages) {
+        const textContent = msg.parts
+          ?.filter((part) => part.type === "text")
+          .map((part) => part.text)
+          .join("\n")
+          .trim();
+
+        if (textContent) {
+          const roleLabel = msg.role === "user" ? "User" : "Assistant";
+          conversationParts.push(`**${roleLabel}:**\n${textContent}`);
+        }
+      }
+
+      if (conversationParts.length === 0) {
+        toast.error("No content to store!");
+        return;
+      }
+
+      // Create a memory entry with the full conversation
+      const memoryContent = `Chat Memory (${new Date().toLocaleDateString()}):\n\n${conversationParts.join("\n\n---\n\n")}`;
+
+      const response = await fetch("/api/knowledge-base", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: memoryContent }),
+      });
+
+      if (response.ok) {
+        toast.success("Stored to memory!");
+      } else {
+        throw new Error("Failed to store memory");
+      }
+    } catch (error) {
+      console.error("Failed to store memory:", error);
+      toast.error("Failed to store memory");
+    } finally {
+      setIsStoringMemory(false);
+    }
   };
 
   // User messages get edit (on hover) and copy actions
@@ -71,6 +129,15 @@ export function PureMessageActions({
     <Actions className="-ml-0.5">
       <Action onClick={handleCopy} tooltip="Copy">
         <CopyIcon />
+      </Action>
+
+      <Action
+        data-testid="store-memory"
+        disabled={isStoringMemory}
+        onClick={handleStoreAsMemory}
+        tooltip={isStoringMemory ? "Storing to memory..." : "Store as Memory"}
+      >
+        <BrainIcon />
       </Action>
 
       <Action
@@ -181,6 +248,15 @@ export const MessageActions = memo(
       return false;
     }
     if (prevProps.isLoading !== nextProps.isLoading) {
+      return false;
+    }
+    if (prevProps.message.id !== nextProps.message.id) {
+      return false;
+    }
+    if (!equal(prevProps.message.parts, nextProps.message.parts)) {
+      return false;
+    }
+    if (prevProps.messages.length !== nextProps.messages.length) {
       return false;
     }
 
