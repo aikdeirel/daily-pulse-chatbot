@@ -145,21 +145,6 @@ export function PureMessageActions({
       </Action>
 
       <Action
-        data-testid="store-memory"
-        disabled={isStoringMemory}
-        onClick={handleStoreAsMemory}
-        tooltip={isStoringMemory ? "Storing to memory..." : "Store as Memory"}
-      >
-        {isStoringMemory ? (
-          <span className="animate-spin">
-            <LoaderIcon />
-          </span>
-        ) : (
-          <BrainIcon />
-        )}
-      </Action>
-
-      <Action
         data-testid="message-upvote"
         disabled={vote?.isUpvoted}
         onClick={() => {
@@ -255,6 +240,21 @@ export function PureMessageActions({
         tooltip="Downvote Response"
       >
         <ThumbDownIcon />
+      </Action>
+
+      <Action
+        data-testid="store-memory"
+        disabled={isStoringMemory}
+        onClick={handleStoreAsMemory}
+        tooltip={isStoringMemory ? "Storing to memory..." : "Store as Memory"}
+      >
+        {isStoringMemory ? (
+          <span className="animate-spin">
+            <LoaderIcon />
+          </span>
+        ) : (
+          <BrainIcon />
+        )}
       </Action>
     </Actions>
   );
