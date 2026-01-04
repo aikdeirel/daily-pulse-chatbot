@@ -8,8 +8,7 @@ const MEMORY_SUMMARY_PROMPT = `Create a summary for storing relevant information
 CONSTRAINT: Be extremely concise and sacrifice grammar for the sake of concision. Use telegraphic style.
 Focus on: user preferences, facts about user, decisions made, important context for future conversations.
 Output only the summary, no preamble.
-IMPORTANT: Focus on the USER's perspective, not the assistant's actions.
-Do not add a date or time to the summary.`;
+IMPORTANT: Focus on the USER's perspective, not the assistant's actions.`;
 
 export async function POST(request: NextRequest) {
   const session = await auth();
