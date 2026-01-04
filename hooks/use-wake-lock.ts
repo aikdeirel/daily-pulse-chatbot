@@ -91,7 +91,7 @@ export function useWakeLock(shouldBeActive: boolean): UseWakeLockReturn {
     return () => {
       release();
     };
-  }, [release]);
+  }, []);
 
   return {
     isSupported,
