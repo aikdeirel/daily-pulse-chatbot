@@ -120,7 +120,7 @@ export function useTimer({
         onCompleteRef.current?.();
       }
     },
-    [clearTimerInterval],
+    [],
   );
 
   // Restore timer state from localStorage on mount
