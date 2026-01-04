@@ -58,10 +58,19 @@ export const THINKING_PHRASES = [
 const ROTATION_INTERVAL = 7000; // 7 seconds
 
 export function useThinkingPhrase() {
-  const [currentIndex, setCurrentIndex] = useState(() =>
-    Math.floor(Math.random() * THINKING_PHRASES.length),
-  );
+  // Use a fixed initial index (0) to avoid hydration mismatch
+  // The random starting point is applied after mount
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
+
+  // Randomize starting index after hydration to avoid mismatch
+  useEffect(() => {
+    if (!hasMounted) {
+      setCurrentIndex(Math.floor(Math.random() * THINKING_PHRASES.length));
+      setHasMounted(true);
+    }
+  }, [hasMounted]);
 
   useEffect(() => {
     const interval = setInterval(() => {
