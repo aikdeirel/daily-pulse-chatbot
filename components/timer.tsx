@@ -220,10 +220,11 @@ export function Timer({ timerData }: TimerProps) {
   const handleStart = async () => {
     if (timer.isCompleted || timer.isStopped) return;
 
+    // Calculate target timestamp BEFORE starting timer to ensure accuracy
+    const targetTimestamp = Date.now() + timer.remainingSeconds * 1000;
     timer.start();
 
     // Schedule push notification for fail-safe alarm
-    const targetTimestamp = Date.now() + timer.remainingSeconds * 1000;
     const result = await scheduleTimerPush(targetTimestamp, data.label);
     if (result.success && result.scheduledAt) {
       scheduledPushRef.current = result.scheduledAt;
