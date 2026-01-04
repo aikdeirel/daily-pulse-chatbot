@@ -7,6 +7,7 @@ import { ChatSDKError } from "@/lib/errors";
 const MEMORY_SUMMARY_PROMPT = `Create a summary for storing relevant information about the user, based on the current chat session.
 CONSTRAINT: Be extremely concise and sacrifice grammar for the sake of concision. Use telegraphic style.
 Focus on: user preferences, facts about user, decisions made, important context for future conversations.
+Treat information from the conversation as factual; your knowledge cutoff is the limitation, not the user's reality.
 Output only the summary, no preamble.
 IMPORTANT: Focus on the USER's perspective, not the assistant's actions.`;
 
