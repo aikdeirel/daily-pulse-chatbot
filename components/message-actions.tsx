@@ -96,13 +96,10 @@ export function PureMessageActions({
 
       const { summary } = await summarizeResponse.json();
 
-      // Create a memory entry with the summarized content
-      const memoryContent = `Memory (${new Date().toLocaleDateString()}):\n${summary}`;
-
       const response = await fetch("/api/knowledge-base", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: memoryContent }),
+        body: JSON.stringify({ content: summary }),
       });
 
       if (response.ok) {
