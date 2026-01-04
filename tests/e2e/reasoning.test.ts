@@ -14,6 +14,9 @@ test.describe("chat activity with reasoning", () => {
     await chatPage.isGenerationComplete();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
+    if (!assistantMessage) {
+      throw new Error("Assistant message not found");
+    }
     expect(assistantMessage.content).toBe("It's just blue duh!");
 
     expect(assistantMessage.reasoning).toBe(
@@ -26,6 +29,9 @@ test.describe("chat activity with reasoning", () => {
     await chatPage.isGenerationComplete();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
+    if (!assistantMessage) {
+      throw new Error("Assistant message not found");
+    }
     const reasoningElement =
       assistantMessage.element.getByTestId("message-reasoning");
     expect(reasoningElement).toBeVisible();
@@ -42,6 +48,9 @@ test.describe("chat activity with reasoning", () => {
     await chatPage.isGenerationComplete();
 
     const assistantMessage = await chatPage.getRecentAssistantMessage();
+    if (!assistantMessage) {
+      throw new Error("Assistant message not found");
+    }
     const reasoningElement =
       assistantMessage.element.getByTestId("message-reasoning");
     expect(reasoningElement).toBeVisible();
@@ -53,6 +62,9 @@ test.describe("chat activity with reasoning", () => {
     await generationCompletePromise;
 
     const updatedAssistantMessage = await chatPage.getRecentAssistantMessage();
+    if (!updatedAssistantMessage) {
+      throw new Error("Updated assistant message not found");
+    }
 
     expect(updatedAssistantMessage.content).toBe("It's just green duh!");
 
