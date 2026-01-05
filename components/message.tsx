@@ -62,6 +62,7 @@ const PurePreviewMessage = ({
   requiresScrollPadding: _requiresScrollPadding,
   threadName,
   isTitleGenerating,
+  isFromHistory,
 }: {
   chatId: string;
   message: ChatMessage;
@@ -74,6 +75,7 @@ const PurePreviewMessage = ({
   requiresScrollPadding: boolean;
   threadName?: string;
   isTitleGenerating?: boolean;
+  isFromHistory?: boolean;
 }) => {
   const [mode, setMode] = useState<"view" | "edit">("view");
 
@@ -367,7 +369,11 @@ const PurePreviewMessage = ({
                   type,
                   action,
                 );
-                const defaultOpen = getBasicToolDefaultOpen(type);
+                // For timers from history, start collapsed so they show in reset state
+                const defaultOpen =
+                  type === "tool-setTimer" && isFromHistory
+                    ? false
+                    : getBasicToolDefaultOpen(type);
 
                 return (
                   <Tool defaultOpen={defaultOpen} key={toolCallId}>
@@ -404,7 +410,11 @@ const PurePreviewMessage = ({
                                 );
                               case "tool-setTimer":
                                 return (
-                                  <Timer timerData={basicPart.output as any} />
+                                  <Timer
+                                    timerData={basicPart.output as any}
+                                    timerId={toolCallId}
+                                    isFromHistory={isFromHistory}
+                                  />
                                 );
                               case "tool-requestSuggestions":
                                 return basicPart.output &&
@@ -702,6 +712,9 @@ export const PreviewMessage = memo(
       return false;
     }
     if (prevProps.messages.length !== nextProps.messages.length) {
+      return false;
+    }
+    if (prevProps.isFromHistory !== nextProps.isFromHistory) {
       return false;
     }
 

@@ -160,6 +160,12 @@ export function Chat({
     googleToolGroupsRef.current = googleToolGroups;
   }, [googleToolGroups]);
 
+  // Track message IDs that existed when the chat was first loaded
+  // These are "from history" - any new messages are from the current session
+  const [initialMessageIds] = useState(
+    () => new Set(initialMessages.map((m) => m.id)),
+  );
+
   const {
     messages,
     setMessages,
@@ -305,6 +311,9 @@ export function Chat({
           selectedModelId={initialChatModel}
           setMessages={setMessages}
           status={status}
+          streamingMessageIds={
+            new Set(messages.filter((m) => !initialMessageIds.has(m.id)).map((m) => m.id))
+          }
           threadName={currentTitle}
           votes={votes}
         />

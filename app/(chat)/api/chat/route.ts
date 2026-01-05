@@ -652,15 +652,28 @@ export async function POST(request: Request) {
         return generateUUID();
       },
       onFinish: async ({ messages }) => {
-        // Filter out the assistant message we're already saving progressively
-        // and only save other messages (like tool results, etc.)
-        const messagesToSave = messages.filter(
+        // Find the assistant message and update it with full parts (including tool-invocations)
+        const assistantMessage = messages.find(
+          (msg) => msg.role === "assistant" && msg.id === assistantMessageId,
+        );
+
+        if (assistantMessage) {
+          // Update the progressively saved message with the complete parts
+          // This ensures tool-invocations are persisted for reload
+          await updateMessageById({
+            id: assistantMessageId,
+            parts: assistantMessage.parts,
+          });
+        }
+
+        // Save any other messages (like tool results that are separate messages)
+        const otherMessages = messages.filter(
           (msg) => !(msg.role === "assistant" && msg.id === assistantMessageId),
         );
 
-        if (messagesToSave.length > 0) {
+        if (otherMessages.length > 0) {
           await saveMessages({
-            messages: messagesToSave.map((currentMessage) => ({
+            messages: otherMessages.map((currentMessage) => ({
               id: currentMessage.id,
               role: currentMessage.role,
               parts: currentMessage.parts,
