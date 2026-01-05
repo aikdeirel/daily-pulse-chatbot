@@ -56,7 +56,9 @@ export function usePersistentTimer({
   }, [onComplete]);
 
   const progress =
-    ((initialSeconds - remainingSeconds) / initialSeconds) * 100;
+    initialSeconds === 0
+      ? 100
+      : ((initialSeconds - remainingSeconds) / initialSeconds) * 100;
 
   // Calculate remaining seconds from target timestamp
   const calcRemaining = useCallback((target: number): number => {
@@ -176,30 +178,33 @@ export function usePersistentTimer({
     return clearTimer;
   }, [isRunning, updateFromTarget, clearTimer]);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return clearTimer;
-  }, [clearTimer]);
-
   const start = useCallback(() => {
-    if (isCompleted || isStopped) return;
+    if (isCompleted) return;
 
+    setIsStopped(false);
     const target = Date.now() + remainingSeconds * 1000;
     targetTimestampRef.current = target;
     setIsRunning(true);
     saveState({ targetTimestamp: target, totalSeconds: initialSeconds });
-  }, [isCompleted, isStopped, remainingSeconds, initialSeconds, saveState]);
+  }, [isCompleted, remainingSeconds, initialSeconds, saveState]);
 
   const pause = useCallback(() => {
     if (!targetTimestampRef.current) return;
 
-    clearTimer();
     const remaining = calcRemaining(targetTimestampRef.current);
+
+    // If timer completed while pausing, finalize instead
+    if (remaining <= 0) {
+      completeTimer();
+      return;
+    }
+
+    clearTimer();
     setRemainingSeconds(remaining);
     setIsRunning(false);
     targetTimestampRef.current = null;
     saveState(null);
-  }, [clearTimer, calcRemaining, saveState]);
+  }, [clearTimer, calcRemaining, saveState, completeTimer]);
 
   const stop = useCallback(() => {
     clearTimer();

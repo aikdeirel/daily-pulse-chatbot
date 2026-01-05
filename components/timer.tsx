@@ -145,8 +145,10 @@ export function Timer({ timerData }: TimerProps) {
     setIsSoundPlaying(false);
   }, []);
 
-  // Play completion sound
+  // Play completion sound (memoized to use as onComplete callback)
   const playSound = useCallback(() => {
+    if (soundWasStopped) return;
+
     if (
       !audioContextRef.current ||
       audioContextRef.current.state === "closed"
@@ -169,22 +171,13 @@ export function Timer({ timerData }: TimerProps) {
         playCuteSound(audioContextRef.current);
       }
     }, 2000);
-  }, []);
+  }, [soundWasStopped]);
 
-  // Use persistent timer hook
+  // Use persistent timer hook with sound callback
   const timer = usePersistentTimer({
     initialSeconds: data.seconds,
-    onComplete: useCallback(() => {
-      // Sound will be triggered by the effect below
-    }, []),
+    onComplete: playSound,
   });
-
-  // Play sound when completed (but only if user hasn't stopped it)
-  useEffect(() => {
-    if (timer.isCompleted && !isSoundPlaying && !soundWasStopped) {
-      playSound();
-    }
-  }, [timer.isCompleted, isSoundPlaying, soundWasStopped, playSound]);
 
   // Cleanup on unmount
   useEffect(() => {
