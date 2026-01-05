@@ -20,6 +20,10 @@ type TimerData = {
 
 type TimerProps = {
   timerData?: TimerData;
+  /** Unique identifier for this timer (toolCallId) */
+  timerId: string;
+  /** If true, timer was loaded from history and should not auto-start */
+  isFromHistory?: boolean;
 };
 
 // Sample data for preview/fallback
@@ -118,7 +122,7 @@ function playCuteSound(audioContext: AudioContext): void {
   chime.stop(chimeTime + 0.5);
 }
 
-export function Timer({ timerData }: TimerProps) {
+export function Timer({ timerData, timerId, isFromHistory = false }: TimerProps) {
   // Use SAMPLE as fallback if timerData is undefined or missing required data
   const data =
     timerData?.seconds !== undefined && timerData.seconds > 0
@@ -175,8 +179,10 @@ export function Timer({ timerData }: TimerProps) {
 
   // Use persistent timer hook with sound callback
   const timer = usePersistentTimer({
+    timerId,
     initialSeconds: data.seconds,
     onComplete: playSound,
+    isFromHistory,
   });
 
   // Cleanup on unmount

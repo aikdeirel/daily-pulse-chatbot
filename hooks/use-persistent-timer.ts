@@ -8,10 +8,14 @@ type TimerState = {
 };
 
 type UsePersistentTimerProps = {
+  /** Unique identifier for this timer instance (e.g., toolCallId) */
+  timerId: string;
   /** Initial duration in seconds */
   initialSeconds: number;
   /** Called when timer completes */
   onComplete?: () => void;
+  /** If true, timer was loaded from history and should not auto-start */
+  isFromHistory?: boolean;
 };
 
 type UsePersistentTimerReturn = {
@@ -26,7 +30,7 @@ type UsePersistentTimerReturn = {
   restart: () => void;
 };
 
-const STORAGE_KEY = "timer_state";
+const getStorageKey = (timerId: string) => `timer_state_${timerId}`;
 
 /**
  * A persistent timer hook that uses absolute timestamps to prevent drift
@@ -36,9 +40,12 @@ const STORAGE_KEY = "timer_state";
  * accurate time display when the user returns to the app.
  */
 export function usePersistentTimer({
+  timerId,
   initialSeconds,
   onComplete,
+  isFromHistory = false,
 }: UsePersistentTimerProps): UsePersistentTimerReturn {
+  const STORAGE_KEY = getStorageKey(timerId);
   const [remainingSeconds, setRemainingSeconds] = useState(initialSeconds);
   const [isRunning, setIsRunning] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -111,6 +118,9 @@ export function usePersistentTimer({
 
   // Restore state from localStorage on mount
   useEffect(() => {
+    // If loaded from history, don't restore - start fresh with initial seconds
+    if (isFromHistory) return;
+
     try {
       if (typeof window === "undefined") return;
       const stored = localStorage.getItem(STORAGE_KEY);

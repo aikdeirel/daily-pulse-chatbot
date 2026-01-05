@@ -20,6 +20,8 @@ type MessagesProps = {
   selectedModelId: string;
   threadName?: string;
   isTitleGenerating?: boolean;
+  /** Set of message IDs that are from the current streaming session (not from history) */
+  streamingMessageIds?: Set<string>;
 };
 
 function PureMessages({
@@ -33,6 +35,7 @@ function PureMessages({
   selectedModelId: _selectedModelId,
   threadName,
   isTitleGenerating,
+  streamingMessageIds,
 }: MessagesProps) {
   const {
     containerRef: messagesContainerRef,
@@ -55,6 +58,7 @@ function PureMessages({
         {messages.map((message, index) => (
           <PreviewMessage
             chatId={chatId}
+            isFromHistory={!streamingMessageIds?.has(message.id)}
             isLoading={status === "streaming" && messages.length - 1 === index}
             isReadonly={isReadonly}
             isTitleGenerating={isTitleGenerating}
