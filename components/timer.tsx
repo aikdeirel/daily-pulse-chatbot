@@ -351,7 +351,7 @@ export function Timer({ timerData }: TimerProps) {
               ) : (
                 <>
                   <PlayIcon className="size-5" />
-                  <span>Resume</span>
+                  <span>{timer.progress === 0 ? "Start" : "Resume"}</span>
                 </>
               )}
             </button>
