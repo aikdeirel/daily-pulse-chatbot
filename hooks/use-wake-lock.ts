@@ -67,6 +67,11 @@ export function useWakeLock(shouldBeActive: boolean): UseWakeLockReturn {
         return;
       }
 
+      // Double-check mount status before setting refs or state
+      if (!mountedRef.current) {
+        sentinel.release().catch(() => {});
+        return;
+      }
       wakeLockRef.current = sentinel;
       setIsActive(true);
 
