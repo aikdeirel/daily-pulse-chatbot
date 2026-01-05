@@ -4,9 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 type TimerState = {
   /** Absolute timestamp when timer should complete (ms since epoch) */
-  targetTimestamp: number | null;
-  /** Total duration in seconds (for restart) */
-  totalSeconds: number;
+  targetTimestamp: number;
 };
 
 type UsePersistentTimerProps = {
@@ -185,7 +183,7 @@ export function usePersistentTimer({
     const target = Date.now() + remainingSeconds * 1000;
     targetTimestampRef.current = target;
     setIsRunning(true);
-    saveState({ targetTimestamp: target, totalSeconds: initialSeconds });
+    saveState({ targetTimestamp: target });
   }, [isCompleted, remainingSeconds, initialSeconds, saveState]);
 
   const pause = useCallback(() => {
@@ -208,11 +206,12 @@ export function usePersistentTimer({
 
   const stop = useCallback(() => {
     clearTimer();
+    setRemainingSeconds(initialSeconds);
     setIsRunning(false);
     setIsStopped(true);
     targetTimestampRef.current = null;
     saveState(null);
-  }, [clearTimer, saveState]);
+  }, [clearTimer, initialSeconds, saveState]);
 
   const restart = useCallback(() => {
     clearTimer();
@@ -223,7 +222,7 @@ export function usePersistentTimer({
     const target = Date.now() + initialSeconds * 1000;
     targetTimestampRef.current = target;
     setIsRunning(true);
-    saveState({ targetTimestamp: target, totalSeconds: initialSeconds });
+    saveState({ targetTimestamp: target });
   }, [clearTimer, initialSeconds, saveState]);
 
   return {
