@@ -290,6 +290,12 @@ export function Chat({
     setMessages,
   });
 
+  // Memoize streaming message IDs to prevent unnecessary re-renders
+  const streamingMessageIds = useMemo(
+    () => new Set(messages.filter((m) => !initialMessageIds.has(m.id)).map((m) => m.id)),
+    [messages, initialMessageIds],
+  );
+
   return (
     <>
       <div className="overscroll-behavior-contain keyboard-aware-container min-w-0 touch-pan-y flex-col bg-background">
@@ -311,9 +317,7 @@ export function Chat({
           selectedModelId={initialChatModel}
           setMessages={setMessages}
           status={status}
-          streamingMessageIds={
-            new Set(messages.filter((m) => !initialMessageIds.has(m.id)).map((m) => m.id))
-          }
+          streamingMessageIds={streamingMessageIds}
           threadName={currentTitle}
           votes={votes}
         />
