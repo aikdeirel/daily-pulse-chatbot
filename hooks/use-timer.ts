@@ -23,10 +23,10 @@ type UseTimerReturn = {
   isCompleted: boolean;
   isStopped: boolean;
   progress: number;
-  start: () => void;
+  start: () => number;
   pause: () => void;
   stop: () => void;
-  restart: () => void;
+  restart: () => number;
   targetTimestamp: number | null;
 };
 
@@ -47,10 +47,11 @@ function loadTimerState(): TimerStorageState | null {
 }
 
 /**
- * Save timer state to localStorage
+ * Save timer state to localStorage.
+ * Returns true if save was successful, false otherwise.
  */
-function saveTimerState(state: TimerStorageState | null): void {
-  if (typeof window === "undefined") return;
+function saveTimerState(state: TimerStorageState | null): boolean {
+  if (typeof window === "undefined") return false;
 
   try {
     if (state === null) {
@@ -58,12 +59,14 @@ function saveTimerState(state: TimerStorageState | null): void {
     } else {
       localStorage.setItem(TIMER_STORAGE_KEY, JSON.stringify(state));
     }
+    return true;
   } catch (error) {
     // Log error so users know background persistence may not work
     console.error(
       "Failed to save timer state to localStorage. Timer may not persist across page reloads:",
       error,
     );
+    return false;
   }
 }
 
@@ -182,7 +185,7 @@ export function useTimer({
   }, [isRunning, targetTimestamp, updateFromTimestamp, clearTimerInterval]);
 
   const start = useCallback(() => {
-    if (isCompleted || isStopped) return;
+    if (isCompleted || isStopped) return 0;
 
     const target = Date.now() + remainingSeconds * 1000;
     setTargetTimestamp(target);
@@ -194,6 +197,8 @@ export function useTimer({
       label,
       isRunning: true,
     });
+
+    return target;
   }, [isCompleted, isStopped, remainingSeconds, initialSeconds, label]);
 
   const pause = useCallback(() => {
@@ -234,6 +239,8 @@ export function useTimer({
       label,
       isRunning: true,
     });
+
+    return target;
   }, [clearTimerInterval, initialSeconds, label]);
 
   // Cleanup on unmount

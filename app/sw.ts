@@ -82,7 +82,6 @@ self.addEventListener("notificationclick", (event: NotificationEvent) => {
           }
         } catch {
           // Ignore malformed URLs and continue checking other clients
-          continue;
         }
       }
       // If no matching URL, try to navigate an existing window

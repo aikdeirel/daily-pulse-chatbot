@@ -16,9 +16,18 @@ export const dynamic = "force-dynamic";
  * 2. setTimeout-based scheduling will NOT work in serverless environments where
  *    the function execution ends before the timer fires.
  *
+ * 3. Concurrent requests with the same endpoint+timestamp could create duplicate
+ *    timers in a multi-instance environment. The Map.get/set operations are not
+ *    atomic across instances. Use a database with transactions for production.
+ *
+ * 4. DUPLICATE NOTIFICATIONS: If the user completes/cancels the timer on the client
+ *    but the server-side cancellation request fails (network error, server restart),
+ *    the notification may still fire. The client should handle this gracefully by
+ *    dismissing unexpected notifications or showing them as "already completed".
+ *
  * For production use, consider:
  * - Vercel Cron Jobs or Upstash QStash for scheduled tasks
- * - Redis or database for persistent timer storage
+ * - Redis or database for persistent timer storage with transactions
  * - A dedicated long-running Node.js server
  *
  * This implementation is suitable for:
@@ -63,15 +72,26 @@ type ScheduleRequest = {
 
 /**
  * Sanitize label to prevent injection attacks.
+ * Only allows alphanumeric characters, spaces, and common punctuation.
  * Removes control characters and limits length.
  */
 function sanitizeLabel(label: string): string {
-  // Remove control characters (ASCII 0-31 and 127) and trim whitespace
-  // Using character code check instead of regex with control characters
+  // Allow only safe characters: letters, numbers, spaces, and common punctuation
   const sanitizedChars: string[] = [];
   for (const char of label) {
     const code = char.charCodeAt(0);
-    if (code >= 32 && code !== 127) {
+    // Allow: space (32), common punctuation (33-47, 58-64, 91-96, 123-126)
+    // letters (65-90, 97-122), numbers (48-57)
+    // Specifically allow: !, ", #, ', -, ., :, ;, ?, @
+    if (
+      code >= 32 &&
+      code <= 126 && // Basic printable ASCII
+      code !== 60 && // < (prevent HTML)
+      code !== 62 && // > (prevent HTML)
+      code !== 38 && // & (prevent HTML entities)
+      code !== 92 && // \ (prevent escapes)
+      code !== 96 // ` (prevent template literals)
+    ) {
       sanitizedChars.push(char);
     }
   }

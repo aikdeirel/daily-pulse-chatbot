@@ -220,12 +220,16 @@ export function Timer({ timerData }: TimerProps) {
   const handleStart = async () => {
     if (timer.isCompleted || timer.isStopped) return;
 
-    // Start timer first so remainingSeconds reflects the active timer state
-    timer.start();
+    // Cancel any existing scheduled push first to prevent duplicates
+    if (scheduledPushRef.current) {
+      await cancelScheduledPush(scheduledPushRef.current);
+      scheduledPushRef.current = null;
+    }
 
-    // Calculate target timestamp AFTER starting timer to keep it in sync
-    const targetTimestamp = Date.now() + timer.remainingSeconds * 1000;
-    // Schedule push notification for fail-safe alarm
+    // Start timer and get the exact target timestamp it uses
+    const targetTimestamp = timer.start();
+
+    // Schedule push notification for fail-safe alarm using the exact timestamp
     try {
       const result = await scheduleTimerPush(targetTimestamp, data.label);
       if (result.success && result.scheduledAt) {
@@ -304,11 +308,13 @@ export function Timer({ timerData }: TimerProps) {
           "Failed to cancel scheduled push notification on restart",
         );
       }
+      scheduledPushRef.current = null;
     }
 
-    // Restart the timer and get the exact target timestamp it will use
+    // Restart the timer and get the exact target timestamp it uses
     const targetTimestamp = timer.restart();
-    // Schedule new push notification
+
+    // Schedule new push notification using the exact timestamp
     try {
       const result = await scheduleTimerPush(targetTimestamp, data.label);
       if (result.success && result.scheduledAt) {

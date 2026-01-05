@@ -128,7 +128,7 @@ export async function subscribeToPush(): Promise<{
       const applicationServerKey = urlBase64ToUint8Array(vapidKey);
       subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey,
+        applicationServerKey: applicationServerKey.buffer as ArrayBuffer,
       });
     }
 
@@ -197,7 +197,14 @@ export async function scheduleTimerPush(
 
 /**
  * Cancel a scheduled push notification.
- * Returns success status and logs any errors.
+ * Returns success status and logs any errors with detailed context.
+ *
+ * Note: A 404 response (timer not found) may indicate:
+ * - The timer already fired and was cleaned up
+ * - The server was restarted (in-memory storage lost)
+ * - A different server instance received the cancel request
+ *
+ * Network errors are logged separately from server responses.
  */
 export async function cancelScheduledPush(
   targetTimestamp: number,
@@ -216,18 +223,30 @@ export async function cancelScheduledPush(
     });
 
     if (!response.ok) {
-      console.error(
-        "Failed to cancel scheduled push:",
-        response.status,
-        await response.text(),
-      );
+      const responseText = await response.text();
+      if (response.status === 404) {
+        // Timer not found - may have already fired or server restarted
+        console.warn(
+          "Timer not found when cancelling (may have already completed):",
+          response.status,
+          responseText,
+        );
+      } else {
+        // Other server errors
+        console.error(
+          "Server error when cancelling scheduled push:",
+          response.status,
+          responseText,
+        );
+      }
       return false;
     }
 
     const result = await response.json();
     return result.success === true;
   } catch (error) {
-    console.error("Error cancelling scheduled push:", error);
+    // Network or parsing errors
+    console.error("Network error cancelling scheduled push:", error);
     return false;
   }
 }
