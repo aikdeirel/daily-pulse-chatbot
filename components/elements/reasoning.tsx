@@ -133,7 +133,7 @@ export const ReasoningTrigger = memo(
             <>
               <BrainIcon className="size-4 text-orange-600 dark:text-orange-400" />
               <p className="font-medium text-orange-700 dark:text-orange-300">
-                {!duration ? `Thought for ${duration}s` : "Thought"}
+                {duration ? `Thought for ${duration}s` : "Thought"}
               </p>
               <ChevronDownIcon
                 className={cn(
