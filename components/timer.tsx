@@ -305,12 +305,8 @@ export function Timer({ timerData }: TimerProps) {
       }
     }
 
-    // Calculate target timestamp BEFORE calling restart (same as handleStart)
-    // This ensures push notification matches the actual timer target
-    const targetTimestamp = Date.now() + data.seconds * 1000;
-
-    timer.restart();
-
+    // Restart the timer and get the exact target timestamp it will use
+    const targetTimestamp = timer.restart();
     // Schedule new push notification
     try {
       const result = await scheduleTimerPush(targetTimestamp, data.label);
