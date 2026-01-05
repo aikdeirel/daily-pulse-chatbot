@@ -274,10 +274,13 @@ export async function DELETE(request: NextRequest) {
       });
     }
 
-    return new Response(JSON.stringify({ success: false }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ success: false, error: "Timer not found" }),
+      {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   } catch (error) {
     console.error("Error cancelling scheduled push:", error);
     return new Response(
