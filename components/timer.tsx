@@ -11,12 +11,11 @@ import {
   VolumeX,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { usePersistentTimer } from "@/hooks/use-persistent-timer";
 
 type TimerData = {
   seconds: number;
   label?: string;
-  // startedAt can be used for more accurate time tracking if component is recreated
-  startedAt?: number;
 };
 
 type TimerProps = {
@@ -27,7 +26,6 @@ type TimerProps = {
 const SAMPLE: TimerData = {
   seconds: 480, // 8 minutes
   label: "Timer",
-  startedAt: Date.now(),
 };
 
 function formatTime(totalSeconds: number): string {
@@ -127,32 +125,19 @@ export function Timer({ timerData }: TimerProps) {
       ? timerData
       : SAMPLE;
 
-  // On re-render/recreation, reset to initial state (not running) to avoid unexpected sound playback
-  // The simplest approach: timer starts fresh each time the component mounts
-  const [remainingSeconds, setRemainingSeconds] = useState(data.seconds);
-  const [isRunning, setIsRunning] = useState(false); // Start paused to avoid unexpected behavior on re-render
-  const [isCompleted, setIsCompleted] = useState(false);
-  const [isStopped, setIsStopped] = useState(false); // Stopped manually without completion
+  // Sound state
   const [isSoundPlaying, setIsSoundPlaying] = useState(false);
-  const [soundWasStopped, setSoundWasStopped] = useState(false); // Track if user stopped the sound
+  const [soundWasStopped, setSoundWasStopped] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const soundIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Calculate progress percentage
-  const totalSeconds = data.seconds;
-  const progress = ((totalSeconds - remainingSeconds) / totalSeconds) * 100;
-
-  // Cleanup audio context - creates a new context to stop all scheduled sounds
+  // Cleanup audio context
   const cleanupAudio = useCallback(() => {
-    // Clear the repeating sound interval
     if (soundIntervalRef.current) {
       clearInterval(soundIntervalRef.current);
       soundIntervalRef.current = null;
     }
-    // Close and nullify the audio context to stop all scheduled sounds immediately
     if (audioContextRef.current) {
-      // Suspend first to stop audio immediately, then close
       audioContextRef.current.suspend().catch(() => {});
       audioContextRef.current.close().catch(() => {});
       audioContextRef.current = null;
@@ -160,9 +145,10 @@ export function Timer({ timerData }: TimerProps) {
     setIsSoundPlaying(false);
   }, []);
 
-  // Play completion sound
+  // Play completion sound (memoized to use as onComplete callback)
   const playSound = useCallback(() => {
-    // Create new AudioContext if none exists or if the existing one is closed
+    if (soundWasStopped) return;
+
     if (
       !audioContextRef.current ||
       audioContextRef.current.state === "closed"
@@ -170,7 +156,6 @@ export function Timer({ timerData }: TimerProps) {
       audioContextRef.current = new AudioContext();
     }
 
-    // Resume if suspended (browser autoplay policy)
     if (audioContextRef.current.state === "suspended") {
       audioContextRef.current.resume();
     }
@@ -178,89 +163,55 @@ export function Timer({ timerData }: TimerProps) {
     setIsSoundPlaying(true);
     playCuteSound(audioContextRef.current);
 
-    // Repeat the sound every 2 seconds until stopped
     soundIntervalRef.current = setInterval(() => {
-      if (audioContextRef.current && audioContextRef.current.state !== "closed") {
+      if (
+        audioContextRef.current &&
+        audioContextRef.current.state !== "closed"
+      ) {
         playCuteSound(audioContextRef.current);
       }
     }, 2000);
-  }, []);
+  }, [soundWasStopped]);
 
-  // Timer countdown logic
-  useEffect(() => {
-    if (isRunning && remainingSeconds > 0) {
-      intervalRef.current = setInterval(() => {
-        setRemainingSeconds((prev) => {
-          if (prev === 1) {
-            setIsRunning(false);
-            setIsCompleted(true);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [isRunning, remainingSeconds]);
-
-  // Play sound when completed (but only if user hasn't stopped it)
-  useEffect(() => {
-    if (isCompleted && !isSoundPlaying && !soundWasStopped) {
-      playSound();
-    }
-  }, [isCompleted, isSoundPlaying, soundWasStopped, playSound]);
+  // Use persistent timer hook with sound callback
+  const timer = usePersistentTimer({
+    initialSeconds: data.seconds,
+    onComplete: playSound,
+  });
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       cleanupAudio();
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
     };
   }, [cleanupAudio]);
 
-  // Handle pause/resume
+  // Handle pause/resume toggle
   const togglePause = () => {
-    if (!isCompleted) {
-      setIsRunning((prev) => !prev);
+    if (timer.isRunning) {
+      timer.pause();
+    } else {
+      timer.start();
     }
   };
 
-  // Handle stop (end timer completely without playing sound)
+  // Handle stop
   const handleStop = () => {
-    setIsRunning(false);
-    setIsStopped(true); // Mark as stopped, not completed
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    // Ensure any audio is cleaned up (safety measure)
+    timer.stop();
     cleanupAudio();
   };
 
   // Handle end sound
   const handleEndSound = () => {
-    setSoundWasStopped(true); // Prevent sound from restarting
+    setSoundWasStopped(true);
     cleanupAudio();
   };
 
   // Handle restart timer
   const handleRestart = () => {
-    // Clean up any existing audio
     cleanupAudio();
-    // Reset all states
-    setRemainingSeconds(timerData?.seconds ?? data.seconds);
-    setIsRunning(true);
-    setIsCompleted(false);
-    setIsStopped(false);
     setSoundWasStopped(false);
-    setIsSoundPlaying(false);
+    timer.restart();
   };
 
   return (
@@ -269,15 +220,15 @@ export function Timer({ timerData }: TimerProps) {
         "relative flex w-full flex-col gap-4 overflow-hidden rounded-3xl p-6 shadow-lg backdrop-blur-sm",
         {
           "bg-gradient-to-br from-teal-400 via-cyan-500 to-teal-600":
-            !isCompleted && !isStopped,
+            !timer.isCompleted && !timer.isStopped,
         },
         {
           "bg-gradient-to-br from-rose-400 via-pink-500 to-rose-600 animate-pulse":
-            isCompleted,
+            timer.isCompleted,
         },
         {
           "bg-gradient-to-br from-slate-400 via-slate-500 to-slate-600":
-            isStopped,
+            timer.isStopped,
         },
       )}
     >
@@ -289,12 +240,12 @@ export function Timer({ timerData }: TimerProps) {
           <div className="font-medium text-sm text-white/80">
             {data.label || "Timer"}
           </div>
-          {isCompleted && (
+          {timer.isCompleted && (
             <div className="animate-bounce rounded-full bg-white/20 px-3 py-1 font-medium text-sm text-white">
               Time&apos;s up!
             </div>
           )}
-          {isStopped && (
+          {timer.isStopped && (
             <div className="rounded-full bg-white/20 px-3 py-1 font-medium text-sm text-white">
               Stopped
             </div>
@@ -306,12 +257,12 @@ export function Timer({ timerData }: TimerProps) {
           <div className="flex items-center gap-4">
             <div
               className={cx("text-white/90", {
-                "text-yellow-200": !isCompleted && !isStopped,
-                "text-white animate-bounce": isCompleted,
-                "text-white/60": isStopped,
+                "text-yellow-200": !timer.isCompleted && !timer.isStopped,
+                "text-white animate-bounce": timer.isCompleted,
+                "text-white/60": timer.isStopped,
               })}
             >
-              {isCompleted ? (
+              {timer.isCompleted ? (
                 <BellIcon className="size-12" />
               ) : (
                 <TimerIcon className="size-12" />
@@ -321,22 +272,25 @@ export function Timer({ timerData }: TimerProps) {
               className="font-light text-5xl text-white tabular-nums"
               role="timer"
               aria-live="polite"
-              aria-label={`${formatTime(remainingSeconds)} remaining`}
+              aria-label={`${formatTime(timer.remainingSeconds)} remaining`}
             >
-              {formatTime(remainingSeconds)}
+              {formatTime(timer.remainingSeconds)}
             </div>
           </div>
 
           {/* Progress indicator (only when running) */}
-          {!isCompleted && !isStopped && (
+          {!timer.isCompleted && !timer.isStopped && (
             <div
               className="text-right"
               role="status"
               aria-live="polite"
-              aria-label={`${Math.round(progress)} percent complete`}
+              aria-label={`${Math.round(timer.progress)} percent complete`}
             >
-              <div className="font-medium text-sm text-white/90" aria-hidden="true">
-                {Math.round(progress)}%
+              <div
+                className="font-medium text-sm text-white/90"
+                aria-hidden="true"
+              >
+                {Math.round(timer.progress)}%
               </div>
               <div className="text-sm text-white/70" aria-hidden="true">
                 complete
@@ -352,17 +306,19 @@ export function Timer({ timerData }: TimerProps) {
               "h-full rounded-full transition-all duration-1000 ease-linear",
               {
                 "bg-gradient-to-r from-yellow-300 to-white":
-                  !isCompleted && !isStopped,
+                  !timer.isCompleted && !timer.isStopped,
                 "bg-gradient-to-r from-white to-pink-200 animate-pulse":
-                  isCompleted,
-                "bg-gradient-to-r from-slate-300 to-slate-200": isStopped,
+                  timer.isCompleted,
+                "bg-gradient-to-r from-slate-300 to-slate-200": timer.isStopped,
               },
             )}
-            style={{ width: `${isCompleted ? 100 : progress}%` }}
+            style={{ width: `${timer.isCompleted ? 100 : timer.progress}%` }}
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-valuenow={Math.round(isCompleted ? 100 : progress)}
+            aria-valuenow={Math.round(
+              timer.isCompleted ? 100 : timer.progress,
+            )}
             aria-label="Timer progress"
           />
         </div>
@@ -370,17 +326,17 @@ export function Timer({ timerData }: TimerProps) {
         {/* Control buttons */}
         <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
           {/* Pause/Resume button - only show when running (not completed or stopped) */}
-          {!isCompleted && !isStopped && (
+          {!timer.isCompleted && !timer.isStopped && (
             <button
               onClick={togglePause}
               type="button"
               className={cx(
                 "flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 font-medium text-sm transition-all active:scale-95",
                 "bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm",
-                "min-h-[48px]", // Mobile-friendly touch target
+                "min-h-[48px]",
               )}
             >
-              {isRunning ? (
+              {timer.isRunning ? (
                 <>
                   <PauseIcon className="size-5" />
                   <span>Pause</span>
@@ -388,21 +344,21 @@ export function Timer({ timerData }: TimerProps) {
               ) : (
                 <>
                   <PlayIcon className="size-5" />
-                  <span>Resume</span>
+                  <span>{timer.progress === 0 ? "Start" : "Resume"}</span>
                 </>
               )}
             </button>
           )}
 
           {/* Stop button - show when timer is running (not completed or stopped) */}
-          {!isCompleted && !isStopped && (
+          {!timer.isCompleted && !timer.isStopped && (
             <button
               onClick={handleStop}
               type="button"
               className={cx(
                 "flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 font-medium text-sm transition-all active:scale-95",
                 "bg-white/10 text-white/90 hover:bg-white/20 backdrop-blur-sm",
-                "min-h-[48px]", // Mobile-friendly touch target
+                "min-h-[48px]",
               )}
             >
               <Square className="size-5" />
@@ -411,14 +367,14 @@ export function Timer({ timerData }: TimerProps) {
           )}
 
           {/* End sound button - only show when completed and sound is playing */}
-          {isCompleted && isSoundPlaying && (
+          {timer.isCompleted && isSoundPlaying && (
             <button
               onClick={handleEndSound}
               type="button"
               className={cx(
                 "flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 font-medium text-sm transition-all active:scale-95",
                 "bg-white/30 text-white hover:bg-white/40 backdrop-blur-sm",
-                "min-h-[48px]", // Mobile-friendly touch target
+                "min-h-[48px]",
                 "ring-2 ring-white/50 ring-offset-2 ring-offset-transparent",
               )}
             >
@@ -428,14 +384,14 @@ export function Timer({ timerData }: TimerProps) {
           )}
 
           {/* Restart button - show when timer is completed or stopped */}
-          {(isCompleted || isStopped) && (
+          {(timer.isCompleted || timer.isStopped) && (
             <button
               onClick={handleRestart}
               type="button"
               className={cx(
                 "flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 font-medium text-sm transition-all active:scale-95",
                 "bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm",
-                "min-h-[48px]", // Mobile-friendly touch target
+                "min-h-[48px]",
               )}
             >
               <RotateCcwIcon className="size-5" />
