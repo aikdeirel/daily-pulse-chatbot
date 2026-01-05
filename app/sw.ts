@@ -68,10 +68,21 @@ self.addEventListener("notificationclick", (event: NotificationEvent) => {
 
   event.waitUntil(
     self.clients.matchAll({ type: "window" }).then((clientList) => {
+      const normalizedTargetUrl = new URL(targetUrl, self.location.origin);
       // First, try to find a client that's already on the target URL
       for (const client of clientList) {
-        if (client.url.includes(targetUrl) && "focus" in client) {
-          return client.focus();
+        try {
+          const clientUrl = new URL(client.url);
+          const isSameLocation =
+            clientUrl.origin === normalizedTargetUrl.origin &&
+            clientUrl.pathname === normalizedTargetUrl.pathname &&
+            clientUrl.search === normalizedTargetUrl.search;
+          if (isSameLocation && "focus" in client) {
+            return client.focus();
+          }
+        } catch {
+          // Ignore malformed URLs and continue checking other clients
+          continue;
         }
       }
       // If no matching URL, try to navigate an existing window
