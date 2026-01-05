@@ -17,7 +17,7 @@ type ReasoningContextValue = {
   isStreaming: boolean;
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  duration: number;
+  duration: number | null;
 };
 
 const ReasoningContext = createContext<ReasoningContextValue | null>(null);
@@ -57,10 +57,7 @@ export const Reasoning = memo(
       defaultProp: defaultOpen,
       onChange: onOpenChange,
     });
-    const [duration, setDuration] = useControllableState({
-      prop: durationProp,
-      defaultProp: 0,
-    });
+    const [duration, setDuration] = useState<number | null>(durationProp ?? null);
 
     const [hasAutoClosedRef, setHasAutoClosedRef] = useState(false);
     const [startTime, setStartTime] = useState<number | null>(null);
@@ -72,10 +69,11 @@ export const Reasoning = memo(
           setStartTime(Date.now());
         }
       } else if (startTime !== null) {
+        // Streaming just finished - calculate duration
         setDuration(Math.round((Date.now() - startTime) / MS_IN_S));
         setStartTime(null);
       }
-    }, [isStreaming, startTime, setDuration]);
+    }, [isStreaming, startTime]);
 
     // Auto-open when streaming starts, auto-close when streaming ends (once only)
     useEffect(() => {
@@ -126,7 +124,7 @@ export const ReasoningTrigger = memo(
         {...props}
       >
         {children ??
-          (isStreaming || duration === 0 ? (
+          (isStreaming ? (
             <>
               <BrainIcon className="size-4 text-orange-600 dark:text-orange-400" />
               <ThinkingText />
@@ -135,7 +133,7 @@ export const ReasoningTrigger = memo(
             <>
               <BrainIcon className="size-4 text-orange-600 dark:text-orange-400" />
               <p className="font-medium text-orange-700 dark:text-orange-300">
-                Thought for {duration}s
+                {!duration ? `Thought for ${duration}s` : "Thought"}
               </p>
               <ChevronDownIcon
                 className={cn(
