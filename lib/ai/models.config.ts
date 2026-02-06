@@ -104,6 +104,16 @@ export const modelsConfig: ModelConfig[] = [
     isFree: false,
     availableFor: ["regular"],
   },
+  {
+    id: "claude-opus-4.6",
+    name: "Claude Opus 4.6",
+    description: "Latest and most capable Claude model",
+    openRouterId: "anthropic/claude-opus-4.6",
+    supportsTools: true,
+    isReasoning: false,
+    isFree: false,
+    availableFor: ["regular"],
+  },
 
   // OpenAI GPT models
   {
