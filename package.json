@@ -48,7 +48,7 @@
     "codemirror": "^6.0.2",
     "date-fns": "^4.1.0",
     "diff-match-patch": "^1.0.5",
-    "dompurify": "^3.4.0",
+    "dompurify": "^3.4.16",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.45.2",
     "embla-carousel-react": "^8.6.0",
